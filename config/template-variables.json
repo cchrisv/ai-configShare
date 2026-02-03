@@ -1,0 +1,50 @@
+{
+  "$schema": "./schemas/template-variables.schema.json",
+  "version": "2.0.0",
+  "description": "Default template variables for prompt resolution",
+  "variables": {
+    "config": {
+      "project": "YourProject"
+    },
+    "org_defaults": {
+      "ado_org": "https://dev.azure.com/YourOrg",
+      "sf_org": "production"
+    },
+    "field_paths": {
+      "field_title": "System.Title",
+      "field_description": "System.Description",
+      "field_acceptance_criteria": "Microsoft.VSTS.Common.AcceptanceCriteria",
+      "field_repro_steps": "Microsoft.VSTS.TCM.ReproSteps",
+      "field_system_info": "Microsoft.VSTS.TCM.SystemInfo",
+      "field_tags": "System.Tags",
+      "field_state": "System.State",
+      "field_area_path": "System.AreaPath",
+      "field_iteration_path": "System.IterationPath",
+      "field_work_item_type": "System.WorkItemType",
+      "field_assigned_to": "System.AssignedTo",
+      "field_story_points": "Microsoft.VSTS.Scheduling.StoryPoints",
+      "field_priority": "Microsoft.VSTS.Common.Priority",
+      "field_work_class_type": "Custom.WorkClassType",
+      "field_requires_qa": "Custom.RequiresQA"
+    },
+    "artifact_files": {
+      "research": {
+        "artifact_file_org_dictionary": "00-organization-dictionary.json",
+        "artifact_file_ado_workitem": "01-ado-workitem.json",
+        "artifact_file_wiki_research": "02-wiki-research.json",
+        "artifact_file_dependency_discovery": "03a-dependency-discovery.json",
+        "artifact_file_dependency_summary": "03b-dependency-summary.md",
+        "artifact_file_similar_workitems": "04-similar-workitems.json",
+        "artifact_file_business_context": "05-business-context.json",
+        "artifact_file_research_summary": "research-summary.json",
+        "artifact_file_assumptions": "assumptions.json"
+      }
+    },
+    "cli": {
+      "ado_tools": "npx --prefix scripts/workflow ado-tools",
+      "sf_tools": "npx --prefix scripts/workflow sf-tools",
+      "wiki_tools": "npx --prefix scripts/workflow wiki-tools",
+      "workflow_tools": "npx --prefix scripts/workflow workflow-tools"
+    }
+  }
+}

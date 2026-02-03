@@ -1,0 +1,218 @@
+#!/usr/bin/env node
+/**
+ * Wiki Tools CLI
+ * Command-line interface for Azure DevOps Wiki operations
+ */
+
+import { Command } from 'commander';
+import { 
+  getWikiPage, 
+  updateWikiPage, 
+  createWikiPage,
+  deleteWikiPage,
+  listWikiPages,
+  searchWikiPages,
+} from '../src/adoWikiPages.js';
+import { configureLogger } from '../src/lib/loggerStructured.js';
+
+const program = new Command();
+
+program
+  .name('wiki-tools')
+  .description('Azure DevOps wiki operations')
+  .version('2.0.0');
+
+// Get command
+program
+  .command('get')
+  .description('Get a wiki page')
+  .option('--page-id <id>', 'Page ID')
+  .option('-p, --path <path>', 'Page path')
+  .option('--wiki <id>', 'Wiki ID or name')
+  .option('--no-content', 'Exclude content')
+  .option('--json', 'Output as JSON (default)')
+  .option('-v, --verbose', 'Verbose output')
+  .action(async (options) => {
+    try {
+      if (options.verbose) {
+        configureLogger({ minLevel: 'debug' });
+      }
+
+      if (!options.pageId && !options.path) {
+        console.error('Error: Either --page-id or --path must be specified');
+        process.exit(1);
+      }
+
+      const page = await getWikiPage({
+        pageId: options.pageId ? parseInt(options.pageId, 10) : undefined,
+        path: options.path,
+        wikiId: options.wiki,
+        includeContent: options.content !== false,
+      });
+
+      console.log(JSON.stringify(page, null, 2));
+    } catch (error) {
+      console.error('Error:', error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
+  });
+
+// Update command
+program
+  .command('update')
+  .description('Update a wiki page')
+  .option('--page-id <id>', 'Page ID')
+  .option('-p, --path <path>', 'Page path')
+  .option('-c, --content <content>', 'Content (string or file path)')
+  .option('--comment <comment>', 'Update comment')
+  .option('--wiki <id>', 'Wiki ID or name')
+  .option('--json', 'Output as JSON (default)')
+  .option('-v, --verbose', 'Verbose output')
+  .action(async (options) => {
+    try {
+      if (options.verbose) {
+        configureLogger({ minLevel: 'debug' });
+      }
+
+      if (!options.path) {
+        console.error('Error: --path must be specified');
+        process.exit(1);
+      }
+
+      if (!options.content) {
+        console.error('Error: --content must be specified');
+        process.exit(1);
+      }
+
+      const result = await updateWikiPage({
+        pageId: options.pageId ? parseInt(options.pageId, 10) : undefined,
+        path: options.path,
+        content: options.content,
+        comment: options.comment,
+        wikiId: options.wiki,
+      });
+
+      console.log(JSON.stringify(result, null, 2));
+    } catch (error) {
+      console.error('Error:', error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
+  });
+
+// Create command
+program
+  .command('create')
+  .description('Create a new wiki page')
+  .requiredOption('-p, --path <path>', 'Page path')
+  .requiredOption('-c, --content <content>', 'Content (string or file path)')
+  .option('--comment <comment>', 'Creation comment')
+  .option('--wiki <id>', 'Wiki ID or name')
+  .option('--json', 'Output as JSON (default)')
+  .option('-v, --verbose', 'Verbose output')
+  .action(async (options) => {
+    try {
+      if (options.verbose) {
+        configureLogger({ minLevel: 'debug' });
+      }
+
+      const result = await createWikiPage({
+        path: options.path,
+        content: options.content,
+        comment: options.comment,
+        wikiId: options.wiki,
+      });
+
+      console.log(JSON.stringify(result, null, 2));
+    } catch (error) {
+      console.error('Error:', error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
+  });
+
+// Delete command
+program
+  .command('delete')
+  .description('Delete a wiki page')
+  .requiredOption('-p, --path <path>', 'Page path')
+  .option('--wiki <id>', 'Wiki ID or name')
+  .option('--force', 'Skip confirmation')
+  .option('-v, --verbose', 'Verbose output')
+  .action(async (options) => {
+    try {
+      if (options.verbose) {
+        configureLogger({ minLevel: 'debug' });
+      }
+
+      if (!options.force) {
+        console.error('Error: Use --force to confirm deletion');
+        process.exit(1);
+      }
+
+      await deleteWikiPage(options.path, options.wiki);
+      console.log(`Deleted wiki page: ${options.path}`);
+    } catch (error) {
+      console.error('Error:', error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
+  });
+
+// List command
+program
+  .command('list')
+  .description('List wiki pages')
+  .option('-p, --path <path>', 'Parent path', '/')
+  .option('--wiki <id>', 'Wiki ID or name')
+  .option('--json', 'Output as JSON (default)')
+  .option('-v, --verbose', 'Verbose output')
+  .action(async (options) => {
+    try {
+      if (options.json) {
+        configureLogger({ silent: true });
+      } else if (options.verbose) {
+        configureLogger({ minLevel: 'debug' });
+      }
+
+      const pages = await listWikiPages(options.path, options.wiki);
+      console.log(JSON.stringify(pages, null, 2));
+    } catch (error) {
+      console.error('Error:', error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
+  });
+
+// Search command
+program
+  .command('search <text>')
+  .description('Search wiki pages by keyword')
+  .option('--wiki <id>', 'Wiki ID or name')
+  .option('--json', 'Output as JSON (default)')
+  .option('-v, --verbose', 'Verbose output')
+  .action(async (text: string, options) => {
+    try {
+      if (options.json) {
+        configureLogger({ silent: true });
+      } else if (options.verbose) {
+        configureLogger({ minLevel: 'debug' });
+      }
+
+      const pages = await searchWikiPages(text, options.wiki);
+      
+      if (options.json || true) {
+        console.log(JSON.stringify({ 
+          searchText: text,
+          count: pages.length,
+          pages 
+        }, null, 2));
+      } else {
+        console.log(`Found ${pages.length} wiki pages matching "${text}":`);
+        for (const page of pages) {
+          console.log(`  ${page.path}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
+  });
+
+program.parse();

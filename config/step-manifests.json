@@ -1,0 +1,404 @@
+{
+  "$schema": "./schemas/step-manifests.schema.json",
+  "version": "2.0.0",
+  "feedback_loop": {
+    "enabled": true,
+    "max_iterations": 3,
+    "triggers": [
+      "new_topic_discovered",
+      "evidence_gap_identified",
+      "contradiction_found",
+      "high_value_finding",
+      "missing_context"
+    ],
+    "evaluation_prompt": "After completing this step, evaluate: 1) What new information was discovered? 2) Does this new information warrant revisiting a previous step? 3) Which steps would benefit from this new context?"
+  },
+  "manifests": [
+    {
+      "id": "research-init",
+      "name": "Research Initialization",
+      "phase": "research",
+      "order": 1,
+      "description": "Initialize research artifacts and create directory structure",
+      "prompt_file": ".github/prompts/research-organization-dictionary.prompt.md",
+      "inputs": [
+        {
+          "name": "work_item_id",
+          "type": "number",
+          "required": true,
+          "description": "ADO work item ID"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "root_dir",
+          "type": "string",
+          "path": ".ai-artifacts/{{work_item_id}}"
+        },
+        {
+          "name": "organization_dictionary",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/research/00-organization-dictionary.json"
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "research-ado",
+      "name": "ADO Work Item Research",
+      "phase": "research",
+      "order": 2,
+      "description": "Extract and analyze ADO work item data",
+      "prompt_file": ".github/prompts/research-ado.prompt.md",
+      "script_alternative": "npx --prefix scripts/workflow ado-tools get {{workItemId}} --expand All --comments --json",
+      "inputs": [
+        {
+          "name": "work_item_id",
+          "type": "number",
+          "required": true,
+          "source": "variable:workItemId"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "ado_workitem",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/research/01-ado-workitem.json"
+        }
+      ],
+      "dependencies": ["research-init"]
+    },
+    {
+      "id": "research-wiki",
+      "name": "Wiki Documentation Research",
+      "phase": "research",
+      "order": 2.5,
+      "description": "Search Azure DevOps Wiki for documentation, runbooks, and architectural decisions",
+      "prompt_file": ".github/prompts/research-wiki.prompt.md",
+      "inputs": [
+        {
+          "name": "ado_workitem",
+          "type": "file",
+          "required": true,
+          "source": "artifact:ado_workitem",
+          "description": "Work item data to extract search keywords"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "wiki_search",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/research/02-wiki-search.json"
+        }
+      ],
+      "dependencies": ["research-ado"],
+      "feedback_targets": ["research-ado"],
+      "feedback_triggers": ["New Salesforce metadata names found", "Related work items mentioned", "New acronyms/terms discovered"]
+    },
+    {
+      "id": "research-salesforce",
+      "name": "Salesforce Metadata Research",
+      "phase": "research",
+      "order": 3,
+      "description": "Discover Salesforce metadata dependencies based on work item context",
+      "prompt_file": ".github/prompts/research-salesforce.prompt.md",
+      "inputs": [
+        {
+          "name": "ado_workitem",
+          "type": "file",
+          "required": true,
+          "source": "artifact:ado_workitem",
+          "description": "Work item data used to identify SF components from title, description, and tags"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "dependency_discovery",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/research/03a-dependency-discovery.json"
+        },
+        {
+          "name": "dependency_summary",
+          "type": "markdown",
+          "path": ".ai-artifacts/{{work_item_id}}/research/03b-dependency-summary.md"
+        }
+      ],
+      "dependencies": ["research-ado"],
+      "feedback_targets": ["research-ado", "research-wiki"],
+      "feedback_triggers": ["New object/field dependencies found", "Integration points discovered", "Permission model insights"]
+    },
+    {
+      "id": "research-similar",
+      "name": "Similar Work Items Research",
+      "phase": "research",
+      "order": 4,
+      "description": "Find related work items by searching title keywords. MUST include all work item types (User Story, Bug, Defect, Task, Feature) - do NOT filter by type. Do NOT limit results - retrieve all matches to ensure complete coverage.",
+      "prompt_file": ".github/prompts/research-similar-workitems.prompt.md",
+      "inputs": [
+        {
+          "name": "ado_workitem",
+          "type": "file",
+          "required": true,
+          "source": "artifact:ado_workitem",
+          "description": "Work item data to extract search keywords from title and description"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "similar_workitems",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/research/04-similar-workitems.json"
+        }
+      ],
+      "dependencies": ["research-ado"],
+      "feedback_targets": ["research-ado", "research-salesforce"],
+      "feedback_triggers": ["Related implementation found", "Similar issue with solution", "Linked work items with context"]
+    },
+    {
+      "id": "research-business-context",
+      "name": "Business Context Research",
+      "phase": "research",
+      "order": 5,
+      "description": "Query Salesforce for business context based on identified components",
+      "prompt_file": ".github/prompts/research-business-context.prompt.md",
+      "inputs": [
+        {
+          "name": "dependency_discovery",
+          "type": "file",
+          "required": false,
+          "source": "artifact:dependency_discovery",
+          "description": "SF dependency data to inform business context queries"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "business_context",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/research/05-business-context.json"
+        }
+      ],
+      "dependencies": ["research-salesforce"],
+      "feedback_targets": ["research-salesforce", "research-ado"],
+      "feedback_triggers": ["User impact data found", "Business rules discovered", "Data patterns identified"]
+    },
+    {
+      "id": "research-code",
+      "name": "Code Repository Research",
+      "phase": "research",
+      "order": 5.5,
+      "description": "Search code repository for implementation patterns, prior art, and technical debt",
+      "prompt_file": ".github/prompts/research-code.prompt.md",
+      "inputs": [
+        {
+          "name": "dependency_discovery",
+          "type": "file",
+          "required": false,
+          "source": "artifact:dependency_discovery",
+          "description": "SF metadata to search for in code"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "code_search",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/research/05-code-search.json"
+        }
+      ],
+      "dependencies": ["research-salesforce"],
+      "feedback_targets": ["research-salesforce", "research-ado"],
+      "feedback_triggers": ["Design patterns discovered", "Library/framework usage found", "Integration code identified"]
+    },
+    {
+      "id": "research-web",
+      "name": "Industry Best Practices Research",
+      "phase": "research",
+      "order": 5.6,
+      "description": "Search web for Salesforce best practices, anti-patterns, and modernization strategies",
+      "prompt_file": ".github/prompts/research-web.prompt.md",
+      "inputs": [
+        {
+          "name": "code_search",
+          "type": "file",
+          "required": false,
+          "source": "artifact:code_search",
+          "description": "Technologies identified from code search"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "web_research",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/research/06-web-research.json"
+        }
+      ],
+      "dependencies": ["research-code"],
+      "feedback_targets": ["research-salesforce", "research-code", "research-ado"],
+      "feedback_triggers": ["Best practice contradicts implementation", "Anti-pattern identified in code", "Modern alternative discovered", "Migration strategy found"]
+    },
+    {
+      "id": "research-synthesis",
+      "name": "Research Synthesis",
+      "phase": "research",
+      "order": 6,
+      "description": "Synthesize all research findings",
+      "prompt_file": ".github/prompts/research-analysis-synthesis.prompt.md",
+      "inputs": [
+        {
+          "name": "ado_workitem",
+          "type": "file",
+          "required": true,
+          "source": "artifact:ado_workitem"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "research_summary",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/research/research-summary.json"
+        },
+        {
+          "name": "assumptions",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/research/assumptions.json"
+        }
+      ],
+      "dependencies": ["research-ado", "research-similar"]
+    },
+    {
+      "id": "grooming",
+      "name": "Grooming",
+      "phase": "grooming",
+      "order": 1,
+      "description": "Transform requests into refined requirements",
+      "prompt_file": ".github/prompts/grooming.prompt.md",
+      "inputs": [
+        {
+          "name": "research_summary",
+          "type": "file",
+          "required": true,
+          "source": "artifact:research_summary"
+        },
+        {
+          "name": "assumptions",
+          "type": "file",
+          "required": true,
+          "source": "artifact:assumptions"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "classification",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/grooming/classification.json"
+        },
+        {
+          "name": "templates_applied",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/grooming/templates-applied.json"
+        },
+        {
+          "name": "triage_summary",
+          "type": "markdown",
+          "path": ".ai-artifacts/{{work_item_id}}/grooming/triage-summary.md"
+        }
+      ],
+      "dependencies": ["research-synthesis"]
+    },
+    {
+      "id": "solutioning",
+      "name": "Solutioning",
+      "phase": "solutioning",
+      "order": 1,
+      "description": "Design technical solutions",
+      "prompt_file": ".github/prompts/solutioning.prompt.md",
+      "inputs": [
+        {
+          "name": "classification",
+          "type": "file",
+          "required": true,
+          "source": "artifact:classification"
+        },
+        {
+          "name": "dependency_discovery",
+          "type": "file",
+          "required": false,
+          "source": "artifact:dependency_discovery"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "solution_design",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/solutioning/solution-design.json"
+        },
+        {
+          "name": "task_breakdown",
+          "type": "json",
+          "path": ".ai-artifacts/{{work_item_id}}/solutioning/task-breakdown.json"
+        }
+      ],
+      "dependencies": ["grooming"]
+    },
+    {
+      "id": "finalization",
+      "name": "Finalization",
+      "phase": "finalization",
+      "order": 1,
+      "description": "Complete all work item updates and create tasks",
+      "prompt_file": ".github/prompts/finalization.prompt.md",
+      "inputs": [
+        {
+          "name": "solution_design",
+          "type": "file",
+          "required": true,
+          "source": "artifact:solution_design"
+        },
+        {
+          "name": "task_breakdown",
+          "type": "file",
+          "required": true,
+          "source": "artifact:task_breakdown"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "completion_summary",
+          "type": "markdown",
+          "path": ".ai-artifacts/{{work_item_id}}/finalization/completion-summary.md"
+        }
+      ],
+      "dependencies": ["solutioning"]
+    },
+    {
+      "id": "wiki-creation",
+      "name": "Wiki Documentation",
+      "phase": "documentation",
+      "order": 1,
+      "description": "Create wiki documentation from artifacts",
+      "prompt_file": ".github/prompts/wiki-creation.prompt.md",
+      "inputs": [
+        {
+          "name": "solution_design",
+          "type": "file",
+          "required": true,
+          "source": "artifact:solution_design"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "wiki_page",
+          "type": "string",
+          "description": "Wiki page path"
+        }
+      ],
+      "dependencies": ["solutioning"],
+      "conditions": [
+        {
+          "field": "createWiki",
+          "operator": "equals",
+          "value": true
+        }
+      ]
+    }
+  ]
+}

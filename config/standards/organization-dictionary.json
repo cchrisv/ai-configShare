@@ -1,0 +1,182 @@
+{
+  "version": "1.2",
+  "last_updated": "2025-12-08",
+  "acronyms": {
+    "UMGC": "University of Maryland Global Campus",
+    "ADO": "Azure DevOps",
+    "SF": "Salesforce",
+    "DP": "Digital Platforms",
+    "MCP": "Model Context Protocol",
+    "CRM": "Customer Relationship Management",
+    "API": "Application Programming Interface",
+    "SOQL": "Salesforce Object Query Language",
+    "Apex": "Salesforce's proprietary programming language",
+    "LWC": "Lightning Web Component",
+    "FLS": "Field-Level Security",
+    "FERPA": "Family Educational Rights and Privacy Act",
+    "PII": "Personally Identifiable Information",
+    "LCA": "Lead Contact Assignment - system using Traction Complete to assign leads and contacts to appropriate owners",
+    "DREAM": "Salesforce, Marketing Cloud, and Five9 Development team",
+    "IC": "Individualized Care",
+    "CLS": "Corporate Learning Solutions",
+    "ESO": "Educational Service Officers",
+    "MAC": "Marketing Activity Code",
+    "CCAF": "Community College of the Air Force",
+    "BASW": "Bachelor of Arts in Social Work",
+    "RFI": "Request for Information",
+    "eApp": "Electronic Application",
+    "EMPLID": "Unique Student Identifier in PeopleSoft",
+    "DSN": "Defense Switched Network",
+    "I2E": "Inquiry to Enrollment",
+    "DPW": "Degree Planning Worksheet",
+    "GEM": "General Education Mobile",
+    "AAR": "Academic Advisement Report",
+    "MEC": "Military Education Coordinator",
+    "USNCC": "United States Naval Community College",
+    "TA": "Tuition Assistance",
+    "VA": "Veterans Affairs",
+    "FAFSA": "Free Application for Federal Student Aid",
+    "SOAR": "Students Overcoming Academic Roadblocks",
+    "SAM": "Student Accommodation Manager",
+    "MARS": "Multi-Dimensional Applied Relevant System",
+    "LEO": "Learning Environment Online (D2L Brightspace)",
+    "D2L": "Desire2Learn (Brightspace)",
+    "SSO": "Single Sign-On",
+    "HIPAA": "Health Insurance Portability and Accountability Act",
+    "USM": "University System of Maryland",
+    "USMF": "University System of Maryland Foundation",
+    "AIM": "Academic Institutional Model",
+    "AVP": "Associate Vice President"
+  },
+  "internal_terms": {
+    "Copilot Grooming": "Autonomous ticket preparation workflow",
+    "Mass Action": "Bulk operation configuration in Salesforce",
+    "Refinement": "AI-assisted work item grooming and preparation",
+    "Grooming": "Process of refining and preparing work items for development",
+    "Solutioning": "Phase where technical solution design is created",
+    "Finalization": "Phase where artifacts are created and work item is completed",
+    "Well-Architected": "Salesforce Well-Architected Framework pillars (Trusted, Easy, Adaptable)",
+    "Traceability": "Mapping acceptance criteria to solution elements and telemetry",
+    "Test Data Matrix": "Reusable test data variations for test cases",
+    "Individualized Care Segment": "Business-defined custom segments used by LCA to assign students to specific care levels",
+    "FastTrack": "Core Salesforce development team that works on core Salesforce tickets",
+    "Traction Complete": "Third-party tool used for lead and contact assignment automation (https://tractioncomplete.com)",
+    "Bridge Program": "Special courses for students not meeting English proficiency requirements (Asia)",
+    "ArmyIgnitED": "Military partnership program for Army personnel",
+    "Time & Tuition Estimator": "Web tool for Stateside students to estimate program cost and completion",
+    "Journey Pipeline": "Salesforce record capturing student lifecycle touchpoints and stages",
+    "Residency Classification": "Process determining in-state vs out-of-state tuition status",
+    "Fast Plan Request": "Preliminary transfer credit evaluation request form for Europe",
+    "RollCall": "GUILD website platform for retrieving lead files",
+    "Zeta": "External contact center (formerly DoublePositive) for lead engagement",
+    "Abatement": "In-house collections status for unpaid balances",
+    "Helio Campus": "Data warehouse partner for reporting and analytics",
+    "Student Portal": "Centralized access point for students to manage classes, finances, and academic progress",
+    "Checklist Items": "Tasks and action items for students to complete (To Dos) in PeopleSoft/Student Portal",
+    "Hold": "Overdue task preventing registration or other actions",
+    "OnBase": "Document management system of record for UMGC",
+    "Parchment": "Web service for receiving official transcripts",
+    "English Proficiency": "Admission requirement for international students (TOEFL, IELTS)",
+    "Auto Matriculation": "Process where students are automatically admitted and matriculated in PeopleSoft after eApp completion",
+    "Articulation": "Process of translating transfer work into UMGC course equivalents",
+    "Degree Plan": "Required plan for military students utilizing tuition benefits",
+    "CareerQuest": "Platform for career services hosted on PeopleGrove",
+    "Handshake": "App for job postings and employer connections",
+    "GetSet": "App for student/alumni connections and peer support",
+    "Tutor.com": "Platform hosting tutoring services",
+    "Aloft": "Virtual computer lab for Cybersecurity and Data Analytics",
+    "SpringShare": "Platform hosting library services",
+    "TogetherAll": "Mental health support platform for students",
+    "Welltrack Connect": "Service connecting students with therapists",
+    "Academic Liaison Project": "Collaboration between Success Coaches, MECs, and Faculty to support struggling students",
+    "Faculty Evaluation Survey": "End of course survey for student feedback",
+    "Graduation Services": "Team responsible for reviewing program completion and conferring degrees",
+    "Commencement Services": "Team responsible for planning and executing graduation ceremonies",
+    "Alumni Association": "Community organization for UMGC graduates",
+    "Institutional Advancement": "Department responsible for fundraising, alumni relations, and donor engagement",
+    "Paradigm": "Vendor for diploma printing and distribution",
+    "Aventri": "Event management platform used for commencement and other university events",
+    "Marching Order": "Platform used for managing graduation ceremony registration and logistics",
+    "Ellucian Advance": "System of record for USM Foundation alumni and donor data",
+    "Anthology": "Fundraising and alumni engagement platform (formerly iModules)",
+    "Financial Edge": "Financial management system used by USM Foundation",
+    "Workday": "HR and finance system used by UMGC",
+    "Initium": "Managed package for address validation and formatting in Salesforce",
+    "Qualtrics": "Survey platform used for alumni feedback",
+    "Alumni Portal": "Portal experience for alumni to access directory and resources",
+    "Alumni Continuing Enrollment": "Campaign encouraging alumni to pursue further degrees",
+    "Alumni Returning Predictive Model": "Scoring model predicting likelihood of alumni returning for another degree",
+    "Donor Predictive Model": "Scoring model indicating likelihood to donate",
+    "My Volunteer Program": "Initiative encouraging alumni to volunteer in various capacities",
+    "Grad Walk": "In-person graduation event held in Maryland",
+    "Regalia": "Academic dress for graduation ceremonies"
+  },
+  "departments": {
+    "Digital Platforms": {
+      "acronym": "DP",
+      "description": "Digital Platforms team responsible for Salesforce and CRM systems"
+    },
+    "DREAM": {
+      "acronym": "DREAM",
+      "description": "Salesforce, Marketing Cloud, and Five9 Development team",
+      "focus_areas": ["Salesforce", "Marketing Cloud", "Five9"]
+    },
+    "FastTrack": {
+      "acronym": "FastTrack",
+      "description": "Core Salesforce development team",
+      "focus_areas": ["Core Salesforce platform"]
+    },
+    "Corporate Learning Solutions": {
+      "acronym": "CLS",
+      "description": "Promotes interest through corporate and business partnerships"
+    },
+    "Degree Audit": {
+      "description": "Team responsible for preliminary and official transcript evaluations"
+    },
+    "Residency Classification": {
+      "description": "Department responsible for reviewing and determining student residency status"
+    },
+    "Tuition Planning": {
+      "description": "Supports students in formulating funding plans (Financial Aid, TA, VA, etc.)"
+    },
+    "Financial Aid": {
+      "description": "Manages federal, state, and institutional aid funds"
+    },
+    "Student Accounts": {
+      "description": "Manages payments, billing, and financial aid disbursements"
+    },
+    "Accessibility Services": {
+      "description": "Provides academic accommodations for students with disabilities"
+    },
+    "Academic Integrity": {
+      "description": "Handles student and faculty referrals regarding student conduct"
+    },
+    "Student Resolution": {
+      "description": "Investigates student inquiries related to conduct, ethics, and behaviors"
+    },
+    "Career Services": {
+      "description": "Provides lifetime career support to students and alumni"
+    },
+    "Graduation Services": {
+      "description": "Manages graduation applications, degree conferral, and diploma distribution"
+    },
+    "Commencement Services": {
+      "description": "Plans and executes commencement ceremonies and events"
+    },
+    "Institutional Advancement": {
+      "description": "Manages alumni relations, fundraising, and donor engagement"
+    },
+    "Alumni Relations": {
+      "description": "Sub-team within Institutional Advancement focused on alumni engagement"
+    },
+    "Advancement Services": {
+      "description": "Sub-team within Institutional Advancement managing donor data and gift processing"
+    }
+  },
+  "context_notes": {
+    "usage": "This dictionary provides context for understanding organizational terminology throughout the workflow",
+    "update_frequency": "As needed when new terms are introduced",
+    "update_process": "AI agent detects new terms during research, requests user approval, then updates dictionary if approved"
+  }
+}
+

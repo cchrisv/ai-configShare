@@ -1,0 +1,155 @@
+{
+  "$schema": "./schemas/shared.schema.json",
+  "version": "2.0.0",
+  "project": {
+    "name": "Salesforce Automation",
+    "description": "Azure DevOps and Salesforce workflow automation",
+    "repository": "copilotAutoRefinement"
+  },
+  "ado_defaults": {
+    "organization": "https://dev.azure.com/UMGC",
+    "project": "Digital Platforms",
+    "wiki": "Digital Platforms.wiki"
+  },
+  "sf_defaults": {
+    "default_org": "q2dev",
+    "api_version": "62.0"
+  },
+  "paths": {
+    "artifacts_root": ".ai-artifacts",
+    "scripts": "scripts/workflow",
+    "prompts": ".github/prompts",
+    "config": "config",
+    "templates": "config/templates",
+    "standards": "config/standards",
+    "state": ".github/state"
+  },
+  "cli_commands": {
+    "ado_get": "npx --prefix scripts/workflow ado-tools get",
+    "ado_update": "npx --prefix scripts/workflow ado-tools update",
+    "ado_create": "npx --prefix scripts/workflow ado-tools create",
+    "ado_search": "npx --prefix scripts/workflow ado-tools search",
+    "ado_link": "npx --prefix scripts/workflow ado-tools link",
+    "ado_relations": "npx --prefix scripts/workflow ado-tools relations",
+    "sf_query": "npx --prefix scripts/workflow sf-tools query",
+    "sf_describe": "npx --prefix scripts/workflow sf-tools describe",
+    "sf_discover": "npx --prefix scripts/workflow sf-tools discover",
+    "sf_apex": "npx --prefix scripts/workflow sf-tools apex-classes",
+    "sf_triggers": "npx --prefix scripts/workflow sf-tools apex-triggers",
+    "sf_flows": "npx --prefix scripts/workflow sf-tools flows",
+    "sf_validation": "npx --prefix scripts/workflow sf-tools validation-rules",
+    "wiki_get": "npx --prefix scripts/workflow wiki-tools get",
+    "wiki_update": "npx --prefix scripts/workflow wiki-tools update",
+    "wiki_create": "npx --prefix scripts/workflow wiki-tools create",
+    "wiki_list": "npx --prefix scripts/workflow wiki-tools list",
+    "wiki_search": "npx --prefix scripts/workflow wiki-tools search",
+    "wiki_delete": "npx --prefix scripts/workflow wiki-tools delete",
+    "workflow_prepare": "npx --prefix scripts/workflow workflow-tools prepare",
+    "workflow_status": "npx --prefix scripts/workflow workflow-tools status",
+    "workflow_reset": "npx --prefix scripts/workflow workflow-tools reset",
+    "report_activity": "npx --prefix scripts/workflow report-tools activity"
+  },
+  "work_item_types": {
+    "user_story": "User Story",
+    "bug": "Bug",
+    "defect": "Defect",
+    "task": "Task",
+    "feature": "Feature",
+    "epic": "Epic"
+  },
+  "work_class_types": [
+    "Critical/Escalation",
+    "Development",
+    "Fixed Date Delivery",
+    "Maintenance/Recurring Tasks",
+    "Standard"
+  ],
+  "field_paths": {
+    "title": "System.Title",
+    "description": "System.Description",
+    "acceptance_criteria": "Microsoft.VSTS.Common.AcceptanceCriteria",
+    "repro_steps": "Microsoft.VSTS.TCM.ReproSteps",
+    "system_info": "Microsoft.VSTS.TCM.SystemInfo",
+    "state": "System.State",
+    "area_path": "System.AreaPath",
+    "iteration_path": "System.IterationPath",
+    "work_item_type": "System.WorkItemType",
+    "assigned_to": "System.AssignedTo",
+    "tags": "System.Tags",
+    "story_points": "Microsoft.VSTS.Scheduling.StoryPoints",
+    "priority": "Microsoft.VSTS.Common.Priority",
+    "severity": "Microsoft.VSTS.Common.Severity",
+    "work_class_type": "Custom.WorkClassType",
+    "requires_qa": "Custom.RequiresQA",
+    "sf_components": "Custom.SFComponents",
+    "technical_notes": "Custom.TechnicalNotes",
+    "root_cause_detail": "Custom.RootCauseDetail"
+  },
+  "tags": {
+    "refined": "AI-Refined",
+    "groomed": "Groomed",
+    "solutioned": "Solutioned",
+    "needs_review": "Needs-Review",
+    "circular_dependencies": "Circular-Dependencies-Detected",
+    "reporting_impact": "Reporting-Impact",
+    "multi_trigger": "Multi-Trigger-Object",
+    "logical_fallacy": "Logical-Fallacy-Challenged"
+  },
+  "template_files": {
+    "user_story": "user-story-templates.md",
+    "bug": "bug-templates.md",
+    "disclaimer": "field-disclaimer.md",
+    "validation": "validation-checklist.md",
+    "solution_design": "solution-design-template.md",
+    "field_mappings": "field-mappings.md",
+    "wiki_format": "wiki-page-format.md",
+    "test_case": "test-case-template.md",
+    "audit_task": "audit-task-template.md"
+  },
+  "artifact_files": {
+    "run_state": "run-state.json",
+    "research": {
+      "organization_dictionary": "00-organization-dictionary.json",
+      "ado_workitem": "01-ado-workitem.json",
+      "wiki_research": "02-wiki-research.json",
+      "dependency_discovery": "03a-dependency-discovery.json",
+      "dependency_summary": "03b-dependency-summary.md",
+      "object_descriptions": "03c-object-descriptions.json",
+      "similar_workitems": "04-similar-workitems.json",
+      "business_context": "05-business-context.json",
+      "business_context_summary": "05-business-context-summary.md",
+      "code_analysis": "05-code-analysis.json",
+      "web_research": "06-web-research.json",
+      "research_summary": "research-summary.json",
+      "assumptions": "assumptions.json",
+      "iteration_state": "research-iteration-state.json"
+    },
+    "grooming": {
+      "result": "grooming-result.json"
+    },
+    "solutioning": {
+      "solution_design": "solution-design.json",
+      "technical_spec": "technical-spec.md",
+      "templates_applied": "templates-applied.json"
+    },
+    "wiki": {
+      "generated_content": "generated-content.md",
+      "wiki_metadata": "wiki-metadata.json"
+    },
+    "finalization": {
+      "completion_summary": "completion-summary.md",
+      "final_templates": "final-templates.json"
+    }
+  },
+  "retry_settings": {
+    "max_retries": 3,
+    "initial_delay_ms": 1000,
+    "max_delay_ms": 30000,
+    "backoff_multiplier": 2
+  },
+  "logging": {
+    "min_level": "info",
+    "json_output": false,
+    "include_timestamp": true
+  }
+}
