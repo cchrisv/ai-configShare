@@ -12,7 +12,7 @@
 
 **Documentation Sources:**
 * Prompt Catalog: `#file:README.md`
-* Architecture Guide: `#file:.github/ARCHITECTURE.md`
+* Architecture Guide: `#file:.github/architecture.md`
 * CLI Reference: `#file:README.md`
 
 ## 3. EXECUTION
@@ -30,7 +30,7 @@ Read `#file:README.md` and summarize:
 - **Utility Prompts**: `util-activity-report`
 
 ### Step 3: Explain Architecture [TYPE: GEN]
-Read `#file:.github/ARCHITECTURE.md` and summarize:
+Read `#file:.github/architecture.md` and summarize:
 - **Folder structure**: `.github/` (prompts), `config/` (configuration, templates, standards), `scripts/workflow/` (CLI tools), `{{paths.artifacts_root}}/` (runtime)
 - **Key concepts**: Configuration-driven, CLI-first, artifacts persist, run state tracking
 - **CLI tools**: workflow-tools, ado-tools, sf-tools, wiki-tools
@@ -44,7 +44,7 @@ Explain how to run the full workflow:
 ### Step 5: Point to Resources [TYPE: IO]
 Direct users to:
 - Full prompt catalog and CLI docs: `README.md` (project root)
-- Architecture details: `.github/ARCHITECTURE.md`
+- Architecture details: `.github/architecture.md`
 - Configuration: `config/shared.json`
 
 ## 4. OUTPUT

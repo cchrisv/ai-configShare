@@ -53,7 +53,7 @@ Reference this file to resolve:
 
 4. **CONFIGURATION IS READ-ONLY** – Do not modify `shared.json` or other config files unless explicitly asked. Treat configuration as stable infrastructure.
 
-5. **FOLLOW ARCHITECTURE** – Before extending this workflow, read `#file:.github/ARCHITECTURE.md` and follow its patterns.
+5. **FOLLOW ARCHITECTURE** – Before extending this workflow, read `#file:.github/architecture.md` and follow its patterns.
 
 ## Step Type Annotations
 
@@ -68,5 +68,5 @@ Reference this file to resolve:
 ## Resources
 
 - Prompt catalog & CLI reference: `#file:README.md`
-- Architecture guide: `#file:.github/ARCHITECTURE.md`
+- Architecture guide: `#file:.github/architecture.md`
 - Configuration: `#file:config/shared.json`

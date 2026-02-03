@@ -12,7 +12,7 @@
 
 **Reference Documentation:**
 * CLI Reference: `#file:README.md` (see Authentication section)
-* Architecture: `#file:.github/ARCHITECTURE.md`
+* Architecture: `#file:.github/architecture.md`
 
 **Variables from shared.json:**
 | Variable | JSON Path | Description |
@@ -99,5 +99,5 @@ Upon successful completion:
 
 For detailed troubleshooting, refer to:
 - CLI issues: `#file:README.md`
-- Architecture questions: `#file:.github/ARCHITECTURE.md`
+- Architecture questions: `#file:.github/architecture.md`
 - Available prompts: `#file:README.md`

@@ -27,7 +27,7 @@ All configuration and tooling lives in `.github/`:
 ```
 .github/
 ├── prompts/          # GitHub Copilot prompts (phase-XX-*.prompt.md)
-├── ARCHITECTURE.md   # Full architecture guide
+├── architecture.md   # Full architecture guide
 └── copilot-instructions.md
 
 config/               # Configuration files
@@ -281,5 +281,5 @@ npm run lint     # Lint code
 
 ## Documentation
 
-- [Architecture Guide](.github/ARCHITECTURE.md)
+- [Architecture Guide](.github/architecture.md)
 - [Configuration](config/shared.json)

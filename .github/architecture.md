@@ -56,7 +56,7 @@ project-root/
 │   │   ├── phase-06a-*.prompt.md  # Phase 6a: Wiki creation
 │   │   ├── phase-07-*.prompt.md   # Phase 7: Finalization
 │   │   └── re-phase-*.prompt.md   # Re-run variants (5 prompts)
-│   ├── ARCHITECTURE.md            # This file
+│   ├── architecture.md            # This file
 │   └── copilot-instructions.md    # GitHub Copilot configuration
 │
 ├── config/                        # Configuration and templates
