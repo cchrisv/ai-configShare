@@ -1,0 +1,22 @@
+{
+  "tool_name": "Cursor (Windsurf)",
+  "instruction_file": ".windsurf/instructions.md",
+  "mcp_prefixes": {
+    "azure_devops": "mcp0_",
+    "deepwiki": "mcp1_",
+    "context7": "mcp1_",
+    "salesforce": "mcp_Salesforce_DX_",
+    "memory": "mcp2_",
+    "sequential_thinking": "mcp3_"
+  },
+  "tags": {
+    "refined": "Windsurf-Refined",
+    "solutioned": "Windsurf-Solutioned"
+  },
+  "notes": [
+    "Leverage Windsurf agents defined in .windsurf/agents.yml for command execution.",
+    "Ensure MCP server prefixes match configured numbers (mcp0_ - mcp3_).",
+    "Refer to shared configuration for workflow sequence and standards."
+  ]
+}
+

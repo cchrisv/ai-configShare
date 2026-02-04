@@ -1,0 +1,121 @@
+{
+  "$schema": "./templatized-workflow.schema.json",
+  "version": "1.0",
+  "iteration_limits": {
+    "max_loops_per_subphase": 3,
+    "max_total_loops": 10,
+    "max_revisits_per_target": 2
+  },
+  "completeness_criteria": {
+    "per_subphase": {
+      "all_findings_documented": true,
+      "all_triggers_evaluated": true,
+      "all_warranted_revisits_executed": true,
+      "no_blocking_contradictions": true,
+      "artifact_marked_complete": true
+    },
+    "global": {
+      "all_subphases_complete": true,
+      "no_critical_uninvestigated_clues": true,
+      "critical_contradictions_resolved": true,
+      "high_priority_contradictions_resolved": true,
+      "research_summary_generated": true,
+      "assumptions_register_complete": true,
+      "iteration_metrics_logged": true
+    }
+  },
+  "revisit_priority_matrix": {
+    "wiki": {
+      "new_salesforce_term": {
+        "targets": ["salesforce", "code"],
+        "priority": "high"
+      },
+      "related_ticket_mentioned": {
+        "targets": ["ado"],
+        "priority": "medium"
+      }
+    },
+    "business_context": {
+      "documentation_needed": {
+        "targets": ["wiki"],
+        "priority": "high"
+      },
+      "related_tickets_needed": {
+        "targets": ["ado"],
+        "priority": "medium"
+      }
+    },
+    "salesforce": {
+      "integration_found": {
+        "targets": ["wiki", "code"],
+        "priority": "high",
+        "notes": "wiki for docs, code for implementation"
+      },
+      "unknown_metadata_pattern": {
+        "targets": ["wiki", "web"],
+        "priority": "medium"
+      }
+    },
+    "code": {
+      "library_usage_found": {
+        "targets": ["context7"],
+        "priority": "high"
+      },
+      "best_practice_question": {
+        "targets": ["web"],
+        "priority": "medium"
+      },
+      "metadata_discrepancy": {
+        "targets": ["salesforce"],
+        "priority": "critical"
+      }
+    },
+    "web": {
+      "new_technology_mentioned": {
+        "targets": ["salesforce", "code"],
+        "priority": "high",
+        "notes": "salesforce to verify usage, code to find implementation"
+      },
+      "best_practice_conflicts_with_org": {
+        "targets": ["code", "salesforce"],
+        "priority": "high"
+      }
+    },
+    "context7": {
+      "implementation_guidance_needed": {
+        "targets": ["code"],
+        "priority": "medium"
+      },
+      "missing_dependency": {
+        "targets": ["salesforce", "code"],
+        "priority": "high"
+      }
+    },
+    "similar_workitems": {
+      "pattern_from_history": {
+        "targets": ["salesforce", "code"],
+        "priority": "high",
+        "notes": "salesforce to verify, code to find implementation"
+      },
+      "related_feature_mentioned": {
+        "targets": ["wiki", "ado"],
+        "priority": "medium"
+      }
+    }
+  },
+  "trigger_priorities": {
+    "new_topic_discovered": "high",
+    "evidence_gap": "high",
+    "contradiction": "critical",
+    "high_value_finding": "medium",
+    "missing_context": "medium"
+  },
+  "safety_behaviors": {
+    "when_limit_reached": {
+      "document_gaps": true,
+      "add_to_unknowns": true,
+      "flag_for_review": true,
+      "proceed_with_warning": true
+    }
+  }
+}

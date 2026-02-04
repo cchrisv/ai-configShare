@@ -1,0 +1,53 @@
+{
+  "tool_name": "GitHub Copilot",
+  "instruction_file": ".github/copilot-instructions.md",
+  "process_name": "Copilot Refinement",
+  "mcp_prefixes": {
+    "azure_devops": "mcp_azure-devops_",
+    "context7": "mcp_context7_",
+    "salesforce": "mcp_Salesforce_DX_"
+  },
+  "tags": {
+    "refined": "CoPilot-Refined",
+    "solutioned": "CoPilot-Solutioned"
+  },
+  "template_variables": {
+    "description": "Template variables are resolved at execution time. Use {{variable_name}} format.",
+    "examples": {
+      "runtime": {
+        "work_item_id": "{{work_item_id}} → 12345",
+        "artifact_path": "{{artifact_path}} → .ai-artifacts/12345",
+        "timestamp": "{{timestamp}} → 2024-01-15T10:30:00Z"
+      },
+      "artifact_paths": {
+        "research": "{{research_artifact_path}} → .ai-artifacts/12345/research",
+        "grooming": "{{grooming_artifact_path}} → .ai-artifacts/12345/grooming"
+      },
+      "field_paths": {
+        "description": "{{field_paths.field_description}} → /fields/System.Description",
+        "acceptance_criteria": "{{field_paths.field_acceptance_criteria}} → /fields/Microsoft.VSTS.Common.AcceptanceCriteria"
+      },
+      "config": {
+        "project": "{{config.project}} → Digital Platforms",
+        "mcp_prefix": "{{config.mcp_prefixes.azure_devops}} → mcp_azure-devops_"
+      }
+    },
+    "resolution_order": [
+      "Runtime variables (work_item_id, artifact_path, timestamp)",
+      "Configuration variables (config.project, config.mcp_prefixes.*)",
+      "Computed path variables (research_artifact_path, grooming_artifact_path)",
+      "Field path variables (field_paths.*)",
+      "Artifact file variables (artifact_files.*)"
+    ],
+    "source": "#file:.github/config/template-variables.json"
+  },
+  "notes": [
+    "Use HTML formatting for all ADO fields.",
+    "Do not modify System.State; human workflow controls transitions.",
+    "Refer to shared configuration for workflow sequence and standards.",
+    "Process name: Copilot Refinement",
+    "Phase 2 renamed from 'ai-refinement' to 'grooming'",
+    "All prompts use {{variable_name}} template variables - resolve before execution"
+  ]
+}
+

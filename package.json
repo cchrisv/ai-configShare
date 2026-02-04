@@ -13,9 +13,19 @@
     "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
     "prettier:verify": "prettier --check \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
     "prepare": "husky || true",
-    "precommit": "lint-staged"
+    "mcdev:init": "mcdev init",
+    "ticket:prepare": "node .github/scripts/run-prepare-ticket.js",
+    "ticket:plan": "node .github/scripts/ticket-workflow-runner.js",
+    "precommit": "lint-staged",
+    "build": "sfmc-build all",
+    "build-cp": "sfmc-build cloudPages",
+    "build-email": "sfmc-build emails",
+    "eslint-check": "eslint",
+    "sf:retrieve": "pwsh -ExecutionPolicy Bypass -File ./scripts/retrieve-all-metadata.ps1",
+    "sf:retrieve:backup": "pwsh -ExecutionPolicy Bypass -File ./scripts/retrieve-all-metadata.ps1 -OutputDir retrieve/backup"
   },
   "devDependencies": {
+    "@eslint/js": "^9.28.0",
     "@lwc/eslint-plugin-lwc": "^3.1.0",
     "@prettier/plugin-xml": "^3.4.1",
     "@salesforce/eslint-config-lwc": "^4.0.0",
@@ -23,12 +33,20 @@
     "@salesforce/eslint-plugin-lightning": "^2.0.0",
     "@salesforce/sfdx-lwc-jest": "^7.0.2",
     "eslint": "^9.29.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-config-ssjs": "^2.0.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jest": "^28.14.0",
+    "eslint-plugin-jsdoc": "^50.7.1",
+    "eslint-plugin-prettier": "^5.4.1",
+    "eslint-plugin-unicorn": "^59.0.1",
+    "globals": "^16.2.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "prettier": "^3.5.3",
-    "prettier-plugin-apex": "^2.2.6"
+    "prettier-plugin-apex": "^2.2.6",
+    "prettier-plugin-sql": "^0.19.0",
+    "sfmc-boilerplate": "^1.2.7"
   },
   "lint-staged": {
     "**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}": [
@@ -38,7 +56,13 @@
       "eslint"
     ],
     "**/lwc/**": [
-        "sfdx-lwc-jest -- --bail --findRelatedTests --passWithNoTests"
+      "sfdx-lwc-jest -- --bail --findRelatedTests --passWithNoTests"
     ]
-  }
+  },
+  "dependencies": {
+    "mcdev": "^8.2.0"
+  },
+  "author": "Accenture",
+  "license": "UNLICENSED",
+  "type": "module"
 }

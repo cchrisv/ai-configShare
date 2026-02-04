@@ -1,0 +1,176 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Step Manifests Schema",
+  "description": "Schema for validating step-manifests.json configuration",
+  "type": "object",
+  "required": ["phases"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "phases": {
+      "type": "object",
+      "description": "Step manifests organized by phase",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "Research phase with sub-phases",
+            "properties": {
+              "ado": {"$ref": "#/definitions/phaseSteps"},
+              "wiki": {"$ref": "#/definitions/phaseSteps"},
+              "salesforce": {"$ref": "#/definitions/phaseSteps"},
+              "code": {"$ref": "#/definitions/phaseSteps"},
+              "web": {"$ref": "#/definitions/phaseSteps"},
+              "context7": {"$ref": "#/definitions/phaseSteps"},
+              "similar_workitems": {"$ref": "#/definitions/phaseSteps"}
+            }
+          },
+          {
+            "type": "object",
+            "description": "Standard phase with steps array",
+            "properties": {
+              "steps": {
+                "type": "array",
+                "items": {"$ref": "#/definitions/step"}
+              }
+            },
+            "required": ["steps"]
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "phaseSteps": {
+      "type": "object",
+      "required": ["steps"],
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/step"}
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "required": ["id", "type", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z]+\\.[a-z_]+(\\.[a-z_]+)*$",
+          "description": "Unique step identifier in format phase.subphase.step_name"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["execution", "generation"],
+          "description": "Step type: execution (deterministic) or generation (non-deterministic)"
+        },
+        "description": {
+          "type": "string"
+        },
+        "prerequisites": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Step IDs that must complete before this step"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "create_directory",
+            "api_call",
+            "save_json",
+            "save_text",
+            "load_json",
+            "load_multiple_json",
+            "run_script",
+            "codebase_search",
+            "web_search",
+            "analyze_and_synthesize",
+            "analyze_and_decide",
+            "analyze_and_rewrite",
+            "classify",
+            "fill_templates",
+            "evaluate_and_score",
+            "design_and_document",
+            "map_and_trace",
+            "write_document"
+          ]
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Action-specific parameters"
+        },
+        "assertion": {
+          "type": "object",
+          "description": "How to verify step completion",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "file_exists",
+                "api_response_valid",
+                "script_success",
+                "search_results_valid",
+                "all_files_exist"
+              ]
+            },
+            "path": {"type": "string"},
+            "field": {"type": "string"},
+            "expected": true,
+            "required_fields": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "verify_field": {
+              "type": "object",
+              "properties": {
+                "path": {"type": "string"},
+                "expected": true
+              }
+            },
+            "verify_fields": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "verify_marker": {
+              "type": "object",
+              "properties": {
+                "marker": {"type": "string"},
+                "checksum": {"type": "string"}
+              }
+            }
+          }
+        },
+        "retry": {
+          "type": "object",
+          "description": "Retry configuration for execution steps",
+          "properties": {
+            "max_attempts": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 3
+            },
+            "backoff": {
+              "type": "string",
+              "enum": ["exponential", "linear", "none"],
+              "default": "exponential"
+            },
+            "initial_delay": {
+              "type": "number",
+              "minimum": 0,
+              "default": 1
+            }
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Output artifacts or state variables produced by this step"
+        }
+      }
+    }
+  }
+}
+

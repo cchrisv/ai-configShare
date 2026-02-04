@@ -5,7 +5,7 @@
       "default": true
     }
   ],
-  "name": "sharedCopilot",
+  "name": "copilotAutoRefinement",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "65.0"

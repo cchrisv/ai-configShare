@@ -1,0 +1,1658 @@
+{
+  "$schema": "./step-manifests.schema.json",
+  "phases": {
+    "research": {
+      "organization_dictionary": {
+        "steps": [
+          {
+            "id": "research.organization_dictionary.create_folder",
+            "type": "execution",
+            "description": "Create artifact directory for research phase",
+            "action": "create_directory",
+            "parameters": {
+              "path": "{{artifact_path}}/research"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{artifact_path}}/research"
+            },
+            "retry": {
+              "max_attempts": 3,
+              "backoff": "exponential",
+              "initial_delay": 1
+            },
+            "outputs": ["{{artifact_path}}/research"]
+          },
+          {
+            "id": "research.organization_dictionary.load_dictionary",
+            "type": "execution",
+            "description": "Load organization dictionary from standards folder",
+            "prerequisites": ["research.organization_dictionary.create_folder"],
+            "action": "load_json",
+            "parameters": {
+              "path": "{{config.standards.organization_dictionary}}"
+            },
+            "assertion": {
+              "type": "file_exists"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["dictionary_data"]
+          },
+          {
+            "id": "research.organization_dictionary.update_context",
+            "type": "execution",
+            "description": "Update unified context with organization dictionary",
+            "prerequisites": ["research.organization_dictionary.load_dictionary"],
+            "action": "update_context_section",
+            "parameters": {
+              "context_file": "{{artifact_paths.context_file}}",
+              "section": "research.organization_dictionary",
+              "data": "dictionary_data",
+              "merge": true
+            },
+            "assertion": {
+              "type": "context_section_exists",
+              "path": "{{artifact_paths.context_file}}",
+              "section": "research.organization_dictionary"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["{{artifact_paths.context_file}}"]
+          },
+          {
+            "id": "research.organization_dictionary.parse_terms",
+            "type": "generation",
+            "description": "Extract and structure terms for easy reference",
+            "prerequisites": ["research.organization_dictionary.save_artifact"],
+            "action": "parse_and_structure",
+            "outputs": ["parsed_acronyms", "parsed_internal_terms", "parsed_departments"]
+          },
+          {
+            "id": "research.organization_dictionary.detect_new_terms",
+            "type": "generation",
+            "description": "Detect new terms throughout research phase",
+            "prerequisites": ["research.organization_dictionary.parse_terms"],
+            "action": "detect_and_track_terms",
+            "conditional": true,
+            "condition_description": "Runs continuously during research phase when new terms are encountered",
+            "outputs": ["new_terms_candidates"]
+          },
+          {
+            "id": "research.organization_dictionary.request_user_approval",
+            "type": "execution",
+            "description": "Request user approval to add new terms to dictionary",
+            "prerequisites": ["research.organization_dictionary.detect_new_terms"],
+            "conditional": true,
+            "condition_description": "Execute when new terms are detected and need approval",
+            "action": "request_user_input",
+            "parameters": {
+              "prompt": "I found the following new terms during research: [terms]. Would you like me to add them to the organization dictionary? (yes/no)"
+            },
+            "outputs": ["user_approval_response"]
+          },
+          {
+            "id": "research.organization_dictionary.update_dictionary",
+            "type": "execution",
+            "description": "Update dictionary file with approved new terms",
+            "prerequisites": ["research.organization_dictionary.request_user_approval"],
+            "conditional": true,
+            "condition_description": "Execute only if user approved dictionary update",
+            "action": "update_json_file",
+            "parameters": {
+              "path": "{{config.standards.organization_dictionary}}",
+              "updates": "approved_new_terms"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{config.standards.organization_dictionary}}"
+            },
+            "retry": {
+              "max_attempts": 3
+            }
+          }
+        ]
+      },
+      "ado": {
+        "steps": [
+          {
+            "id": "research.ado.create_folder",
+            "type": "execution",
+            "description": "Create artifact directory for research phase (if not already created)",
+            "prerequisites": ["research.organization_dictionary.save_artifact"],
+            "action": "create_directory",
+            "parameters": {
+              "path": "{{artifact_path}}/research"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{artifact_path}}/research"
+            },
+            "retry": {
+              "max_attempts": 3,
+              "backoff": "exponential",
+              "initial_delay": 1
+            },
+            "outputs": ["{{artifact_path}}/research"]
+          },
+          {
+            "id": "research.ado.retrieve_workitem",
+            "type": "execution",
+            "description": "Retrieve work item from Azure DevOps",
+            "prerequisites": ["research.ado.create_folder"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.azure_devops}}wit_get_work_item",
+              "project": "{{config.project}}",
+              "id": "{{work_item_id}}",
+              "expand": "all"
+            },
+            "assertion": {
+              "type": "api_response_valid",
+              "field": "id",
+              "expected": "{{work_item_id}}"
+            },
+            "retry": {
+              "max_attempts": 3,
+              "backoff": "exponential",
+              "initial_delay": 1
+            },
+            "outputs": ["work_item_data"]
+          },
+          {
+            "id": "research.ado.retrieve_workitem_comments",
+            "type": "execution",
+            "description": "Retrieve all comments from current work item",
+            "prerequisites": ["research.ado.retrieve_workitem"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.azure_devops}}wit_list_work_item_comments",
+              "project": "{{config.project}}",
+              "workItemId": "{{work_item_id}}",
+              "top": 100
+            },
+            "assertion": {
+              "type": "api_response_valid"
+            },
+            "retry": {
+              "max_attempts": 3,
+              "backoff": "exponential",
+              "initial_delay": 1
+            },
+            "outputs": ["work_item_comments"]
+          },
+          {
+            "id": "research.ado.save_artifact",
+            "type": "execution",
+            "description": "Save work item data to JSON artifact",
+            "prerequisites": ["research.ado.retrieve_workitem_comments"],
+            "action": "save_json",
+            "parameters": {
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_ado_workitem}}",
+              "data": "work_item_data"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_ado_workitem}}"
+            },
+            "retry": {
+              "max_attempts": 3,
+              "backoff": "exponential",
+              "initial_delay": 1
+            },
+            "outputs": ["{{research_artifact_path}}/{{artifact_files.research.artifact_file_ado_workitem}}"]
+          },
+          {
+            "id": "research.ado.analyze_content",
+            "type": "generation",
+            "description": "Analyze work item content and extract insights",
+            "prerequisites": ["research.ado.save_artifact"],
+            "action": "analyze_and_synthesize",
+            "outputs": ["analysis_insights", "key_insights"]
+          },
+          {
+            "id": "research.ado.extract_keywords",
+            "type": "generation",
+            "description": "Extract keywords for next research phase",
+            "prerequisites": ["research.ado.analyze_content"],
+            "action": "extract_keywords",
+            "outputs": ["metadata_keywords", "follow_up_items"]
+          },
+          {
+            "id": "research.ado.form_hypotheses",
+            "type": "generation",
+            "description": "Form initial hypotheses (Detective Pattern Step 2)",
+            "prerequisites": ["research.ado.analyze_content"],
+            "action": "form_hypotheses",
+            "outputs": ["hypotheses", "detective_pattern_cycles"]
+          },
+          {
+            "id": "research.ado.correlate_evidence",
+            "type": "generation",
+            "description": "Correlate findings with evidence (Detective Pattern Step 3)",
+            "prerequisites": ["research.ado.form_hypotheses"],
+            "action": "correlate_evidence",
+            "outputs": ["evidence_correlation", "confidence_levels", "patterns_identified", "gaps_identified"]
+          },
+          {
+            "id": "research.ado.converge_view",
+            "type": "generation",
+            "description": "Converge on clear view (Detective Pattern Step 4)",
+            "prerequisites": ["research.ado.correlate_evidence"],
+            "action": "converge_view",
+            "outputs": ["detective_pattern_cycles", "assumptions", "unknowns"]
+          },
+          {
+            "id": "research.ado.decide_feedback_loop",
+            "type": "generation",
+            "description": "Decide if feedback loop needed to previous research steps",
+            "prerequisites": ["research.ado.converge_view"],
+            "action": "decide_feedback_loop",
+            "outputs": ["feedback_loop_decisions", "steps_to_revisit", "research_complete"]
+          },
+          {
+            "id": "research.ado.execute_feedback_loops",
+            "type": "orchestration",
+            "description": "Execute any warranted feedback loops before proceeding",
+            "prerequisites": ["research.ado.decide_feedback_loop"],
+            "action": "execute_feedback_loops",
+            "parameters": {
+              "max_loops": 3,
+              "revisit_targets": "steps_to_revisit"
+            },
+            "outputs": ["feedback_loops_executed", "research_complete"]
+          }
+        ]
+      },
+      "wiki": {
+        "steps": [
+          {
+            "id": "research.wiki.search_wiki",
+            "type": "execution",
+            "description": "Search Azure DevOps wiki for relevant documentation",
+            "prerequisites": ["research.ado.save_artifact"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.azure_devops}}wiki_search_wiki",
+              "searchText": "{{metadata_keywords}}",
+              "project": ["{{config.project}}"]
+            },
+            "assertion": {
+              "type": "api_response_valid"
+            },
+            "retry": {
+              "max_attempts": 3,
+              "backoff": "exponential"
+            },
+            "outputs": ["wiki_search_results"]
+          },
+          {
+            "id": "research.wiki.save_artifact",
+            "type": "execution",
+            "description": "Save wiki search results to JSON",
+            "prerequisites": ["research.wiki.search_wiki"],
+            "action": "save_json",
+            "parameters": {
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_wiki_search}}",
+              "data": "wiki_search_results"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_wiki_search}}"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["{{research_artifact_path}}/{{artifact_files.research.artifact_file_wiki_search}}"]
+          },
+          {
+            "id": "research.wiki.analyze_results",
+            "type": "generation",
+            "description": "Analyze wiki search results and extract metadata references",
+            "prerequisites": ["research.wiki.save_artifact"],
+            "action": "analyze_and_synthesize",
+            "outputs": ["metadata_references", "documentation_insights"]
+          },
+          {
+            "id": "research.wiki.form_hypotheses",
+            "type": "generation",
+            "description": "Form hypotheses about wiki findings (Detective Pattern Step 2)",
+            "prerequisites": ["research.wiki.analyze_results"],
+            "action": "form_hypotheses",
+            "outputs": ["hypotheses", "detective_pattern_cycles"]
+          },
+          {
+            "id": "research.wiki.correlate_evidence",
+            "type": "generation",
+            "description": "Correlate wiki evidence with work item (Detective Pattern Step 3)",
+            "prerequisites": ["research.wiki.form_hypotheses"],
+            "action": "correlate_evidence",
+            "outputs": ["evidence_correlation", "confidence_levels", "patterns_identified"]
+          },
+          {
+            "id": "research.wiki.decide_feedback_loop",
+            "type": "generation",
+            "description": "Decide if feedback loop needed to previous research steps",
+            "prerequisites": ["research.wiki.correlate_evidence"],
+            "action": "decide_feedback_loop",
+            "outputs": ["feedback_loop_decisions", "steps_to_revisit", "research_complete"]
+          }
+        ]
+      },
+      "business_context": {
+        "steps": [
+          {
+            "id": "research.business_context.match_organizational_context",
+            "type": "execution",
+            "description": "Match work item to organizational context using deterministic rules",
+            "prerequisites": ["research.ado.save_artifact"],
+            "action": "match_organizational_context",
+            "outputs": ["organizational_context_match"]
+          },
+          {
+            "id": "research.business_context.create_journey_process_maps",
+            "type": "generation",
+            "description": "Create journey and process maps for applicable work items",
+            "prerequisites": ["research.business_context.match_organizational_context"],
+            "conditional": true,
+            "condition_description": "Execute when work item involves user-facing features, workflows, or multi-step processes",
+            "action": "create_journey_process_maps",
+            "parameters": {
+              "path": "{{research_artifact_path}}/journey-process-maps.json"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{research_artifact_path}}/journey-process-maps.json"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["journey_process_maps"]
+          },
+          {
+            "id": "research.business_context.decide_feedback_loop",
+            "type": "generation",
+            "description": "Decide if feedback loop needed to previous research steps",
+            "prerequisites": ["research.business_context.match_organizational_context"],
+            "action": "decide_feedback_loop",
+            "outputs": ["feedback_loop_decisions", "steps_to_revisit", "research_complete"]
+          },
+          {
+            "id": "research.business_context.execute_feedback_loops",
+            "type": "orchestration",
+            "description": "Execute any warranted feedback loops before proceeding",
+            "prerequisites": ["research.business_context.decide_feedback_loop"],
+            "action": "execute_feedback_loops",
+            "parameters": {
+              "max_loops": 3,
+              "revisit_targets": "steps_to_revisit"
+            },
+            "outputs": ["feedback_loops_executed", "research_complete"]
+          }
+        ]
+      },
+      "salesforce": {
+        "steps": [
+          {
+            "id": "research.salesforce.discover_metadata",
+            "type": "execution",
+            "description": "Discover Salesforce metadata using dependency discovery script with depth 5",
+            "prerequisites": ["research.ado.save_artifact"],
+            "action": "run_script",
+            "parameters": {
+              "script": "{{config.scripts.metadata_dependencies}}",
+              "inputs": ["metadata_keywords"],
+              "args": ["--depth", "5", "--all-enhanced", "--output-path", "{{research_artifact_path}}/03a-dependency-discovery.json"]
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{research_artifact_path}}/03a-dependency-discovery.json"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["dependency_discovery_results", "{{research_artifact_path}}/03a-dependency-discovery.json"]
+          },
+          {
+            "id": "research.salesforce.generate_dependency_summary",
+            "type": "generation",
+            "description": "Generate human-readable dependency summary markdown",
+            "prerequisites": ["research.salesforce.discover_metadata"],
+            "action": "write_document",
+            "parameters": {
+              "path": "{{research_artifact_path}}/03b-dependency-summary.md",
+              "template": "dependency_summary"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{research_artifact_path}}/03b-dependency-summary.md"
+            },
+            "outputs": ["{{research_artifact_path}}/03b-dependency-summary.md"]
+          },
+          {
+            "id": "research.salesforce.assess_dependency_depth",
+            "type": "generation",
+            "description": "Assess if deeper analysis needed (depth 8) for complex objects",
+            "prerequisites": ["research.salesforce.discover_metadata"],
+            "action": "analyze_and_decide",
+            "parameters": {
+              "thresholds": {
+                "high_component_count": 1000,
+                "high_cycle_count": 50,
+                "core_objects": ["Account", "Contact", "Opportunity", "Lead", "Case"]
+              }
+            },
+            "outputs": ["needs_deep_analysis", "deep_analysis_reason"]
+          },
+          {
+            "id": "research.salesforce.deep_dependency_analysis",
+            "type": "execution",
+            "description": "Run deeper dependency analysis (depth 8) for complex objects",
+            "prerequisites": ["research.salesforce.assess_dependency_depth"],
+            "conditional": true,
+            "condition_description": "Execute only if needs_deep_analysis is true",
+            "action": "run_script",
+            "parameters": {
+              "script": "{{config.scripts.metadata_dependencies}}",
+              "inputs": ["metadata_keywords"],
+              "args": ["--depth", "8", "--all-enhanced", "--output-path", "{{research_artifact_path}}/03a-dependency-discovery.json"]
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{research_artifact_path}}/03a-dependency-discovery.json"
+            },
+            "retry": {
+              "max_attempts": 2
+            },
+            "outputs": ["deep_dependency_results"]
+          },
+          {
+            "id": "research.salesforce.query_metadata",
+            "type": "execution",
+            "description": "Query Salesforce metadata via MCP",
+            "prerequisites": ["research.salesforce.discover_metadata"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.salesforce}}run_soql_query",
+              "query": "SELECT ... FROM EntityDefinition WHERE ..."
+            },
+            "assertion": {
+              "type": "api_response_valid"
+            },
+            "retry": {
+              "max_attempts": 3,
+              "backoff": "exponential"
+            },
+            "outputs": ["salesforce_metadata"]
+          },
+          {
+            "id": "research.salesforce.save_artifact",
+            "type": "execution",
+            "description": "Save Salesforce metadata to JSON",
+            "prerequisites": ["research.salesforce.query_metadata"],
+            "action": "save_json",
+            "parameters": {
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_salesforce_metadata}}",
+              "data": "salesforce_metadata"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_salesforce_metadata}}"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["{{research_artifact_path}}/{{artifact_files.research.artifact_file_salesforce_metadata}}"]
+          },
+          {
+            "id": "research.salesforce.analyze_metadata",
+            "type": "generation",
+            "description": "Analyze Salesforce metadata and identify dependencies",
+            "prerequisites": ["research.salesforce.save_artifact"],
+            "action": "analyze_and_synthesize",
+            "outputs": ["metadata_analysis", "dependency_map"]
+          },
+          {
+            "id": "research.salesforce.form_hypotheses",
+            "type": "generation",
+            "description": "Form hypotheses for each metadata discovery (Detective Pattern Step 2)",
+            "prerequisites": ["research.salesforce.analyze_metadata"],
+            "action": "form_hypotheses",
+            "outputs": ["hypotheses", "detective_pattern_cycles"]
+          },
+          {
+            "id": "research.salesforce.correlate_evidence",
+            "type": "generation",
+            "description": "Correlate evidence across objects/flows/automation (Detective Pattern Step 3)",
+            "prerequisites": ["research.salesforce.form_hypotheses"],
+            "action": "correlate_evidence",
+            "outputs": ["evidence_correlation", "confidence_levels", "patterns_identified", "gaps_identified"]
+          },
+          {
+            "id": "research.salesforce.assess_confidence",
+            "type": "generation",
+            "description": "Assess confidence levels for each finding",
+            "prerequisites": ["research.salesforce.correlate_evidence"],
+            "action": "assess_confidence",
+            "outputs": ["confidence_levels"]
+          },
+          {
+            "id": "research.salesforce.decide_feedback_loop",
+            "type": "generation",
+            "description": "Decide if feedback loop needed to previous research steps",
+            "prerequisites": ["research.salesforce.assess_confidence"],
+            "action": "decide_feedback_loop",
+            "outputs": ["feedback_loop_decisions", "steps_to_revisit", "research_complete"]
+          }
+        ]
+      },
+      "code": {
+        "steps": [
+          {
+            "id": "research.code.search_repository",
+            "type": "execution",
+            "description": "Search code repository for implementation patterns",
+            "prerequisites": ["research.salesforce.save_artifact"],
+            "action": "codebase_search",
+            "parameters": {
+              "query": "{{metadata_keywords}}",
+              "target_directories": []
+            },
+            "assertion": {
+              "type": "search_results_valid"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["code_search_results"]
+          },
+          {
+            "id": "research.code.save_artifact",
+            "type": "execution",
+            "description": "Save code search results to JSON",
+            "prerequisites": ["research.code.search_repository"],
+            "action": "save_json",
+            "parameters": {
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_code_search}}",
+              "data": "code_search_results"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_code_search}}"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["{{research_artifact_path}}/{{artifact_files.research.artifact_file_code_search}}"]
+          },
+          {
+            "id": "research.code.analyze_patterns",
+            "type": "generation",
+            "description": "Analyze code patterns and identify implementation approaches",
+            "prerequisites": ["research.code.save_artifact"],
+            "action": "analyze_and_synthesize",
+            "outputs": ["code_patterns", "implementation_insights"]
+          },
+          {
+            "id": "research.code.identify_technologies",
+            "type": "generation",
+            "description": "Extract technologies and frameworks for web research",
+            "prerequisites": ["research.code.analyze_patterns"],
+            "action": "analyze_and_synthesize",
+            "outputs": ["technologies_identified"]
+          },
+          {
+            "id": "research.code.extract_assumptions",
+            "type": "generation",
+            "description": "Extract assumptions from code findings",
+            "prerequisites": ["research.code.identify_technologies"],
+            "action": "analyze_and_synthesize",
+            "outputs": ["assumptions_extracted"]
+          },
+          {
+            "id": "research.code.identify_unknowns",
+            "type": "generation",
+            "description": "Identify information gaps and unknowns",
+            "prerequisites": ["research.code.extract_assumptions"],
+            "action": "analyze_and_synthesize",
+            "outputs": ["unknowns_identified"]
+          },
+          {
+            "id": "research.code.form_hypotheses",
+            "type": "generation",
+            "description": "Form hypotheses about architectural decisions (Detective Pattern Step 2)",
+            "prerequisites": ["research.code.analyze_patterns"],
+            "action": "form_hypotheses",
+            "outputs": ["hypotheses", "detective_pattern_cycles"]
+          },
+          {
+            "id": "research.code.correlate_evidence",
+            "type": "generation",
+            "description": "Correlate code patterns with Salesforce metadata (Detective Pattern Step 3)",
+            "prerequisites": ["research.code.form_hypotheses"],
+            "action": "correlate_evidence",
+            "outputs": ["evidence_correlation", "confidence_levels", "patterns_identified"]
+          },
+          {
+            "id": "research.code.decide_feedback_loop",
+            "type": "generation",
+            "description": "Decide if feedback loop needed to previous research steps",
+            "prerequisites": ["research.code.correlate_evidence"],
+            "action": "decide_feedback_loop",
+            "outputs": ["feedback_loop_decisions", "steps_to_revisit", "research_complete"]
+          },
+          {
+            "id": "research.code.execute_feedback_loops",
+            "type": "orchestration",
+            "description": "Execute any warranted feedback loops before proceeding",
+            "prerequisites": ["research.code.decide_feedback_loop"],
+            "action": "execute_feedback_loops",
+            "parameters": {
+              "max_loops": 3,
+              "revisit_targets": "steps_to_revisit"
+            },
+            "outputs": ["feedback_loops_executed", "research_complete"]
+          }
+        ]
+      },
+      "web": {
+        "steps": [
+          {
+            "id": "research.web.search_best_practices",
+            "type": "execution",
+            "description": "Search web for industry best practices",
+            "prerequisites": ["research.code.save_artifact"],
+            "action": "web_search",
+            "parameters": {
+              "search_term": "{{metadata_keywords}} Salesforce best practices"
+            },
+            "assertion": {
+              "type": "search_results_valid"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["web_search_results"]
+          },
+          {
+            "id": "research.web.save_artifact",
+            "type": "execution",
+            "description": "Save web research results to JSON",
+            "prerequisites": ["research.web.search_best_practices"],
+            "action": "save_json",
+            "parameters": {
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_web_research}}",
+              "data": "web_search_results"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_web_research}}"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["{{research_artifact_path}}/{{artifact_files.research.artifact_file_web_research}}"]
+          },
+          {
+            "id": "research.web.analyze_best_practices",
+            "type": "generation",
+            "description": "Analyze web research and compare with discovered patterns",
+            "prerequisites": ["research.web.save_artifact"],
+            "action": "analyze_and_synthesize",
+            "outputs": ["best_practices_analysis", "recommendations"]
+          },
+          {
+            "id": "research.web.form_hypotheses",
+            "type": "generation",
+            "description": "Form hypotheses about best practices (Detective Pattern Step 2)",
+            "prerequisites": ["research.web.analyze_best_practices"],
+            "action": "form_hypotheses",
+            "outputs": ["hypotheses", "detective_pattern_cycles"]
+          },
+          {
+            "id": "research.web.correlate_evidence",
+            "type": "generation",
+            "description": "Correlate best practices with org-specific findings (Detective Pattern Step 3)",
+            "prerequisites": ["research.web.form_hypotheses"],
+            "action": "correlate_evidence",
+            "outputs": ["evidence_correlation", "confidence_levels", "patterns_identified"]
+          },
+          {
+            "id": "research.web.decide_feedback_loop",
+            "type": "generation",
+            "description": "Decide if feedback loop needed to previous research steps",
+            "prerequisites": ["research.web.correlate_evidence"],
+            "action": "decide_feedback_loop",
+            "outputs": ["feedback_loop_decisions", "steps_to_revisit", "research_complete"]
+          },
+          {
+            "id": "research.web.execute_feedback_loops",
+            "type": "orchestration",
+            "description": "Execute any warranted feedback loops before proceeding",
+            "prerequisites": ["research.web.decide_feedback_loop"],
+            "action": "execute_feedback_loops",
+            "parameters": {
+              "max_loops": 3,
+              "revisit_targets": "steps_to_revisit"
+            },
+            "outputs": ["feedback_loops_executed", "research_complete"]
+          }
+        ]
+      },
+      "context7": {
+        "steps": [
+          {
+            "id": "research.context7.resolve_library",
+            "type": "execution",
+            "description": "Resolve library ID for Context7 documentation",
+            "prerequisites": ["research.web.save_artifact"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.context7}}resolve-library-id",
+              "libraryName": "{{library_name}}"
+            },
+            "assertion": {
+              "type": "api_response_valid"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["library_id"]
+          },
+          {
+            "id": "research.context7.get_docs",
+            "type": "execution",
+            "description": "Retrieve library documentation from Context7",
+            "prerequisites": ["research.context7.resolve_library"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.context7}}get-library-docs",
+              "context7CompatibleLibraryID": "{{library_id}}"
+            },
+            "assertion": {
+              "type": "api_response_valid"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["library_docs"]
+          },
+          {
+            "id": "research.context7.save_artifact",
+            "type": "execution",
+            "description": "Save Context7 library documentation to JSON",
+            "prerequisites": ["research.context7.get_docs"],
+            "action": "save_json",
+            "parameters": {
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_context7_libraries}}",
+              "data": "library_docs"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_context7_libraries}}"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["{{research_artifact_path}}/{{artifact_files.research.artifact_file_context7_libraries}}"]
+          },
+          {
+            "id": "research.context7.analyze_docs",
+            "type": "generation",
+            "description": "Analyze library documentation for implementation guidance",
+            "prerequisites": ["research.context7.save_artifact"],
+            "action": "analyze_and_synthesize",
+            "outputs": ["api_references", "implementation_guidance"]
+          },
+          {
+            "id": "research.context7.form_hypotheses",
+            "type": "generation",
+            "description": "Form hypotheses about implementation approaches (Detective Pattern Step 2)",
+            "prerequisites": ["research.context7.analyze_docs"],
+            "action": "form_hypotheses",
+            "outputs": ["hypotheses", "detective_pattern_cycles"]
+          },
+          {
+            "id": "research.context7.correlate_evidence",
+            "type": "generation",
+            "description": "Correlate library guidance with code patterns (Detective Pattern Step 3)",
+            "prerequisites": ["research.context7.form_hypotheses"],
+            "action": "correlate_evidence",
+            "outputs": ["evidence_correlation", "confidence_levels", "patterns_identified"]
+          },
+          {
+            "id": "research.context7.decide_feedback_loop",
+            "type": "generation",
+            "description": "Decide if feedback loop needed to previous research steps",
+            "prerequisites": ["research.context7.correlate_evidence"],
+            "action": "decide_feedback_loop",
+            "outputs": ["feedback_loop_decisions", "steps_to_revisit", "research_complete"]
+          }
+        ]
+      },
+      "similar_workitems": {
+        "steps": [
+          {
+            "id": "research.similar.search_workitems",
+            "type": "execution",
+            "description": "Search for similar work items in Azure DevOps",
+            "prerequisites": ["research.context7.save_artifact"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.azure_devops}}wit_search_workitem",
+              "searchText": "{{metadata_keywords}}",
+              "project": ["{{config.project}}"]
+            },
+            "assertion": {
+              "type": "api_response_valid"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["similar_workitems_results"]
+          },
+          {
+            "id": "research.similar.save_artifact",
+            "type": "execution",
+            "description": "Save similar work items search results to JSON",
+            "prerequisites": ["research.similar.search_workitems"],
+            "action": "save_json",
+            "parameters": {
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_similar_workitems}}",
+              "data": "similar_workitems_results"
+            },
+            "assertion": {
+              "type": "file_exists",
+              "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_similar_workitems}}"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["{{research_artifact_path}}/{{artifact_files.research.artifact_file_similar_workitems}}"]
+          },
+          {
+            "id": "research.similar.find_related_workitems",
+            "type": "execution",
+            "description": "Find and link related work items (not duplicates)",
+            "prerequisites": ["research.similar.save_artifact"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.azure_devops}}wit_work_items_link",
+              "project": "{{config.project}}",
+              "updates": "{{relationship_updates}}"
+            },
+            "assertion": {
+              "type": "api_response_valid"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["related_work_items_linked"]
+          },
+          {
+            "id": "research.similar.find_duplicates",
+            "type": "execution",
+            "description": "Find and link duplicate work items",
+            "prerequisites": ["research.similar.save_artifact"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.azure_devops}}wit_work_items_link",
+              "project": "{{config.project}}",
+              "updates": "{{duplicate_updates}}"
+            },
+            "assertion": {
+              "type": "api_response_valid"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "outputs": ["duplicate_work_items_linked"]
+          },
+          {
+            "id": "research.similar.retrieve_related_comments",
+            "type": "execution",
+            "description": "Retrieve comments from related work items",
+            "prerequisites": ["research.similar.find_related_workitems"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.azure_devops}}wit_list_work_item_comments",
+              "project": "{{config.project}}",
+              "workItemId": "{{related_work_item_id}}"
+            },
+            "assertion": {
+              "type": "api_response_valid"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "conditional": true,
+            "condition_description": "Execute for each related work item found",
+            "outputs": ["related_workitems_comments"]
+          },
+          {
+            "id": "research.similar.retrieve_duplicate_comments",
+            "type": "execution",
+            "description": "Retrieve comments from duplicate work items",
+            "prerequisites": ["research.similar.find_duplicates"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.azure_devops}}wit_list_work_item_comments",
+              "project": "{{config.project}}",
+              "workItemId": "{{duplicate_work_item_id}}"
+            },
+            "assertion": {
+              "type": "api_response_valid"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "conditional": true,
+            "condition_description": "Execute for each duplicate work item found",
+            "outputs": ["duplicate_workitems_comments"]
+          },
+          {
+            "id": "research.similar.retrieve_parent_comments",
+            "type": "execution",
+            "description": "Retrieve comments from parent feature work item if exists",
+            "prerequisites": ["research.similar.search_workitems"],
+            "action": "api_call",
+            "parameters": {
+              "tool": "{{config.mcp_prefixes.azure_devops}}wit_list_work_item_comments",
+              "project": "{{config.project}}",
+              "workItemId": "{{parent_work_item_id}}"
+            },
+            "assertion": {
+              "type": "api_response_valid"
+            },
+            "retry": {
+              "max_attempts": 3
+            },
+            "conditional": true,
+            "condition_description": "Execute only if work item has a parent feature (check relations for parent link)",
+            "outputs": ["parent_workitem_comments"]
+          },
+          {
+            "id": "research.similar.generate_summary",
+            "type": "generation",
+            "description": "Generate research summary markdown (Detective Pattern format)",
+            "prerequisites": ["research.similar.find_duplicates"],
+            "action": "write_document",
+            "outputs": ["{{research_artifact_path}}/{{artifact_files.research.artifact_file_research_summary}}"]
+          },
+          {
+            "id": "research.similar.form_hypotheses",
+            "type": "generation",
+            "description": "Form hypotheses about solution approaches (Detective Pattern Step 2)",
+            "prerequisites": ["research.similar.save_artifact"],
+            "action": "form_hypotheses",
+            "outputs": ["hypotheses", "detective_pattern_cycles"]
+          },
+          {
+            "id": "research.similar.correlate_evidence",
+            "type": "generation",
+            "description": "Correlate evidence from similar work items (Detective Pattern Step 3)",
+            "prerequisites": ["research.similar.form_hypotheses"],
+            "action": "correlate_evidence",
+            "outputs": ["evidence_correlation", "confidence_levels", "patterns_identified"]
+          },
+          {
+            "id": "research.similar.decide_feedback_loop",
+            "type": "generation",
+            "description": "Decide if feedback loop needed to previous research steps",
+            "prerequisites": ["research.similar.correlate_evidence"],
+            "action": "decide_feedback_loop",
+            "outputs": ["feedback_loop_decisions", "steps_to_revisit", "research_complete"]
+          },
+          {
+            "id": "research.similar.execute_feedback_loops",
+            "type": "orchestration",
+            "description": "Execute any warranted feedback loops before proceeding",
+            "prerequisites": ["research.similar.decide_feedback_loop"],
+            "action": "execute_feedback_loops",
+            "parameters": {
+              "max_loops": 3,
+              "revisit_targets": "steps_to_revisit"
+            },
+            "outputs": ["feedback_loops_executed", "research_complete"]
+          }
+        ]
+      }
+    },
+    "grooming": {
+      "steps": [
+        {
+          "id": "grooming.create_folder",
+          "type": "execution",
+          "description": "Create artifact directory for grooming phase",
+          "action": "create_directory",
+          "parameters": {
+            "path": "{{artifact_path}}/grooming"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{artifact_path}}/grooming"
+          },
+          "retry": {
+            "max_attempts": 3,
+            "backoff": "exponential"
+          },
+          "outputs": ["{{artifact_path}}/grooming"]
+        },
+        {
+          "id": "grooming.select_template",
+          "type": "generation",
+          "description": "Select appropriate template (User Story vs Bug)",
+          "prerequisites": ["grooming.create_folder"],
+          "action": "analyze_and_decide",
+          "outputs": ["template_selection", "template_rationale"]
+        },
+        {
+          "id": "grooming.load_assumptions",
+          "type": "execution",
+          "description": "Load assumptions register from research phase",
+          "prerequisites": ["grooming.select_template"],
+          "action": "load_json",
+          "parameters": {
+            "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_assumptions}}"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{research_artifact_path}}/{{artifact_files.research.artifact_file_assumptions}}"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["assumptions_data"]
+        },
+        {
+          "id": "grooming.load_journey_maps",
+          "type": "execution",
+          "description": "Load journey/process maps from research phase if available",
+          "prerequisites": ["grooming.load_assumptions"],
+          "action": "load_json",
+          "parameters": {
+            "path": "{{research_artifact_path}}/journey-process-maps.json"
+          },
+          "assertion": {
+            "type": "file_exists_optional",
+            "path": "{{research_artifact_path}}/journey-process-maps.json"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["journey_maps_data"]
+        },
+        {
+          "id": "grooming.neutralize_solution_bias",
+          "type": "generation",
+          "description": "Remove solution hints from original ticket and move to assumptions",
+          "prerequisites": ["grooming.load_assumptions"],
+          "action": "analyze_and_rewrite",
+          "outputs": ["what_why_content", "updated_assumptions"]
+        },
+        {
+          "id": "grooming.apply_classification",
+          "type": "generation",
+          "description": "Apply work classification (work class type, effort, risk, tags)",
+          "prerequisites": ["grooming.neutralize_solution_bias"],
+          "action": "classify",
+          "outputs": ["classification_data"]
+        },
+        {
+          "id": "grooming.save_classification",
+          "type": "execution",
+          "description": "Save classification to JSON artifact",
+          "prerequisites": ["grooming.apply_classification"],
+          "action": "save_json",
+          "parameters": {
+            "path": "{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_classification}}",
+            "data": "classification_data"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_classification}}"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_classification}}"]
+        },
+        {
+          "id": "grooming.apply_templates",
+          "type": "generation",
+          "description": "Apply business requirements templates with HTML formatting",
+          "prerequisites": ["grooming.save_classification"],
+          "action": "fill_templates",
+          "outputs": ["templates_content"]
+        },
+        {
+          "id": "grooming.save_templates",
+          "type": "execution",
+          "description": "Save applied templates to JSON artifact",
+          "prerequisites": ["grooming.apply_templates"],
+          "action": "save_json",
+          "parameters": {
+            "path": "{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_templates_applied}}",
+            "data": "templates_content"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_templates_applied}}"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_templates_applied}}"]
+        },
+        {
+          "id": "grooming.update_ado",
+          "type": "execution",
+          "description": "Apply all changes to Azure DevOps work item in single update",
+          "prerequisites": ["grooming.save_templates"],
+          "action": "api_call",
+          "parameters": {
+            "tool": "{{config.mcp_prefixes.azure_devops}}wit_update_work_item",
+            "project": "{{config.project}}",
+            "id": "{{work_item_id}}",
+            "updates": "{{templates_content}}"
+          },
+          "assertion": {
+            "type": "api_response_valid",
+            "field": "id",
+            "expected": "{{work_item_id}}"
+          },
+          "retry": {
+            "max_attempts": 3,
+            "backoff": "exponential"
+          },
+          "outputs": ["ado_update_result"]
+        },
+        {
+          "id": "grooming.write_summary",
+          "type": "generation",
+          "description": "Write triage summary markdown",
+          "prerequisites": ["grooming.update_ado"],
+          "action": "write_document",
+          "outputs": ["{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_triage_summary}}"]
+        }
+      ]
+    },
+    "solutioning": {
+      "steps": [
+        {
+          "id": "solutioning.create_folder",
+          "type": "execution",
+          "description": "Create artifact directory for solutioning phase",
+          "action": "create_directory",
+          "parameters": {
+            "path": "{{artifact_path}}/solutioning"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{artifact_path}}/solutioning"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["{{artifact_path}}/solutioning"]
+        },
+        {
+          "id": "solutioning.load_context",
+          "type": "execution",
+          "description": "Load research and grooming artifacts",
+          "prerequisites": ["solutioning.create_folder"],
+          "action": "load_multiple_json",
+          "parameters": {
+            "files": [
+              "{{research_artifact_path}}/{{artifact_files.research.artifact_file_research_summary}}",
+              "{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_classification}}",
+              "{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_templates_applied}}"
+            ]
+          },
+          "assertion": {
+            "type": "all_files_exist"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["research_context", "grooming_context"]
+        },
+        {
+          "id": "solutioning.identify_options",
+          "type": "generation",
+          "description": "Identify candidate solution options (OOTB, refactor, custom)",
+          "prerequisites": ["solutioning.load_context"],
+          "action": "analyze_and_propose",
+          "outputs": ["solution_options"]
+        },
+        {
+          "id": "solutioning.evaluate_options",
+          "type": "generation",
+          "description": "Evaluate options using Salesforce Well-Architected pillars",
+          "prerequisites": ["solutioning.identify_options"],
+          "action": "evaluate_and_score",
+          "outputs": ["option_analysis"]
+        },
+        {
+          "id": "solutioning.save_option_analysis",
+          "type": "execution",
+          "description": "Save option analysis to JSON artifact",
+          "prerequisites": ["solutioning.evaluate_options"],
+          "action": "save_json",
+          "parameters": {
+            "path": "{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_option_analysis}}",
+            "data": "option_analysis"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_option_analysis}}"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_option_analysis}}"]
+        },
+        {
+          "id": "solutioning.design_solution",
+          "type": "generation",
+          "description": "Design detailed solution for recommended option",
+          "prerequisites": ["solutioning.save_option_analysis"],
+          "action": "design_and_document",
+          "outputs": ["solution_design"]
+        },
+        {
+          "id": "solutioning.save_solution_design",
+          "type": "execution",
+          "description": "Save solution design to JSON artifact",
+          "prerequisites": ["solutioning.design_solution"],
+          "action": "save_json",
+          "parameters": {
+            "path": "{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_solution_design}}",
+            "data": "solution_design"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_solution_design}}"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_solution_design}}"]
+        },
+        {
+          "id": "solutioning.create_traceability",
+          "type": "generation",
+          "description": "Create AC-to-solution traceability matrix",
+          "prerequisites": ["solutioning.save_solution_design"],
+          "action": "map_and_trace",
+          "outputs": ["traceability_matrix"]
+        },
+        {
+          "id": "solutioning.save_traceability",
+          "type": "execution",
+          "description": "Save traceability matrix to JSON artifact",
+          "prerequisites": ["solutioning.create_traceability"],
+          "action": "save_json",
+          "parameters": {
+            "path": "{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_traceability}}",
+            "data": "traceability_matrix"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_traceability}}"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_traceability}}"]
+        },
+        {
+          "id": "solutioning.create_test_data_matrix",
+          "type": "generation",
+          "description": "Build reusable test data matrix (personas, record types, boundary values, feature flags, error injection)",
+          "prerequisites": ["solutioning.save_traceability"],
+          "action": "analyze_and_create",
+          "outputs": ["test_data_matrix"]
+        },
+        {
+          "id": "solutioning.save_test_data_matrix",
+          "type": "execution",
+          "description": "Update unified context with solutioning test data matrix",
+          "prerequisites": ["solutioning.create_test_data_matrix"],
+          "action": "update_context_section",
+          "parameters": {
+            "context_file": "{{artifact_paths.context_file}}",
+            "section": "solutioning.testing.test_data_matrix",
+            "data": "test_data_matrix",
+            "merge": true
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{solutioning_artifact_path}}/solution-output.json"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["{{solutioning_artifact_path}}/solution-output.json"]
+        },
+        {
+          "id": "solutioning.derive_test_scenarios",
+          "type": "generation",
+          "description": "Systematically derive test scenarios using lenses (happy path, alternates, boundaries, negatives, state transitions, concurrency, security, resilience, non-functional, regression)",
+          "prerequisites": ["solutioning.save_test_data_matrix"],
+          "action": "analyze_and_derive",
+          "outputs": ["test_scenarios"]
+        },
+        {
+          "id": "solutioning.write_test_cases",
+          "type": "generation",
+          "description": "Write test cases using template (standard and Gherkin formats)",
+          "prerequisites": ["solutioning.derive_test_scenarios"],
+          "action": "write_test_cases",
+          "outputs": ["test_cases"]
+        },
+        {
+          "id": "solutioning.save_test_cases",
+          "type": "execution",
+          "description": "Update unified context with solutioning test cases",
+          "prerequisites": ["solutioning.write_test_cases"],
+          "action": "update_context_section",
+          "parameters": {
+            "context_file": "{{artifact_paths.context_file}}",
+            "section": "solutioning.testing.test_cases",
+            "data": "test_cases",
+            "merge": true
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{solutioning_artifact_path}}/solution-output.json"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["{{solutioning_artifact_path}}/solution-output.json"]
+        },
+        {
+          "id": "solutioning.update_development_summary",
+          "type": "execution",
+          "description": "Update Development Summary field in ADO work item",
+          "prerequisites": ["solutioning.save_test_cases"],
+          "action": "api_call",
+          "parameters": {
+            "tool": "{{config.mcp_prefixes.azure_devops}}wit_update_work_item",
+            "project": "{{config.project}}",
+            "id": "{{work_item_id}}",
+            "updates": [{
+              "path": "{{field_paths.field_development_summary}}",
+              "value": "{{solution_summary_html}}"
+            }]
+          },
+          "assertion": {
+            "type": "api_response_valid"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["ado_update_result"]
+        },
+        {
+          "id": "solutioning.write_summary",
+          "type": "generation",
+          "description": "Write solution summary markdown for developer handoff",
+          "prerequisites": ["solutioning.update_development_summary"],
+          "action": "write_document",
+          "outputs": ["{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_solution_summary}}"]
+        }
+      ]
+    },
+    "wiki": {
+      "steps": [
+        {
+          "id": "wiki.create_folder",
+          "type": "execution",
+          "description": "Create artifact directory for wiki phase",
+          "action": "create_directory",
+          "parameters": {
+            "path": "{{artifact_path}}/wiki"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{artifact_path}}/wiki"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["{{artifact_path}}/wiki"]
+        },
+        {
+          "id": "wiki.load_all_artifacts",
+          "type": "execution",
+          "description": "Load all phase artifacts for wiki content generation",
+          "prerequisites": ["wiki.create_folder"],
+          "action": "load_multiple_json",
+          "parameters": {
+            "files": [
+              "{{research_artifact_path}}/{{artifact_files.research.artifact_file_research_summary}}",
+              "{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_classification}}",
+              "{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_solution_summary}}"
+            ]
+          },
+          "assertion": {
+            "type": "all_files_exist"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["all_phase_artifacts"]
+        },
+        {
+          "id": "wiki.identify_primary_object",
+          "type": "generation",
+          "description": "Identify primary Salesforce object for wiki categorization",
+          "prerequisites": ["wiki.load_all_artifacts"],
+          "action": "analyze_and_decide",
+          "outputs": ["primary_object"]
+        },
+        {
+          "id": "wiki.generate_content",
+          "type": "generation",
+          "description": "Generate comprehensive wiki page content",
+          "prerequisites": ["wiki.identify_primary_object"],
+          "action": "write_document",
+          "outputs": ["wiki_content_markdown"]
+        },
+        {
+          "id": "wiki.save_content_backup",
+          "type": "execution",
+          "description": "Save wiki content as local backup",
+          "prerequisites": ["wiki.generate_content"],
+          "action": "save_text",
+          "parameters": {
+            "path": "{{wiki_artifact_path}}/{{artifact_files.wiki.artifact_file_wiki_content}}",
+            "content": "wiki_content_markdown"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{wiki_artifact_path}}/{{artifact_files.wiki.artifact_file_wiki_content}}"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["{{wiki_artifact_path}}/{{artifact_files.wiki.artifact_file_wiki_content}}"]
+        },
+        {
+          "id": "wiki.create_wiki_page",
+          "type": "execution",
+          "description": "Create wiki page in Azure DevOps",
+          "prerequisites": ["wiki.save_content_backup"],
+          "action": "api_call",
+          "parameters": {
+            "tool": "{{config.mcp_prefixes.azure_devops}}wiki_create_or_update_page",
+            "wikiIdentifier": "{{config.wiki.name}}",
+            "project": "{{config.project}}",
+            "path": "{{wiki_path}}",
+            "content": "wiki_content_markdown"
+          },
+          "assertion": {
+            "type": "api_response_valid"
+          },
+          "retry": {
+            "max_attempts": 3,
+            "backoff": "exponential"
+          },
+          "outputs": ["wiki_page_result"]
+        },
+        {
+          "id": "wiki.save_creation_record",
+          "type": "execution",
+          "description": "Save wiki creation metadata to JSON",
+          "prerequisites": ["wiki.create_wiki_page"],
+          "action": "save_json",
+          "parameters": {
+            "path": "{{wiki_artifact_path}}/{{artifact_files.wiki.artifact_file_wiki_creation}}",
+            "data": "wiki_page_result"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{wiki_artifact_path}}/{{artifact_files.wiki.artifact_file_wiki_creation}}"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["{{wiki_artifact_path}}/{{artifact_files.wiki.artifact_file_wiki_creation}}"]
+        }
+      ]
+    },
+    "finalization": {
+      "steps": [
+        {
+          "id": "finalize.contextSnapshot",
+          "type": "execution",
+          "description": "Update unified context with finalization snapshot",
+          "action": "update_context_section",
+          "parameters": {
+            "context_file": "{{artifact_paths.context_file}}",
+            "section": "finalization.context_snapshot",
+            "data": "context_snapshot_data"
+          },
+          "assertion": {
+            "type": "file_exists",
+            "path": "{{artifact_path}}/{{artifact_files.finalization.artifact_file_context_snapshot}}",
+            "required_fields": ["work_item_id", "title", "research_summary", "triage_classification", "solution_approach"]
+          },
+          "retry": {
+            "max_attempts": 3,
+            "backoff": "exponential"
+          },
+          "outputs": ["{{artifact_path}}/{{artifact_files.finalization.artifact_file_context_snapshot}}"]
+        },
+        {
+          "id": "finalize.storyPoints",
+          "type": "execution",
+          "description": "Estimate story points using Fibonacci heuristic and update work item",
+          "prerequisites": ["finalize.contextSnapshot"],
+          "action": "api_call",
+          "parameters": {
+            "tool": "{{config.mcp_prefixes.azure_devops}}wit_update_work_item",
+            "project": "{{config.project}}",
+            "id": "{{work_item_id}}",
+            "updates": [{
+              "path": "{{field_paths.field_story_points}}",
+              "value": "{{computed_story_points}}"
+            }]
+          },
+          "assertion": {
+            "type": "api_response_valid",
+            "verify_field": {
+              "path": "{{field_paths.field_story_points}}",
+              "expected": "{{computed_story_points}}"
+            }
+          },
+          "retry": {
+            "max_attempts": 3,
+            "backoff": "exponential"
+          },
+          "outputs": ["story_points_update_result"]
+        },
+        {
+          "id": "finalize.createAuditTask",
+          "type": "execution",
+          "description": "Create closed audit task with Activity='Refinement'",
+          "prerequisites": ["finalize.storyPoints"],
+          "action": "api_call",
+          "parameters": {
+            "tool": "{{config.mcp_prefixes.azure_devops}}wit_create_work_item",
+            "project": "{{config.project}}",
+            "workItemType": "Task",
+            "fields": {
+              "System.Title": "0a - [Refinement] - Complete - {{work_item_id}}",
+              "Microsoft.VSTS.Common.Activity": "Refinement",
+              "System.State": "Closed"
+            }
+          },
+          "assertion": {
+            "type": "api_response_valid",
+            "verify_fields": {
+              "Microsoft.VSTS.Common.Activity": "Refinement",
+              "System.State": "Closed"
+            }
+          },
+          "retry": {
+            "max_attempts": 3,
+            "backoff": "exponential"
+          },
+          "outputs": ["audit_task_id"]
+        },
+        {
+          "id": "finalize.linkAuditTask",
+          "type": "execution",
+          "description": "Link audit task as child of parent work item",
+          "prerequisites": ["finalize.createAuditTask"],
+          "action": "api_call",
+          "parameters": {
+            "tool": "{{config.mcp_prefixes.azure_devops}}wit_work_items_link",
+            "project": "{{config.project}}",
+            "updates": [{
+              "id": "{{work_item_id}}",
+              "linkToId": "{{audit_task_id}}",
+              "type": "child"
+            }]
+          },
+          "assertion": {
+            "type": "api_response_valid"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["link_result"]
+        },
+        {
+          "id": "finalize.updateAuditTaskDescription",
+          "type": "execution",
+          "description": "Add completion description to audit task with wiki link",
+          "prerequisites": ["finalize.linkAuditTask"],
+          "action": "api_call",
+          "parameters": {
+            "tool": "{{config.mcp_prefixes.azure_devops}}wit_update_work_item",
+            "project": "{{config.project}}",
+            "id": "{{audit_task_id}}",
+            "updates": [{
+              "path": "/fields/System.Description",
+              "value": "{{audit_task_description_html}}"
+            }]
+          },
+          "assertion": {
+            "type": "api_response_valid"
+          },
+          "retry": {
+            "max_attempts": 3
+          },
+          "outputs": ["description_update_result"]
+        }
+      ]
+    }
+  }
+}
+

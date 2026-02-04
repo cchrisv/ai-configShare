@@ -1,0 +1,2742 @@
+{
+  "organization": "UMGC",
+  "last_updated": "2025-01-XX",
+  "strategic_goals": [
+    "Priority I: Market-responsive portfolio management that continuously adapts to workforce demands",
+    "Priority II: Skills-based architecture that bridges learning experiences, skills, and prior learning credit",
+    "Priority III: Strengthened and diversified learner population to expand access and serve historically underserved populations",
+    "Priority IV: Streamlined, learner-centric ecosystem with automated and tailored support",
+    "Priority V: Intentional study of and investment in the needs of our community to ensure agency and support for all employees"
+  ],
+  "strategic_plan_period": "2024-2030",
+  "strategic_plan_theme": "Innovation and transformation to bridge industry skill and knowledge gaps while preparing students for the jobs of today and the future",
+  "vision": "UMGC's mission is to 'inspire hope, empower dreams, and transform lives . . . one student at a time.' We are an open enrollment Maryland state university dedicated to serving working adults, military servicemembers and their families, and veterans who reside in Maryland, across the United States, and around the world. Founded in 1947, UMGC has grown to become the largest public university in the nation, offering affordable, skills-based online programs and comprehensive student services to help learners advance their education and plan for their next success, no matter where life takes them.",
+  "mission": "Inspire hope, empower dreams, and transform lives . . . one student at a time",
+  "founded": "1947",
+  "description": "University of Maryland Global Campus (UMGC) is an innovative, transformational university that bridges industry skill and knowledge gaps while preparing students for the jobs of today and the future. With 75+ years of experience serving working adults, servicemembers, and their families, UMGC understands the unique academic journey that entails hard work, perseverance, and determination.",
+  "key_statistics": {
+    "locations_worldwide": 175,
+    "degrees_and_certificates": 135,
+    "years_of_service": 75,
+    "global_presence_since": "1949",
+    "largest_public_university": true
+  },
+  "unique_value_propositions": [
+    "Affordability - Competitive tuition rates with multiple payment and finance options",
+    "Convenience - Flexible online and hybrid programs that fit into busy schedules",
+    "Flexibility - Multiple start dates with streamlined admission process",
+    "Accessibility - Open enrollment policy welcoming diverse learners",
+    "Skills-based education - Programs designed to equip students with key skills in communication, leadership, and critical thinking",
+    "No-cost digital course materials - Most programs use digital materials instead of expensive textbooks",
+    "Lifetime career services - Comprehensive career support from acceptance through alumni status",
+    "Military-focused - Dedicated military advising team and worldwide locations at military installations",
+    "Global reach - 175+ classroom and service locations worldwide including U.S., Europe, and Asia divisions",
+    "State university reputation - Backed by the University System of Maryland"
+  ],
+  "target_learners": [
+    "Working adults balancing career and education",
+    "Active-duty military servicemembers",
+    "Military spouses and family members",
+    "Veterans transitioning to civilian careers",
+    "Adult learners seeking career advancement",
+    "Historically underserved populations",
+    "Learners requiring flexible scheduling",
+    "Students seeking skills-based, career-relevant education"
+  ],
+  "academic_offerings": {
+    "degree_levels": [
+      "Bachelor's Degrees",
+      "Master's Degrees",
+      "Associate Degrees",
+      "Doctoral Programs",
+      "Undergraduate Certificates",
+      "Graduate Certificates"
+    ],
+    "subject_areas": [
+      "Business & Management",
+      "Cybersecurity",
+      "Data Analytics",
+      "Education & Teaching",
+      "Healthcare & Science",
+      "IT & Computer Science",
+      "Liberal Arts & Communication",
+      "Public Safety & Criminal Justice",
+      "Psychology"
+    ],
+    "learning_modes": [
+      "Online Learning",
+      "Hybrid Learning"
+    ]
+  },
+  "student_services": [
+    "Academic Advising",
+    "Career Services (lifetime access)",
+    "Accessibility Services",
+    "Military and Veterans Services",
+    "Library and Research Support",
+    "Student Organizations and Clubs",
+    "Help Center Support",
+    "Financial Aid Counseling",
+    "Transfer Credit Evaluation",
+    "Transcript Services"
+  ],
+  "focus_areas": [
+    "Working adults",
+    "Military servicemembers and their families",
+    "Veterans",
+    "Global reach (175+ locations worldwide)",
+    "Online and hybrid learning",
+    "Skills-based education",
+    "Accessibility and affordability",
+    "Market-responsive program portfolio",
+    "Prior learning credit recognition",
+    "Learner-centric ecosystem"
+  ],
+  "strategic_priorities_detail": {
+    "priority_i": {
+      "title": "Market-responsive portfolio management that continuously adapts to workforce demands",
+      "focus": "Ensuring academic programs align with current and emerging workforce needs, continuously adapting curriculum to meet industry demands",
+      "key_initiatives": [
+        "Regularly assess market trends to inform program development and portfolio decisions",
+        "Engage with industry partners to ensure curriculum relevance and alignment with workforce needs",
+        "Implement agile processes for program updates and new program creation",
+        "Develop strategic partnerships with organizations like Guild and Coursera to expand learning pathways",
+        "Redesign academic programs (e.g., MBA) to be more flexible, customized, and affordable",
+        "Continuously monitor employer needs and workforce demands to adapt offerings"
+      ],
+      "success_metrics": [
+        "Program alignment with current and emerging job market demands",
+        "Employer satisfaction with graduate preparedness",
+        "Graduate employment rates and career advancement",
+        "Enrollment growth in market-responsive programs",
+        "Partnership outcomes and effectiveness",
+        "Program completion rates and credential attainment"
+      ],
+      "related_departments": [
+        "Academic Affairs",
+        "Enrollment Management"
+      ]
+    },
+    "priority_ii": {
+      "title": "Skills-based architecture that bridges learning experiences, skills, and prior learning credit",
+      "focus": "Creating a comprehensive system that recognizes and credits prior learning, connects skills to credentials, and provides clear pathways for learners",
+      "key_initiatives": [
+        "Map curricula to industry-recognized skills and certifications",
+        "Provide learners with clear pathways to career advancement through skills-based credentials",
+        "Expand credit for prior learning assessment and recognition",
+        "Develop competency-based pathways that connect learning experiences to workforce competencies",
+        "Collaborate with employers to validate skill frameworks and credentialing",
+        "Integrate experiential learning opportunities to build practical, applicable skills",
+        "Create stackable credentials that allow learners to build toward degrees incrementally"
+      ],
+      "success_metrics": [
+        "Credit for prior learning awarded to learners",
+        "Skills-to-credential pathways created and utilized",
+        "Learner time-to-degree reduction through prior learning credit",
+        "Number of industry-recognized certifications integrated into programs",
+        "Employer validation of skill frameworks",
+        "Learner progression through stackable credential pathways"
+      ],
+      "related_departments": [
+        "Academic Affairs",
+        "Enrollment Management",
+        "Information Technology / Digital Platforms"
+      ]
+    },
+    "priority_iii": {
+      "title": "Strengthened and diversified learner population to expand access and serve historically underserved populations",
+      "focus": "Expanding access to education for diverse populations, including historically underserved communities, and supporting their success",
+      "key_initiatives": [
+        "Identify and engage underserved learner demographics through targeted outreach",
+        "Expand scholarship and financial aid programs to reduce barriers",
+        "Enhance support services tailored to diverse learner needs",
+        "Develop programs specifically tailored to military and veteran students",
+        "Expand global partnerships to reach international learners",
+        "Implement diversity, equity, and inclusion training for staff working with learners",
+        "Create strategic partnerships to create new learning pathways for diverse populations"
+      ],
+      "success_metrics": [
+        "Enrollment diversity metrics and representation of underserved populations",
+        "Retention rates by population and demographic groups",
+        "Graduation rates for historically underserved populations",
+        "Enrollment growth among target demographics",
+        "Scholarship and financial aid utilization rates",
+        "Learner satisfaction scores across diverse populations"
+      ],
+      "related_departments": [
+        "Enrollment Management",
+        "Student Affairs",
+        "Finance"
+      ]
+    },
+    "priority_iv": {
+      "title": "Streamlined, learner-centric ecosystem with automated and tailored support",
+      "focus": "Creating an efficient, user-friendly experience with automated processes and personalized support throughout the learner journey",
+      "key_initiatives": [
+        "Develop integrated reporting system offering comprehensive view of learners for personalized, data-driven discussions",
+        "Create centralized data hub integrating systems used by team members working directly with learners",
+        "Refine early alert capability to identify at-risk learners promptly",
+        "Implement personalized learning pathways based on learner goals and needs",
+        "Develop regular reporting and dashboards tailored to roles and responsibilities of teams interacting with learners",
+        "Enhance support services with automated and tailored interventions",
+        "Leverage digital technologies to improve educational delivery and administrative processes",
+        "Implement responsive, tailored, and seamless learner experience across all touchpoints"
+      ],
+      "success_metrics": [
+        "Process automation rates and reduction in manual processes",
+        "Learner satisfaction scores and experience ratings",
+        "Time-to-enrollment reduction and streamlined processes",
+        "Support response times and resolution rates",
+        "Early alert effectiveness in identifying and supporting at-risk learners",
+        "Data hub utilization and integration success",
+        "Personalized pathway adoption and completion rates"
+      ],
+      "related_departments": [
+        "Information Technology / Digital Platforms",
+        "Enrollment Management",
+        "Student Affairs"
+      ]
+    },
+    "priority_v": {
+      "title": "Intentional study of and investment in the needs of our community to ensure agency and support for all employees",
+      "focus": "Supporting faculty and staff success through intentional investment in their needs, professional development, and workplace satisfaction",
+      "key_initiatives": [
+        "Conduct regular assessments of staff and faculty needs through engagement surveys and feedback mechanisms",
+        "Provide professional development opportunities aligned with strategic goals and individual growth",
+        "Promote culture of collaboration and continuous improvement",
+        "Ensure resources and support systems are in place for team success",
+        "Invest in workplace culture initiatives that foster innovation and excellence",
+        "Review and enhance compensation and benefits to support employee well-being",
+        "Create pathways for career advancement and professional growth",
+        "Foster spirit of innovation and digital transformation capabilities among staff"
+      ],
+      "success_metrics": [
+        "Employee satisfaction scores and engagement metrics",
+        "Staff and faculty retention rates",
+        "Professional development participation and completion rates",
+        "Workplace culture metrics and climate surveys",
+        "Employee agency and support perception scores",
+        "Innovation and collaboration indicators",
+        "Professional growth and advancement rates"
+      ],
+      "related_departments": [
+        "Human Resources",
+        "Academic Affairs"
+      ]
+    }
+  },
+  "strategic_enablers": [
+    {
+      "name": "Technology Infrastructure and Digital Transformation",
+      "description": "Robust technology infrastructure and digital transformation capabilities enable market-responsive portfolio management, streamlined learner experiences, and skills-based architecture. Digital platforms support automated processes, personalized pathways, and integrated systems that enhance operational efficiency and learner success.",
+      "related_priorities": [
+        "Priority I",
+        "Priority II",
+        "Priority IV"
+      ]
+    },
+    {
+      "name": "Data and Analytics Capabilities",
+      "description": "Comprehensive data hub and analytics capabilities enable data-driven decision making across all priorities. Integrated reporting systems, early alert capabilities, and personalized dashboards support market analysis, learner success interventions, and strategic portfolio management.",
+      "related_priorities": [
+        "Priority I",
+        "Priority II",
+        "Priority III",
+        "Priority IV"
+      ]
+    },
+    {
+      "name": "Strategic Partnerships and Collaborations",
+      "description": "Strategic partnerships with organizations like Guild, Coursera, employers, and community organizations enable market-responsive program development, expanded learning pathways, and alignment with workforce needs. Partnerships support targeted expansion and skills-based credentialing.",
+      "related_priorities": [
+        "Priority I",
+        "Priority II",
+        "Priority III"
+      ]
+    },
+    {
+      "name": "People and Culture",
+      "description": "Investment in people through professional development, supportive culture, and collaborative environment enables innovation, excellence, and effective execution of all strategic priorities. Engaged and skilled workforce drives learner success and organizational transformation.",
+      "related_priorities": [
+        "Priority V",
+        "Priority I",
+        "Priority IV"
+      ]
+    }
+  ],
+  "strategic_values": [
+    "Learner Centricity - Prioritizing the needs and success of learners in all decisions and actions",
+    "Innovation - Embracing new ideas and technologies to enhance learning experiences and operational efficiency",
+    "Integrity - Upholding ethical standards, honesty, and transparency in all activities",
+    "Diversity and Inclusion - Fostering a diverse and inclusive community that respects and values diverse perspectives",
+    "Collaboration - Working together across departments and with external partners to achieve common goals",
+    "Excellence - Striving for the highest quality in educational programs, services, and operations",
+    "Accessibility - Ensuring education is within reach for all individuals regardless of background or circumstances",
+    "Affordability - Offering cost-effective educational programs to minimize financial barriers for learners",
+    "Respect - Treating all individuals with dignity and consideration",
+    "Accountability - Taking responsibility for actions and outcomes, ensuring transparency and trust"
+  ],
+  "foundational_commitments": {
+    "learner_centricity": "UMGC is dedicated to placing learners at the center of its mission, ensuring that educational experiences are tailored to meet their diverse needs and aspirations",
+    "our_people": "The university values its community, recognizing that the collective efforts of its teams drive success and innovation",
+    "state_of_maryland": "UMGC is committed to serving the state of Maryland by providing accessible and affordable education to its residents",
+    "global_reach": "With a presence in over 175 locations worldwide, UMGC aims to meet learners wherever they are, offering flexible and quality education",
+    "military": "The university has a longstanding commitment to military-affiliated students, providing tailored programs and support services to meet their unique needs",
+    "spirit_of_innovation": "UMGC embraces a culture of innovation, continuously seeking new ways to enhance learning experiences and operational efficiency",
+    "digital_transformation": "The university leverages digital technologies to improve educational delivery and administrative processes, ensuring a seamless experience for learners"
+  },
+  "strategic_challenges": [
+    {
+      "challenge": "Rapidly changing workforce demands and evolving skill requirements",
+      "impact": "Academic programs may become misaligned with employer needs, reducing graduate employability and program relevance. Requires continuous monitoring and agile adaptation of curriculum and offerings.",
+      "mitigation": "Priority I (Market-responsive portfolio management) addresses this through regular market trend assessment, industry partnerships, and agile program development processes"
+    },
+    {
+      "challenge": "Technology infrastructure and integration needs for streamlined learner experience",
+      "impact": "Fragmented systems create inefficiencies, poor learner experience, and limit data-driven decision making. Manual processes slow down operations and reduce responsiveness.",
+      "mitigation": "Priority IV (Streamlined learner-centric ecosystem) addresses this through integrated reporting systems, data hub development, and digital transformation initiatives"
+    },
+    {
+      "challenge": "Serving diverse and historically underserved populations while maintaining quality",
+      "impact": "Traditional educational models may not meet needs of diverse learners, leading to lower retention and completion rates. Requires tailored approaches and enhanced support services.",
+      "mitigation": "Priority III (Strengthened and diversified learner population) addresses this through targeted outreach, enhanced support services, and diversity/equity/inclusion training"
+    },
+    {
+      "challenge": "Recognizing and crediting prior learning while maintaining academic rigor",
+      "impact": "Learners with extensive experience may face barriers to degree completion if prior learning isn't recognized, increasing time and cost to completion.",
+      "mitigation": "Priority II (Skills-based architecture) addresses this through expanded prior learning assessment, skills mapping, and competency-based pathways"
+    },
+    {
+      "challenge": "Faculty and staff engagement and retention in competitive market",
+      "impact": "High turnover and low engagement reduce institutional knowledge, innovation capacity, and quality of learner support. Impacts all strategic priorities.",
+      "mitigation": "Priority V (Investment in our people) addresses this through needs assessment, professional development, culture initiatives, and resource support"
+    }
+  ],
+  "strategic_opportunities": [
+    {
+      "opportunity": "Growing demand for skills-based education and stackable credentials",
+      "potential_impact": "UMGC can position itself as a leader in skills-based education by expanding credentialing pathways, prior learning recognition, and industry-aligned programs. This aligns with workforce needs and learner preferences for flexible, career-relevant education.",
+      "related_priority": "Priority II"
+    },
+    {
+      "opportunity": "Expansion of online and hybrid learning post-pandemic",
+      "potential_impact": "UMGC's expertise in online education positions it to serve more learners globally. Enhanced digital platforms and personalized experiences can differentiate UMGC in the competitive online education market.",
+      "related_priority": "Priority IV"
+    },
+    {
+      "opportunity": "Strategic partnerships with employers and education platforms (Guild, Coursera)",
+      "potential_impact": "Partnerships create new learning pathways, expand reach to employer-sponsored learners, and provide opportunities for program innovation and market expansion.",
+      "related_priority": "Priority I"
+    },
+    {
+      "opportunity": "Increasing focus on diversity, equity, and inclusion in higher education",
+      "potential_impact": "UMGC can strengthen its commitment to serving diverse populations, expand access to underserved communities, and build reputation as an inclusive institution that supports all learners.",
+      "related_priority": "Priority III"
+    },
+    {
+      "opportunity": "Data-driven personalization and early intervention capabilities",
+      "potential_impact": "Advanced analytics and early alert systems enable proactive learner support, improving retention and success rates while demonstrating commitment to learner-centricity.",
+      "related_priority": "Priority IV"
+    },
+    {
+      "opportunity": "Military and veteran education benefits and support",
+      "potential_impact": "UMGC's longstanding commitment to military-affiliated students positions it to expand services and programs, leveraging its global presence and expertise in serving this population.",
+      "related_priority": "Priority III"
+    }
+  ],
+  "departments": [
+    {
+      "name": "Academic Administration",
+      "primary_contacts": [
+        {
+          "name": "Alexis Hill White",
+          "role": "Acting VP, Academic Administration",
+          "email": null
+        },
+        {
+          "name": "Pershail Young",
+          "role": "AVP, Academic Pathways & Credit Innovation",
+          "email": null
+        },
+        {
+          "name": "Alexis Hill White",
+          "role": "AVP, Academic Planning, Policy, & Curriculum Operations",
+          "email": null
+        },
+        {
+          "name": "Evelin Letarte",
+          "role": "Director, Experiential & Workplace Learning",
+          "email": null
+        },
+        {
+          "name": "Jenel Roberts",
+          "role": "Senior Director, Academic Policy & Planning",
+          "email": null
+        }
+      ],
+      "personas": [
+        {
+          "name": "DCAD - Academic Administration Leadership",
+          "role": "DCAD - Academic Administration Leadership",
+          "profiles": [
+            "UMUC B2C Manager",
+            "UMUC Standard Manager"
+          ]
+        },
+        {
+          "name": "Arts and Sciences - Arts and Humanities",
+          "role": "Arts and Sciences - Arts and Humanities",
+          "profiles": [
+            "UMUC Standard User"
+          ]
+        },
+        {
+          "name": "Arts and Sciences - Education and Public Service",
+          "role": "Arts and Sciences - Education and Public Service",
+          "profiles": [
+            "UMUC Standard User"
+          ]
+        },
+        {
+          "name": "Arts and Sciences",
+          "role": "Arts and Sciences",
+          "profiles": [
+            "UMUC Standard User"
+          ]
+        },
+        {
+          "name": "Business - Accounting and Finance",
+          "role": "Business - Accounting and Finance",
+          "profiles": [
+            "UMUC Standard User"
+          ]
+        },
+        {
+          "name": "Business - Business Administration",
+          "role": "Business - Business Administration",
+          "profiles": [
+            "UMUC Standard User"
+          ]
+        },
+        {
+          "name": "Business - Business Management",
+          "role": "Business - Business Management",
+          "profiles": [
+            "UMUC Standard User"
+          ]
+        },
+        {
+          "name": "Business - Dean's Office",
+          "role": "Business - Dean's Office",
+          "profiles": [
+            "UMUC Standard Manager",
+            "UMUC Standard User"
+          ]
+        },
+        {
+          "name": "Cyber and IT - Cybersecurity",
+          "role": "Cyber and IT - Cybersecurity",
+          "profiles": [
+            "UMUC Standard User"
+          ]
+        },
+        {
+          "name": "Cyber and IT - Dean's Office",
+          "role": "Cyber and IT - Dean's Office",
+          "profiles": [
+            "UMUC Standard User"
+          ]
+        },
+        {
+          "name": "Cyber and IT - Information Technology",
+          "role": "Cyber and IT - Information Technology",
+          "profiles": [
+            "UMUC Standard User"
+          ]
+        }
+      ],
+      "roles": [
+        "DCAD - Academic Administration Leadership",
+        "Arts and Sciences - Arts and Humanities",
+        "Arts and Sciences - Education and Public Service",
+        "Arts and Sciences",
+        "Business - Accounting and Finance",
+        "Business - Business Administration",
+        "Business - Business Management",
+        "Business - Dean's Office",
+        "Cyber and IT - Cybersecurity",
+        "Cyber and IT - Dean's Office",
+        "Cyber and IT - Information Technology"
+      ],
+      "profiles": [
+        "UMUC B2C Manager",
+        "UMUC Standard Manager",
+        "UMUC Standard User"
+      ]
+    },
+    {
+      "name": "Academic Integrity and Accountability",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Student Affairs - SRIA",
+          "role": "Student Affairs - SRIA",
+          "profiles": [
+            "UMUC SEM Advisor"
+          ]
+        }
+      ],
+      "roles": [
+        "Student Affairs - SRIA"
+      ],
+      "profiles": [
+        "UMUC SEM Advisor"
+      ]
+    },
+    {
+      "name": "Academic Services and Quality",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "ASQ - Leadership",
+          "role": "ASQ - Leadership",
+          "profiles": [
+            "UMUC Registrar Manager"
+          ]
+        },
+        {
+          "name": "ASQ - Response Center",
+          "role": "ASQ - Response Center",
+          "profiles": [
+            "UMUC Registrar User"
+          ]
+        },
+        {
+          "name": "ASQ - Scheduling Manager",
+          "role": "ASQ - Scheduling Manager",
+          "profiles": [
+            "UMUC Registrar Manager"
+          ]
+        },
+        {
+          "name": "DCAD - Academic Administration Leadership",
+          "role": "DCAD - Academic Administration Leadership",
+          "profiles": [
+            "UMUC Registrar Manager"
+          ]
+        },
+        {
+          "name": "DCAD - Pathways",
+          "role": "DCAD - Pathways",
+          "profiles": [
+            "UMUC Registrar Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "ASQ - Leadership",
+        "ASQ - Response Center",
+        "ASQ - Scheduling Manager",
+        "DCAD - Academic Administration Leadership",
+        "DCAD - Pathways"
+      ],
+      "profiles": [
+        "UMUC Registrar Manager",
+        "UMUC Registrar User"
+      ]
+    },
+    {
+      "name": "Accelerated",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMUC SC Manager"
+          ]
+        },
+        {
+          "name": "System Administrator",
+          "role": "System Administrator",
+          "profiles": [
+            "UMUC System Admin Viewer"
+          ]
+        }
+      ],
+      "roles": [
+        "One Global University",
+        "System Administrator"
+      ],
+      "profiles": [
+        "UMUC SC Manager",
+        "UMUC System Admin Viewer"
+      ]
+    },
+    {
+      "name": "Accreditation, Reporting, & Compliance (ARC)",
+      "primary_contacts": [
+        {
+          "name": "Sean Pitterson",
+          "role": "Senior Director, Credential Evaluation & Graduation Services",
+          "email": null
+        },
+        {
+          "name": "Melanie Maree",
+          "role": "Assistant Director, ARC Support",
+          "email": null
+        }
+      ],
+      "personas": [],
+      "roles": [],
+      "profiles": []
+    },
+    {
+      "name": "Admissions",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMUC SEM Manager - View All"
+          ]
+        },
+        {
+          "name": "SEM - Admissions - Command Centre",
+          "role": "SEM - Admissions - Command Centre",
+          "profiles": [
+            "UMUC SEM Advisor",
+            "UMUC SEM Manager",
+            "UMUC SEM Team Lead"
+          ]
+        },
+        {
+          "name": "SEM - Admissions - Crosslinked",
+          "role": "SEM - Admissions - Crosslinked",
+          "profiles": [
+            "UMUC SEM Advisor",
+            "UMUC SEM Manager"
+          ]
+        },
+        {
+          "name": "SEM - Admissions - Crosslinked - ChatSMS",
+          "role": "SEM - Admissions - Crosslinked - ChatSMS",
+          "profiles": [
+            "UMUC SEM Advisor",
+            "UMUC SEM Team Lead"
+          ]
+        },
+        {
+          "name": "SEM - Admissions - Outbound Coach",
+          "role": "SEM - Admissions - Outbound Coach",
+          "profiles": [
+            "UMUC SEM Advisor"
+          ]
+        },
+        {
+          "name": "SEM - Admissions - Success Coach",
+          "role": "SEM - Admissions - Success Coach",
+          "profiles": [
+            "UMUC SEM Advisor"
+          ]
+        },
+        {
+          "name": "SEM - Admissions - Team Associate",
+          "role": "SEM - Admissions - Team Associate",
+          "profiles": [
+            "UMUC SEM Advisor"
+          ]
+        },
+        {
+          "name": "SEM - Admissions - Trainee",
+          "role": "SEM - Admissions - Trainee",
+          "profiles": [
+            "UMUC SEM Advisor"
+          ]
+        },
+        {
+          "name": "SEM - Director - Admissions",
+          "role": "SEM - Director - Admissions",
+          "profiles": [
+            "UMUC SEM Manager",
+            "UMUC SEM Manager - View All"
+          ]
+        }
+      ],
+      "roles": [
+        "One Global University",
+        "SEM - Admissions - Command Centre",
+        "SEM - Admissions - Crosslinked",
+        "SEM - Admissions - Crosslinked - ChatSMS",
+        "SEM - Admissions - Outbound Coach",
+        "SEM - Admissions - Success Coach",
+        "SEM - Admissions - Team Associate",
+        "SEM - Admissions - Trainee",
+        "SEM - Director - Admissions"
+      ],
+      "profiles": [
+        "UMUC SEM Advisor",
+        "UMUC SEM Manager",
+        "UMUC SEM Manager - View All",
+        "UMUC SEM Team Lead"
+      ]
+    },
+    {
+      "name": "Admissions Services",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "ASQ - Admissions Services Manager",
+          "role": "ASQ - Admissions Services Manager",
+          "profiles": [
+            "UMUC SEM Manager - View All"
+          ]
+        },
+        {
+          "name": "ASQ - Admissions Services Program Specialist",
+          "role": "ASQ - Admissions Services Program Specialist",
+          "profiles": [
+            "UMUC SEM Advisor"
+          ]
+        },
+        {
+          "name": "ASQ - Leadership",
+          "role": "ASQ - Leadership",
+          "profiles": [
+            "UMUC SEM Manager - View All"
+          ]
+        },
+        {
+          "name": "ASQ - Residency Coordinator",
+          "role": "ASQ - Residency Coordinator",
+          "profiles": [
+            "UMUC SEM Advisor"
+          ]
+        },
+        {
+          "name": "ASQ - Residency Manager",
+          "role": "ASQ - Residency Manager",
+          "profiles": [
+            "UMUC SEM Manager - View All"
+          ]
+        }
+      ],
+      "roles": [
+        "ASQ - Admissions Services Manager",
+        "ASQ - Admissions Services Program Specialist",
+        "ASQ - Leadership",
+        "ASQ - Residency Coordinator",
+        "ASQ - Residency Manager"
+      ],
+      "profiles": [
+        "UMUC SEM Advisor",
+        "UMUC SEM Manager - View All"
+      ]
+    },
+    {
+      "name": "Alumni/Career Services",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "IA - Career Services Manager",
+          "role": "IA - Career Services Manager",
+          "profiles": [
+            "UMUC Institutional Advancement"
+          ]
+        },
+        {
+          "name": "IA - Career Services User",
+          "role": "IA - Career Services User",
+          "profiles": [
+            "UMUC Institutional Advancement"
+          ]
+        }
+      ],
+      "roles": [
+        "IA - Career Services Manager",
+        "IA - Career Services User"
+      ],
+      "profiles": [
+        "UMUC Institutional Advancement"
+      ]
+    },
+    {
+      "name": "Asia Division",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Asia Division - Dean's Office",
+          "role": "Asia Division - Dean's Office",
+          "profiles": [
+            "UMUC Overseas Asia Manager",
+            "UMUC Overseas Asia User"
+          ]
+        },
+        {
+          "name": "Asia Division - Enrollment Operations",
+          "role": "Asia Division - Enrollment Operations",
+          "profiles": [
+            "UMUC Overseas Asia Manager"
+          ]
+        },
+        {
+          "name": "Asia Division - Field Advising Guam",
+          "role": "Asia Division - Field Advising Guam",
+          "profiles": [
+            "UMUC Overseas Asia Advisor"
+          ]
+        },
+        {
+          "name": "Asia Division - Field Advising Japan",
+          "role": "Asia Division - Field Advising Japan",
+          "profiles": [
+            "UMUC Overseas Asia Advisor"
+          ]
+        },
+        {
+          "name": "Asia Division - Field Advising Korea",
+          "role": "Asia Division - Field Advising Korea",
+          "profiles": [
+            "UMUC Overseas Asia Advisor"
+          ]
+        },
+        {
+          "name": "Asia Division - Field Advising Overseas",
+          "role": "Asia Division - Field Advising Overseas",
+          "profiles": [
+            "UMUC Overseas Asia Advisor"
+          ]
+        },
+        {
+          "name": "Asia Division - Field Rep Guam",
+          "role": "Asia Division - Field Rep Guam",
+          "profiles": [
+            "UMUC Overseas Asia Advisor"
+          ]
+        },
+        {
+          "name": "Asia Division - Field Rep Japan",
+          "role": "Asia Division - Field Rep Japan",
+          "profiles": [
+            "UMUC Overseas Asia Advisor"
+          ]
+        },
+        {
+          "name": "Asia Division - Field Rep Korea",
+          "role": "Asia Division - Field Rep Korea",
+          "profiles": [
+            "UMUC Overseas Asia Advisor"
+          ]
+        },
+        {
+          "name": "Asia Division - Field Rep Overseas",
+          "role": "Asia Division - Field Rep Overseas",
+          "profiles": [
+            "UMUC Overseas Asia Advisor"
+          ]
+        },
+        {
+          "name": "Asia Division - Marketing & Communications",
+          "role": "Asia Division - Marketing & Communications",
+          "profiles": [
+            "UMUC Overseas Asia Manager"
+          ]
+        },
+        {
+          "name": "Asia Division - Regional Enrollment Manager Guam",
+          "role": "Asia Division - Regional Enrollment Manager Guam",
+          "profiles": [
+            "UMUC Overseas Asia Manager"
+          ]
+        },
+        {
+          "name": "Asia Division - Regional Enrollment Manager Japan",
+          "role": "Asia Division - Regional Enrollment Manager Japan",
+          "profiles": [
+            "UMUC Overseas Asia Manager"
+          ]
+        },
+        {
+          "name": "Asia Division - Regional Enrollment Manager Korea",
+          "role": "Asia Division - Regional Enrollment Manager Korea",
+          "profiles": [
+            "UMUC Overseas Asia Manager"
+          ]
+        },
+        {
+          "name": "Asia Division - Regional Enrollment Manager Overseas",
+          "role": "Asia Division - Regional Enrollment Manager Overseas",
+          "profiles": [
+            "UMUC Overseas Asia Manager"
+          ]
+        },
+        {
+          "name": "Asia Division - Special Programs",
+          "role": "Asia Division - Special Programs",
+          "profiles": [
+            "UMUC Overseas Asia Manager"
+          ]
+        },
+        {
+          "name": "Asia Division - Student Affairs",
+          "role": "Asia Division - Student Affairs",
+          "profiles": [
+            "UMUC Overseas Asia Manager",
+            "UMUC Overseas Asia User"
+          ]
+        },
+        {
+          "name": "Asia Division - Student Affairs DK",
+          "role": "Asia Division - Student Affairs DK",
+          "profiles": [
+            "UMUC Overseas Asia Manager"
+          ]
+        },
+        {
+          "name": "Asia Division - VP",
+          "role": "Asia Division - VP",
+          "profiles": [
+            "UMUC Omni-User",
+            "UMUC Overseas Asia Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "Asia Division - Dean's Office",
+        "Asia Division - Enrollment Operations",
+        "Asia Division - Field Advising Guam",
+        "Asia Division - Field Advising Japan",
+        "Asia Division - Field Advising Korea",
+        "Asia Division - Field Advising Overseas",
+        "Asia Division - Field Rep Guam",
+        "Asia Division - Field Rep Japan",
+        "Asia Division - Field Rep Korea",
+        "Asia Division - Field Rep Overseas",
+        "Asia Division - Marketing & Communications",
+        "Asia Division - Regional Enrollment Manager Guam",
+        "Asia Division - Regional Enrollment Manager Japan",
+        "Asia Division - Regional Enrollment Manager Korea",
+        "Asia Division - Regional Enrollment Manager Overseas",
+        "Asia Division - Special Programs",
+        "Asia Division - Student Affairs",
+        "Asia Division - Student Affairs DK",
+        "Asia Division - VP"
+      ],
+      "profiles": [
+        "UMUC Omni-User",
+        "UMUC Overseas Asia Advisor",
+        "UMUC Overseas Asia Manager",
+        "UMUC Overseas Asia User"
+      ]
+    },
+    {
+      "name": "Client Relationship Management",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "CLS - Manager",
+          "role": "CLS - Manager",
+          "profiles": [
+            "UMGC B2C Manager"
+          ]
+        },
+        {
+          "name": "CLS - User",
+          "role": "CLS - User",
+          "profiles": [
+            "UMGC B2C User"
+          ]
+        }
+      ],
+      "roles": [
+        "CLS - Manager",
+        "CLS - User"
+      ],
+      "profiles": [
+        "UMGC B2C Manager",
+        "UMGC B2C User"
+      ]
+    },
+    {
+      "name": "Commencement Services",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "US-locale - Commencement",
+          "role": "US-locale - Commencement",
+          "profiles": [
+            "UMUC Standard User"
+          ]
+        }
+      ],
+      "roles": [
+        "US-locale - Commencement"
+      ],
+      "profiles": [
+        "UMUC Standard User"
+      ]
+    },
+    {
+      "name": "Corporate Alliances",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "CLS - User",
+          "role": "CLS - User",
+          "profiles": [
+            "UMGC B2B User"
+          ]
+        }
+      ],
+      "roles": [
+        "CLS - User"
+      ],
+      "profiles": [
+        "UMGC B2B User"
+      ]
+    },
+    {
+      "name": "Data and Systems Operations",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "ASQ - Data and Systems Operations",
+          "role": "ASQ - Data and Systems Operations",
+          "profiles": [
+            "UMUC Registrar Manager",
+            "UMUC Registrar User"
+          ]
+        },
+        {
+          "name": "ASQ - Leadership",
+          "role": "ASQ - Leadership",
+          "profiles": [
+            "UMUC Registrar Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "ASQ - Data and Systems Operations",
+        "ASQ - Leadership"
+      ],
+      "profiles": [
+        "UMUC Registrar Manager",
+        "UMUC Registrar User"
+      ]
+    },
+    {
+      "name": "Degree Audit",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "ASQ - Degree Evaluator",
+          "role": "ASQ - Degree Evaluator",
+          "profiles": [
+            "UMUC Registrar User"
+          ]
+        },
+        {
+          "name": "ASQ - Degree Planning Manager",
+          "role": "ASQ - Degree Planning Manager",
+          "profiles": [
+            "UMUC Registrar Manager"
+          ]
+        },
+        {
+          "name": "ASQ - Graduation Review",
+          "role": "ASQ - Graduation Review",
+          "profiles": [
+            "UMGC OOH Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "ASQ - Degree Evaluator",
+        "ASQ - Degree Planning Manager",
+        "ASQ - Graduation Review"
+      ],
+      "profiles": [
+        "UMGC OOH Manager",
+        "UMUC Registrar Manager",
+        "UMUC Registrar User"
+      ]
+    },
+    {
+      "name": "Diversity and Equity",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "CLS - User",
+          "role": "CLS - User",
+          "profiles": [
+            "UMGC B2B User"
+          ]
+        },
+        {
+          "name": "Diversity and Equity Office",
+          "role": "Diversity and Equity Office",
+          "profiles": [
+            "UMGC Standard User"
+          ]
+        },
+        {
+          "name": "Student Affairs - Learner Access Services - Accessibility Services",
+          "role": "Student Affairs - Learner Access Services - Accessibility Services",
+          "profiles": [
+            "UMUC Standard Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "CLS - User",
+        "Diversity and Equity Office",
+        "Student Affairs - Learner Access Services - Accessibility Services"
+      ],
+      "profiles": [
+        "UMGC B2B User",
+        "UMGC Standard User",
+        "UMUC Standard Manager"
+      ]
+    },
+    {
+      "name": "Enrollment Operations",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMUC SEM Manager - View All"
+          ]
+        }
+      ],
+      "roles": [
+        "One Global University"
+      ],
+      "profiles": [
+        "UMUC SEM Manager - View All"
+      ]
+    },
+    {
+      "name": "Europe Division",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Diversity and Equity Office",
+          "role": "Diversity and Equity Office",
+          "profiles": [
+            "UMGC Overseas Europe Manager"
+          ]
+        },
+        {
+          "name": "Europe Division - Field Rep",
+          "role": "Europe Division - Field Rep",
+          "profiles": [
+            "UMGC Overseas Europe Advisor",
+            "UMGC Overseas Europe Manager"
+          ]
+        },
+        {
+          "name": "Europe Division - Regional Enrollment Manager",
+          "role": "Europe Division - Regional Enrollment Manager",
+          "profiles": [
+            "UMGC Overseas Europe Manager"
+          ]
+        },
+        {
+          "name": "Europe Division - Field Rep DE / UK",
+          "role": "Europe Division - Field Rep DE / UK",
+          "profiles": [
+            "UMGC Overseas Europe Advisor"
+          ]
+        },
+        {
+          "name": "Europe Division - Enrollment Operations",
+          "role": "Europe Division - Enrollment Operations",
+          "profiles": [
+            "UMGC Overseas Europe Manager"
+          ]
+        },
+        {
+          "name": "Europe Division - Field Advisor",
+          "role": "Europe Division - Field Advisor",
+          "profiles": [
+            "UMGC Overseas Europe Advisor"
+          ]
+        },
+        {
+          "name": "Europe Division - Field Rep DE 1",
+          "role": "Europe Division - Field Rep DE 1",
+          "profiles": [
+            "UMGC Overseas Europe Advisor"
+          ]
+        },
+        {
+          "name": "Europe Division - Field Rep DE 2",
+          "role": "Europe Division - Field Rep DE 2",
+          "profiles": [
+            "UMGC Overseas Europe Advisor"
+          ]
+        },
+        {
+          "name": "Europe Division - Field Rep MUD",
+          "role": "Europe Division - Field Rep MUD",
+          "profiles": [
+            "UMGC Overseas Europe Advisor"
+          ]
+        },
+        {
+          "name": "Europe Division - Graduate Programs",
+          "role": "Europe Division - Graduate Programs",
+          "profiles": [
+            "UMGC Overseas Europe Manager"
+          ]
+        },
+        {
+          "name": "Europe Division - Regional Enrollment Manager DE 1",
+          "role": "Europe Division - Regional Enrollment Manager DE 1",
+          "profiles": [
+            "UMGC Overseas Europe Manager"
+          ]
+        },
+        {
+          "name": "Europe Division - Regional Enrollment Manager DE 2",
+          "role": "Europe Division - Regional Enrollment Manager DE 2",
+          "profiles": [
+            "UMGC Overseas Europe Manager"
+          ]
+        },
+        {
+          "name": "Europe Division - Regional Enrollment Manager DE 3",
+          "role": "Europe Division - Regional Enrollment Manager DE 3",
+          "profiles": [
+            "UMGC Overseas Europe Manager"
+          ]
+        },
+        {
+          "name": "Europe Division - Regional Enrollment Manager DE 3-SPM",
+          "role": "Europe Division - Regional Enrollment Manager DE 3-SPM",
+          "profiles": [
+            "UMGC Overseas Europe Manager"
+          ]
+        },
+        {
+          "name": "Europe Division - Regional Enrollment Manager MUD",
+          "role": "Europe Division - Regional Enrollment Manager MUD",
+          "profiles": [
+            "UMGC Overseas Europe Manager"
+          ]
+        },
+        {
+          "name": "Europe Division - Student Affairs",
+          "role": "Europe Division - Student Affairs",
+          "profiles": [
+            "UMGC Overseas Europe Manager",
+            "UMGC Overseas Europe User"
+          ]
+        },
+        {
+          "name": "Europe Division - VP",
+          "role": "Europe Division - VP",
+          "profiles": [
+            "UMGC Overseas Europe Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "Diversity and Equity Office",
+        "Europe Division - Field Rep",
+        "Europe Division - Regional Enrollment Manager",
+        "Europe Division - Field Rep DE / UK",
+        "Europe Division - Enrollment Operations",
+        "Europe Division - Field Advisor",
+        "Europe Division - Field Rep DE 1",
+        "Europe Division - Field Rep DE 2",
+        "Europe Division - Field Rep MUD",
+        "Europe Division - Graduate Programs",
+        "Europe Division - Regional Enrollment Manager DE 1",
+        "Europe Division - Regional Enrollment Manager DE 2",
+        "Europe Division - Regional Enrollment Manager DE 3",
+        "Europe Division - Regional Enrollment Manager DE 3-SPM",
+        "Europe Division - Regional Enrollment Manager MUD",
+        "Europe Division - Student Affairs",
+        "Europe Division - VP"
+      ],
+      "profiles": [
+        "UMGC Overseas Europe Advisor",
+        "UMGC Overseas Europe Manager",
+        "UMGC Overseas Europe User"
+      ]
+    },
+    {
+      "name": "Faculty Experience & Global Scheduling (FAST)",
+      "primary_contacts": [
+        {
+          "name": "Missy Phillips",
+          "role": "AVP, Faculty Experience & Global Scheduling",
+          "email": null
+        },
+        {
+          "name": "Kathy Im",
+          "role": "Senior Director, Faculty Life Cycle",
+          "email": null
+        },
+        {
+          "name": "Mark Freeman-Price",
+          "role": "Director, Faculty Learning & Professional Development",
+          "email": null
+        },
+        {
+          "name": "Matthew Burke",
+          "role": "Director, Forecasting & Global Scheduling",
+          "email": null
+        },
+        {
+          "name": "Susan Morris",
+          "role": "Director, Faculty Operations & Support",
+          "email": null
+        }
+      ],
+      "personas": [],
+      "roles": [],
+      "profiles": []
+    },
+    {
+      "name": "Financial Aid",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "FA - Director - Federal Programs & QDM",
+          "role": "FA - Director - Federal Programs & QDM",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - Director - QDM Training",
+          "role": "FA - Director - QDM Training",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - Director - Scholarships",
+          "role": "FA - Director - Scholarships",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - Director - Student Prevention",
+          "role": "FA - Director - Student Prevention",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - DMS Associate",
+          "role": "FA - DMS Associate",
+          "profiles": [
+            "UMGC FA Advisor"
+          ]
+        },
+        {
+          "name": "FA - Europe Counselor",
+          "role": "FA - Europe Counselor",
+          "profiles": [
+            "UMGC FA Advisor"
+          ]
+        },
+        {
+          "name": "FA - FA Accountant",
+          "role": "FA - FA Accountant",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - FA Analyst",
+          "role": "FA - FA Analyst",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - FA Counselors",
+          "role": "FA - FA Counselors",
+          "profiles": [
+            "UMGC FA Advisor"
+          ]
+        },
+        {
+          "name": "FA - Fraud Rep",
+          "role": "FA - Fraud Rep",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - Management - DMS",
+          "role": "FA - Management - DMS",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - Management - QDM",
+          "role": "FA - Management - QDM",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - Management - Scholarships",
+          "role": "FA - Management - Scholarships",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - QDM Training Associate",
+          "role": "FA - QDM Training Associate",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - Service Management",
+          "role": "FA - Service Management",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - Student Services Director",
+          "role": "FA - Student Services Director",
+          "profiles": [
+            "UMGC FA Manager"
+          ]
+        },
+        {
+          "name": "FA - Student Services Manager",
+          "role": "FA - Student Services Manager",
+          "profiles": [
+            "UMGC FA Advisor",
+            "UMGC FA Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "One Global University",
+        "FA - Director - Federal Programs & QDM",
+        "FA - Director - QDM Training",
+        "FA - Director - Scholarships",
+        "FA - Director - Student Prevention",
+        "FA - DMS Associate",
+        "FA - Europe Counselor",
+        "FA - FA Accountant",
+        "FA - FA Analyst",
+        "FA - FA Counselors",
+        "FA - Fraud Rep",
+        "FA - Management - DMS",
+        "FA - Management - QDM",
+        "FA - Management - Scholarships",
+        "FA - QDM Training Associate",
+        "FA - Service Management",
+        "FA - Student Services Director",
+        "FA - Student Services Manager"
+      ],
+      "profiles": [
+        "UMGC FA Advisor",
+        "UMGC FA Manager",
+        "UMGC Omni-User"
+      ]
+    },
+    {
+      "name": "Financial Solutions",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Financial Solutions - Trainee",
+          "role": "Financial Solutions - Trainee",
+          "profiles": [
+            "UMGC Tuition Planning Staff"
+          ]
+        },
+        {
+          "name": "Financial Solutions Advisor",
+          "role": "Financial Solutions Advisor",
+          "profiles": [
+            "UMGC Tuition Planning Staff"
+          ]
+        },
+        {
+          "name": "Financial Solutions Director",
+          "role": "Financial Solutions Director",
+          "profiles": [
+            "UMGC Tuition Planning Manager"
+          ]
+        },
+        {
+          "name": "Financial Solutions Finance - Associate and Associate Director",
+          "role": "Financial Solutions Finance - Associate and Associate Director",
+          "profiles": [
+            "UMGC Tuition Planning Manager"
+          ]
+        },
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMGC Tuition Planning Manager"
+          ]
+        },
+        {
+          "name": "Senior Financial Solutions Advisor",
+          "role": "Senior Financial Solutions Advisor",
+          "profiles": [
+            "UMGC Tuition Planning Staff"
+          ]
+        }
+      ],
+      "roles": [
+        "Financial Solutions - Trainee",
+        "Financial Solutions Advisor",
+        "Financial Solutions Director",
+        "Financial Solutions Finance - Associate and Associate Director",
+        "One Global University",
+        "Senior Financial Solutions Advisor"
+      ],
+      "profiles": [
+        "UMGC Tuition Planning Manager",
+        "UMGC Tuition Planning Staff"
+      ]
+    },
+    {
+      "name": "First Term Experience",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Student Affairs - First Term Experience and Tutoring Services",
+          "role": "Student Affairs - First Term Experience and Tutoring Services",
+          "profiles": [
+            "UMUC Standard Manager",
+            "UMUC Standard User"
+          ]
+        },
+        {
+          "name": "Student Affairs - Leadership",
+          "role": "Student Affairs - Leadership",
+          "profiles": [
+            "UMUC Standard Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "Student Affairs - First Term Experience and Tutoring Services",
+        "Student Affairs - Leadership"
+      ],
+      "profiles": [
+        "UMUC Standard Manager",
+        "UMUC Standard User"
+      ]
+    },
+    {
+      "name": "Graduation Services",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "ASQ - Graduation Review",
+          "role": "ASQ - Graduation Review",
+          "profiles": [
+            "UMGC OOH Manager",
+            "UMUC Registrar User"
+          ]
+        },
+        {
+          "name": "ASQ - Graduation Services",
+          "role": "ASQ - Graduation Services",
+          "profiles": [
+            "UMUC Registrar User"
+          ]
+        },
+        {
+          "name": "ASQ - Graduation Services Manager",
+          "role": "ASQ - Graduation Services Manager",
+          "profiles": [
+            "UMUC Registrar Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "ASQ - Graduation Review",
+        "ASQ - Graduation Services",
+        "ASQ - Graduation Services Manager"
+      ],
+      "profiles": [
+        "UMGC OOH Manager",
+        "UMUC Registrar Manager",
+        "UMUC Registrar User"
+      ]
+    },
+    {
+      "name": "Helico",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMGC Omni-User",
+            "UMGC SEM Manager - View All"
+          ]
+        }
+      ],
+      "roles": [
+        "One Global University"
+      ],
+      "profiles": [
+        "UMGC Omni-User",
+        "UMGC SEM Manager - View All"
+      ]
+    },
+    {
+      "name": "Institutional Advancement",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "IA - Advancement Services Rep",
+          "role": "IA - Advancement Services Rep",
+          "profiles": [
+            "UMUC Institutional Advancement"
+          ]
+        },
+        {
+          "name": "IA - Alumni Relations Manager",
+          "role": "IA - Alumni Relations Manager",
+          "profiles": [
+            "UMUC Institutional Advancement"
+          ]
+        },
+        {
+          "name": "IA - Alumni Relations User",
+          "role": "IA - Alumni Relations User",
+          "profiles": [
+            "UMUC Institutional Advancement"
+          ]
+        },
+        {
+          "name": "IA - Development Rep",
+          "role": "IA - Development Rep",
+          "profiles": [
+            "UMUC Institutional Advancement"
+          ]
+        },
+        {
+          "name": "IA - Development User",
+          "role": "IA - Development User",
+          "profiles": [
+            "UMUC Institutional Advancement"
+          ]
+        }
+      ],
+      "roles": [
+        "IA - Advancement Services Rep",
+        "IA - Alumni Relations Manager",
+        "IA - Alumni Relations User",
+        "IA - Development Rep",
+        "IA - Development User"
+      ],
+      "profiles": [
+        "UMUC Institutional Advancement"
+      ]
+    },
+    {
+      "name": "Learners Academic Support",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "US-locale - Instructional Services and Support",
+          "role": "US-locale - Instructional Services and Support",
+          "profiles": [
+            "UMUC Standard IT User",
+            "UMUC Standard User"
+          ]
+        }
+      ],
+      "roles": [
+        "US-locale - Instructional Services and Support"
+      ],
+      "profiles": [
+        "UMUC Standard IT User",
+        "UMUC Standard User"
+      ]
+    },
+    {
+      "name": "Marketing",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Digital Marketing Rep",
+          "role": "Digital Marketing Rep",
+          "profiles": [
+            "UMGC Marketing Manager"
+          ]
+        },
+        {
+          "name": "Digital Marketing User",
+          "role": "Digital Marketing User",
+          "profiles": [
+            "UMGC Marketing General User"
+          ]
+        },
+        {
+          "name": "Marketing - VP",
+          "role": "Marketing - VP",
+          "profiles": [
+            "UMGC Marketing Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "Digital Marketing Rep",
+        "Digital Marketing User",
+        "Marketing - VP"
+      ],
+      "profiles": [
+        "UMGC Marketing General User",
+        "UMGC Marketing Manager"
+      ]
+    },
+    {
+      "name": "Office of Student Accounts",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - Acct Rep",
+          "role": "OSA - Acct Rep",
+          "profiles": [
+            "UMUC SA Manager",
+            "UMUC SA Team Lead"
+          ]
+        },
+        {
+          "name": "OSA - Acct Sup",
+          "role": "OSA - Acct Sup",
+          "profiles": [
+            "UMUC SA Manager",
+            "UMUC SA Specialist"
+          ]
+        },
+        {
+          "name": "OSA - Asia/Europe Dir Cust",
+          "role": "OSA - Asia/Europe Dir Cust",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - Asia/Europe Dir Finance",
+          "role": "OSA - Asia/Europe Dir Finance",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - Asia/Europe Dir Sys",
+          "role": "OSA - Asia/Europe Dir Sys",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - Asia/Europe Dir TPMI",
+          "role": "OSA - Asia/Europe Dir TPMI",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - AVP",
+          "role": "OSA - AVP",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - Cash Lead",
+          "role": "OSA - Cash Lead",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - Cash Rep",
+          "role": "OSA - Cash Rep",
+          "profiles": [
+            "UMUC SA Specialist"
+          ]
+        },
+        {
+          "name": "OSA - Cash Sup",
+          "role": "OSA - Cash Sup",
+          "profiles": [
+            "UMUC SA Specialist"
+          ]
+        },
+        {
+          "name": "OSA - Coll Rep 1",
+          "role": "OSA - Coll Rep 1",
+          "profiles": [
+            "UMUC SA Specialist"
+          ]
+        },
+        {
+          "name": "OSA - Coll Rep 2",
+          "role": "OSA - Coll Rep 2",
+          "profiles": [
+            "UMUC SA Specialist"
+          ]
+        },
+        {
+          "name": "OSA - Coll/MGR",
+          "role": "OSA - Coll/MGR",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - Comm Rep",
+          "role": "OSA - Comm Rep",
+          "profiles": [
+            "UMUC SA Manager",
+            "UMUC SA Specialist"
+          ]
+        },
+        {
+          "name": "OSA - Comm Sup",
+          "role": "OSA - Comm Sup",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - CS Lead",
+          "role": "OSA - CS Lead",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - Cust Svc - CS",
+          "role": "OSA - Cust Svc - CS",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - Europe",
+          "role": "OSA - Europe",
+          "profiles": [
+            "UMUC SA Manager",
+            "UMUC SA Team Lead"
+          ]
+        },
+        {
+          "name": "OSA - QA",
+          "role": "OSA - QA",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - Sys Rep",
+          "role": "OSA - Sys Rep",
+          "profiles": [
+            "UMUC SA Specialist"
+          ]
+        },
+        {
+          "name": "OSA - TP IP Rep",
+          "role": "OSA - TP IP Rep",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - TP Non-Mil Rep",
+          "role": "OSA - TP Non-Mil Rep",
+          "profiles": [
+            "UMUC SA Advisor",
+            "UMUC SA Specialist"
+          ]
+        },
+        {
+          "name": "OSA - TP SA/LD RA",
+          "role": "OSA - TP SA/LD RA",
+          "profiles": [
+            "UMUC SA Specialist",
+            "UMUC SA Team Lead"
+          ]
+        },
+        {
+          "name": "OSA - TP SA/LD Non-Mil",
+          "role": "OSA - TP SA/LD Non-Mil",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        },
+        {
+          "name": "OSA - TP VA Rep",
+          "role": "OSA - TP VA Rep",
+          "profiles": [
+            "UMUC SA Specialist"
+          ]
+        },
+        {
+          "name": "OSA - Vendor Rel/AD",
+          "role": "OSA - Vendor Rel/AD",
+          "profiles": [
+            "UMUC SA Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "One Global University",
+        "OSA - Acct Rep",
+        "OSA - Acct Sup",
+        "OSA - Asia/Europe Dir Cust",
+        "OSA - Asia/Europe Dir Finance",
+        "OSA - Asia/Europe Dir Sys",
+        "OSA - Asia/Europe Dir TPMI",
+        "OSA - AVP",
+        "OSA - Cash Lead",
+        "OSA - Cash Rep",
+        "OSA - Cash Sup",
+        "OSA - Coll Rep 1",
+        "OSA - Coll Rep 2",
+        "OSA - Coll/MGR",
+        "OSA - Comm Rep",
+        "OSA - Comm Sup",
+        "OSA - CS Lead",
+        "OSA - Cust Svc - CS",
+        "OSA - Europe",
+        "OSA - QA",
+        "OSA - Sys Rep",
+        "OSA - TP IP Rep",
+        "OSA - TP Non-Mil Rep",
+        "OSA - TP SA/LD RA",
+        "OSA - TP SA/LD Non-Mil",
+        "OSA - TP VA Rep",
+        "OSA - Vendor Rel/AD"
+      ],
+      "profiles": [
+        "UMUC SA Advisor",
+        "UMUC SA Manager",
+        "UMUC SA Specialist",
+        "UMUC SA Team Lead"
+      ]
+    },
+    {
+      "name": "Other",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Other",
+          "role": "Other",
+          "profiles": [
+            "UMUC Standard Manager",
+            "Web to Case Profile 139071386668",
+            "Read Only",
+            "Integration System Admin",
+            "External Integrations",
+            "Integration Account",
+            "Chatbot Free User",
+            "Emergency Fund Profile",
+            "System Administrator",
+            "umuchdoto Profile",
+            "Minimum Access - API Only Integrations",
+            "UMUC Standard User",
+            "PGB Profile 139071386668"
+          ]
+        }
+      ],
+      "roles": [
+        "Other"
+      ],
+      "profiles": [
+        "Chatbot Free User",
+        "Emergency Fund Profile",
+        "External Integrations",
+        "Integration Account",
+        "Integration System Admin",
+        "Minimum Access - API Only Integrations",
+        "PGB Profile 139071386668",
+        "Read Only",
+        "System Administrator",
+        "UMUC Standard Manager",
+        "UMUC Standard User",
+        "Web to Case Profile 139071386668",
+        "umuchdoto Profile"
+      ]
+    },
+    {
+      "name": "Pathways",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "ASQ - Data and Systems Operations",
+          "role": "ASQ - Data and Systems Operations",
+          "profiles": [
+            "UMUC Registrar Manager",
+            "UMUC Registrar User"
+          ]
+        },
+        {
+          "name": "ASQ - Leadership",
+          "role": "ASQ - Leadership",
+          "profiles": [
+            "UMUC Registrar Manager"
+          ]
+        },
+        {
+          "name": "ASQ - Scheduling",
+          "role": "ASQ - Scheduling",
+          "profiles": [
+            "UMUC Registrar User"
+          ]
+        },
+        {
+          "name": "ASQ - Student Records",
+          "role": "ASQ - Student Records",
+          "profiles": [
+            "UMUC Registrar User"
+          ]
+        },
+        {
+          "name": "DCAD - Pathways",
+          "role": "DCAD - Pathways",
+          "profiles": [
+            "UMUC Registrar Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "ASQ - Data and Systems Operations",
+        "ASQ - Leadership",
+        "ASQ - Scheduling",
+        "ASQ - Student Records",
+        "DCAD - Pathways"
+      ],
+      "profiles": [
+        "UMUC Registrar Manager",
+        "UMUC Registrar User"
+      ]
+    },
+    {
+      "name": "Registrar",
+      "primary_contacts": [
+        {
+          "name": "Insiya Bream",
+          "role": "Registrar & Associate Vice President",
+          "email": null
+        },
+        {
+          "name": "Angela Thompson",
+          "role": "Senior Director, Registrar Operations",
+          "email": null
+        },
+        {
+          "name": "Carolene Curtis",
+          "role": "Senior Director, Student Records and Evaluation",
+          "email": null
+        },
+        {
+          "name": "Kyara Porter",
+          "role": "Director, Registrar Operations",
+          "email": null
+        }
+      ],
+      "personas": [
+        {
+          "name": "ASQ - Leadership",
+          "role": "ASQ - Leadership",
+          "profiles": [
+            "UMUC Registrar Manager"
+          ]
+        },
+        {
+          "name": "ASQ - Scheduling",
+          "role": "ASQ - Scheduling",
+          "profiles": [
+            "UMUC Registrar User"
+          ]
+        },
+        {
+          "name": "ASQ - Student Records",
+          "role": "ASQ - Student Records",
+          "profiles": [
+            "UMUC Registrar User"
+          ]
+        }
+      ],
+      "roles": [
+        "ASQ - Leadership",
+        "ASQ - Scheduling",
+        "ASQ - Student Records"
+      ],
+      "profiles": [
+        "UMUC Registrar Manager",
+        "UMUC Registrar User"
+      ]
+    },
+    {
+      "name": "SEM Support Operations",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMGC SEM Manager - View All",
+            "UMGC Tuition Planning Manager"
+          ]
+        },
+        {
+          "name": "SEM - Director - SOO",
+          "role": "SEM - Director - SOO",
+          "profiles": [
+            "UMGC SEM Manager - View All"
+          ]
+        }
+      ],
+      "roles": [
+        "One Global University",
+        "SEM - Director - SOO"
+      ],
+      "profiles": [
+        "UMGC SEM Manager - View All",
+        "UMGC Tuition Planning Manager"
+      ]
+    },
+    {
+      "name": "School of Business (BUS)",
+      "primary_contacts": [
+        {
+          "name": "Calvin Nobles",
+          "role": "Portfolio Vice President & Dean",
+          "email": null
+        },
+        {
+          "name": "S. Bhaskar",
+          "role": "Senior Associate Dean of Strategy & Operations",
+          "email": null
+        },
+        {
+          "name": "Kimberley Doyle",
+          "role": "Executive Administrative Assistant",
+          "email": null
+        },
+        {
+          "name": "Chandra Bajracharya",
+          "role": "Assistant Dean, Portfolio Life Cycle & Student Success",
+          "email": null
+        }
+      ],
+      "personas": [],
+      "roles": [],
+      "profiles": []
+    },
+    {
+      "name": "School of Cybersecurity and Information Technology (CIT)",
+      "primary_contacts": [
+        {
+          "name": "Calvin Nobles",
+          "role": "Portfolio Vice President & Dean",
+          "email": null
+        },
+        {
+          "name": "Rand Hansen",
+          "role": "Senior Associate Dean of Strategy & Operations",
+          "email": null
+        },
+        {
+          "name": "Jennifer Thompson",
+          "role": "Associate Dean, Portfolio Planning & Evaluation",
+          "email": null
+        },
+        {
+          "name": "Debra McLaughlin",
+          "role": "Assistant Dean, Portfolio Life Cycle & Student Success",
+          "email": null
+        }
+      ],
+      "personas": [],
+      "roles": [],
+      "profiles": []
+    },
+    {
+      "name": "School of Integrative and Professional Studies (IPS)",
+      "primary_contacts": [
+        {
+          "name": "Lauren Segura",
+          "role": "Portfolio Vice President & Dean",
+          "email": null
+        },
+        {
+          "name": "Rand Hansen",
+          "role": "Senior Associate Dean of Strategy & Operations",
+          "email": null
+        },
+        {
+          "name": "Jennifer Thompson",
+          "role": "Associate Dean, Portfolio Planning & Evaluation",
+          "email": null
+        },
+        {
+          "name": "Debra McLaughlin",
+          "role": "Assistant Dean, Portfolio Life Cycle & Student Success",
+          "email": null
+        }
+      ],
+      "personas": [],
+      "roles": [],
+      "profiles": []
+    },
+    {
+      "name": "Service Center",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "SC - Admin",
+          "role": "SC - Admin",
+          "profiles": [
+            "UMGC SC Manager"
+          ]
+        },
+        {
+          "name": "SC - Core IT Agent",
+          "role": "SC - Core IT Agent",
+          "profiles": [
+            "UMGC SC Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "SC - Admin",
+        "SC - Core IT Agent"
+      ],
+      "profiles": [
+        "UMGC SC Manager"
+      ]
+    },
+    {
+      "name": "Service Desk",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Service Desk - Team Lead",
+          "role": "Service Desk - Team Lead",
+          "profiles": [
+            "UMGC IT Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "Service Desk - Team Lead"
+      ],
+      "profiles": [
+        "UMGC IT Manager"
+      ]
+    },
+    {
+      "name": "Stateside Military Ops",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Assistant Director - Outreach",
+          "role": "SMD - Assistant Director - Outreach",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Assistant Director - Eastern Region",
+          "role": "SMD - Assistant Director - Eastern Region",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Assistant Director - Portals",
+          "role": "SMD - Assistant Director - Portals",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Assistant Director - VCD",
+          "role": "SMD - Assistant Director - VCD",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Assistant Director - VRC",
+          "role": "SMD - Assistant Director - VRC",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Assistant Director - Western Region",
+          "role": "SMD - Assistant Director - Western Region",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - AVP/Director Support",
+          "role": "SMD - AVP/Director Support",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Regional Director",
+          "role": "SMD - Regional Director",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Staff - Central Region",
+          "role": "SMD - Staff - Central Region",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Staff - Eastern Region",
+          "role": "SMD - Staff - Eastern Region",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Staff - Outreach",
+          "role": "SMD - Staff - Outreach",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Staff - Programs",
+          "role": "SMD - Staff - Programs",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Staff - SOC",
+          "role": "SMD - Staff - SOC",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Staff - VCD",
+          "role": "SMD - Staff - VCD",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Staff - VRC",
+          "role": "SMD - Staff - VRC",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - Staff - Western Region",
+          "role": "SMD - Staff - Western Region",
+          "profiles": [
+            "UMGC B2C Manager",
+            "UMGC Omni-User"
+          ]
+        },
+        {
+          "name": "SMD - VP",
+          "role": "SMD - VP",
+          "profiles": [
+            "UMGC Omni-User"
+          ]
+        }
+      ],
+      "roles": [
+        "One Global University",
+        "SMD - Assistant Director - Outreach",
+        "SMD - Assistant Director - Eastern Region",
+        "SMD - Assistant Director - Portals",
+        "SMD - Assistant Director - VCD",
+        "SMD - Assistant Director - VRC",
+        "SMD - Assistant Director - Western Region",
+        "SMD - AVP/Director Support",
+        "SMD - Regional Director",
+        "SMD - Staff - Central Region",
+        "SMD - Staff - Eastern Region",
+        "SMD - Staff - Outreach",
+        "SMD - Staff - Programs",
+        "SMD - Staff - SOC",
+        "SMD - Staff - VCD",
+        "SMD - Staff - VRC",
+        "SMD - Staff - Western Region",
+        "SMD - VP"
+      ],
+      "profiles": [
+        "UMGC B2C Manager",
+        "UMGC Omni-User"
+      ]
+    },
+    {
+      "name": "Student Accessibility Services",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Student Affairs - Learner Access Services - Accessibility Services",
+          "role": "Student Affairs - Learner Access Services - Accessibility Services",
+          "profiles": [
+            "UMUC Standard Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "Student Affairs - Learner Access Services - Accessibility Services"
+      ],
+      "profiles": [
+        "UMUC Standard Manager"
+      ]
+    },
+    {
+      "name": "Student Advising",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMGC SEM Manager - View All"
+          ]
+        },
+        {
+          "name": "SEM - Director - SAD",
+          "role": "SEM - Director - SAD",
+          "profiles": [
+            "UMGC SEM Manager - View All"
+          ]
+        },
+        {
+          "name": "SEM - SAD - Command Center",
+          "role": "SEM - SAD - Command Center",
+          "profiles": [
+            "UMGC SEM Manager",
+            "UMGC SEM Team Lead"
+          ]
+        },
+        {
+          "name": "SEM - SAD - Inbound Crossroad",
+          "role": "SEM - SAD - Inbound Crossroad",
+          "profiles": [
+            "UMGC SEM Manager"
+          ]
+        },
+        {
+          "name": "SEM - SAD - Outbound Crossroad",
+          "role": "SEM - SAD - Outbound Crossroad",
+          "profiles": [
+            "UMGC SEM Advisor"
+          ]
+        },
+        {
+          "name": "SEM - SAD - Success Coach",
+          "role": "SEM - SAD - Success Coach",
+          "profiles": [
+            "UMGC SEM Advisor"
+          ]
+        },
+        {
+          "name": "SEM - SAD - Success Coach - ChatSMS",
+          "role": "SEM - SAD - Success Coach - ChatSMS",
+          "profiles": [
+            "UMGC SEM Advisor"
+          ]
+        },
+        {
+          "name": "SEM - SAD - Success Coach - Exclude",
+          "role": "SEM - SAD - Success Coach - Exclude",
+          "profiles": [
+            "UMGC SEM Advisor"
+          ]
+        },
+        {
+          "name": "SEM - SAD - Success Coach - Engage",
+          "role": "SEM - SAD - Success Coach - Engage",
+          "profiles": [
+            "UMGC SEM Advisor"
+          ]
+        },
+        {
+          "name": "SEM - SAD - Success Coach I A",
+          "role": "SEM - SAD - Success Coach I A",
+          "profiles": [
+            "UMGC SEM Advisor"
+          ]
+        },
+        {
+          "name": "SEM - SAD - Success Coach I B",
+          "role": "SEM - SAD - Success Coach I B",
+          "profiles": [
+            "UMGC SEM Advisor"
+          ]
+        },
+        {
+          "name": "SEM - SAD - Trainee",
+          "role": "SEM - SAD - Trainee",
+          "profiles": [
+            "UMGC SEM Advisor"
+          ]
+        }
+      ],
+      "roles": [
+        "One Global University",
+        "SEM - Director - SAD",
+        "SEM - SAD - Command Center",
+        "SEM - SAD - Inbound Crossroad",
+        "SEM - SAD - Outbound Crossroad",
+        "SEM - SAD - Success Coach",
+        "SEM - SAD - Success Coach - ChatSMS",
+        "SEM - SAD - Success Coach - Exclude",
+        "SEM - SAD - Success Coach - Engage",
+        "SEM - SAD - Success Coach I A",
+        "SEM - SAD - Success Coach I B",
+        "SEM - SAD - Trainee"
+      ],
+      "profiles": [
+        "UMGC SEM Advisor",
+        "UMGC SEM Manager",
+        "UMGC SEM Manager - View All",
+        "UMGC SEM Team Lead"
+      ]
+    },
+    {
+      "name": "Student Affairs",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMGC SEM Manager - View All"
+          ]
+        },
+        {
+          "name": "Student Affairs - Library Services",
+          "role": "Student Affairs - Library Services",
+          "profiles": [
+            "UMUC Standard User"
+          ]
+        }
+      ],
+      "roles": [
+        "One Global University",
+        "Student Affairs - Library Services"
+      ],
+      "profiles": [
+        "UMGC SEM Manager - View All",
+        "UMUC Standard User"
+      ]
+    },
+    {
+      "name": "Student Conduct",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Student Affairs - Leadership",
+          "role": "Student Affairs - Leadership",
+          "profiles": [
+            "UMUC SEM Advisor"
+          ]
+        }
+      ],
+      "roles": [
+        "Student Affairs - Leadership"
+      ],
+      "profiles": [
+        "UMUC SEM Advisor"
+      ]
+    },
+    {
+      "name": "Student Engagement",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Student Affairs - Retention Initiatives",
+          "role": "Student Affairs - Retention Initiatives",
+          "profiles": [
+            "UMUC SEM Advisor"
+          ]
+        }
+      ],
+      "roles": [
+        "Student Affairs - Retention Initiatives"
+      ],
+      "profiles": [
+        "UMUC SEM Advisor"
+      ]
+    },
+    {
+      "name": "Student Records",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "ASQ - Student Records",
+          "role": "ASQ - Student Records",
+          "profiles": [
+            "UMUC Registrar User"
+          ]
+        },
+        {
+          "name": "ASQ - Student Records Manager",
+          "role": "ASQ - Student Records Manager",
+          "profiles": [
+            "UMUC Registrar Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "ASQ - Student Records",
+        "ASQ - Student Records Manager"
+      ],
+      "profiles": [
+        "UMUC Registrar Manager",
+        "UMUC Registrar User"
+      ]
+    },
+    {
+      "name": "Student Resolution",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "Student Affairs - Leadership",
+          "role": "Student Affairs - Leadership",
+          "profiles": [
+            "UMUC SEM Manager",
+            "UMUC SEM Manager - View All"
+          ]
+        },
+        {
+          "name": "Student Affairs - SRIA",
+          "role": "Student Affairs - SRIA",
+          "profiles": [
+            "UMUC SEM Advisor"
+          ]
+        }
+      ],
+      "roles": [
+        "Student Affairs - Leadership",
+        "Student Affairs - SRIA"
+      ],
+      "profiles": [
+        "UMUC SEM Advisor",
+        "UMUC SEM Manager",
+        "UMUC SEM Manager - View All"
+      ]
+    },
+    {
+      "name": "Support Operations",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "One Global University",
+          "role": "One Global University",
+          "profiles": [
+            "UMGC SEM Manager - View All"
+          ]
+        }
+      ],
+      "roles": [
+        "One Global University"
+      ],
+      "profiles": [
+        "UMGC SEM Manager - View All"
+      ]
+    },
+    {
+      "name": "Virtual Labs",
+      "primary_contacts": [],
+      "personas": [
+        {
+          "name": "LAS - Lab Assistants",
+          "role": "LAS - Lab Assistants",
+          "profiles": [
+            "UMUC Standard IT User"
+          ]
+        },
+        {
+          "name": "LAS - Manager (Learners Academic Support)",
+          "role": "LAS - Manager (Learners Academic Support)",
+          "profiles": [
+            "UMUC Standard IT Manager"
+          ]
+        },
+        {
+          "name": "LAS - Technical Assistants",
+          "role": "LAS - Technical Assistants",
+          "profiles": [
+            "UMUC Standard IT User"
+          ]
+        },
+        {
+          "name": "LAS - Leadership",
+          "role": "LAS - Leadership",
+          "profiles": [
+            "UMUC Standard IT Manager"
+          ]
+        }
+      ],
+      "roles": [
+        "LAS - Lab Assistants",
+        "LAS - Manager (Learners Academic Support)",
+        "LAS - Technical Assistants",
+        "LAS - Leadership"
+      ],
+      "profiles": [
+        "UMUC Standard IT Manager",
+        "UMUC Standard IT User"
+      ]
+    }
+  ]
+}

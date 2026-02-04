@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Templatized Workflow Schema",
+  "description": "Schema for validating templatized-workflow.json configuration",
+  "type": "object",
+  "required": ["process_name", "version", "phases", "execution_order"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "process_name": {
+      "type": "string",
+      "description": "Name of the workflow process"
+    },
+    "version": {
+      "type": "string",
+      "description": "Workflow version"
+    },
+    "phases": {
+      "type": "array",
+      "description": "Workflow phases in execution order",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "order", "artifact_path", "prompt_file"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": ["research", "grooming", "solutioning", "wiki", "finalization"]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number",
+            "minimum": 1
+          },
+          "prerequisites": {
+            "type": "array",
+            "description": "Prerequisites from previous phases",
+            "items": {
+              "type": "object",
+              "required": ["phase", "required_artifacts"],
+              "properties": {
+                "phase": {
+                  "type": "string",
+                  "enum": ["research", "grooming", "solutioning", "wiki", "finalization"]
+                },
+                "required_artifacts": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
+            }
+          },
+          "sub_phases": {
+            "type": "array",
+            "description": "Sub-phases for research phase",
+            "items": {
+              "type": "string",
+              "enum": ["ado", "wiki", "salesforce", "code", "web", "context7", "similar_workitems"]
+            }
+          },
+          "artifact_path": {
+            "type": "string",
+            "description": "Template variable for artifact path"
+          },
+          "required_artifacts": {
+            "type": "array",
+            "description": "Required artifact file paths (with template variables)",
+            "items": {"type": "string"}
+          },
+          "output_artifacts": {
+            "type": "array",
+            "description": "Output artifact file names (with template variables)",
+            "items": {"type": "string"}
+          },
+          "prompt_file": {
+            "type": "string",
+            "description": "Path to phase prompt file"
+          }
+        }
+      }
+    },
+    "execution_order": {
+      "type": "array",
+      "description": "Phase execution order",
+      "items": {
+        "type": "string",
+        "enum": ["research", "grooming", "solutioning", "wiki", "finalization"]
+      }
+    },
+    "phase_dependencies": {
+      "type": "object",
+      "description": "Phase dependency mapping",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["research", "grooming", "solutioning", "wiki", "finalization"]
+        }
+      }
+    }
+  }
+}
+

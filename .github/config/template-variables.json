@@ -1,0 +1,256 @@
+{
+  "$schema": "./template-variables.schema.json",
+  "runtime_variables": {
+    "work_item_id": {
+      "description": "Azure DevOps work item ID",
+      "type": "number",
+      "required": true,
+      "example": 12345
+    },
+    "artifact_path": {
+      "description": "Base artifact path computed from work_item_id",
+      "type": "string",
+      "computed": ".ai-artifacts/{{work_item_id}}",
+      "required": true
+    },
+    "timestamp": {
+      "description": "Current timestamp in ISO 8601 format",
+      "type": "string",
+      "format": "iso8601",
+      "example": "2024-01-15T10:30:00Z"
+    },
+    "iso_timestamp": {
+      "description": "Current timestamp in ISO 8601 format (alias for timestamp)",
+      "type": "string",
+      "format": "iso8601"
+    },
+    "phase_name": {
+      "description": "Current phase name",
+      "type": "string",
+      "enum": ["research", "grooming", "solutioning", "wiki", "finalization"]
+    }
+  },
+  "artifact_paths": {
+    "context_file": {
+      "description": "Path to unified ticket context file (single source of truth)",
+      "computed": "{{artifact_path}}/ticket-context.json",
+      "required_for": ["grooming", "solutioning", "wiki", "finalization"]
+    },
+    "solution_summary_file": {
+      "description": "Path to solution summary HTML file (for ADO update)",
+      "computed": "{{artifact_path}}/solution-summary.md",
+      "required_for": ["wiki", "finalization"]
+    },
+    "wiki_content_file": {
+      "description": "Path to wiki content file (for ADO Wiki API)",
+      "computed": "{{artifact_path}}/wiki-content.md",
+      "required_for": ["finalization"]
+    }
+  },
+  "field_paths": {
+    "field_title": {
+      "description": "ADO field path for work item title",
+      "value": "/fields/System.Title"
+    },
+    "field_description": {
+      "description": "ADO field path for work item description",
+      "value": "/fields/System.Description"
+    },
+    "field_acceptance_criteria": {
+      "description": "ADO field path for acceptance criteria",
+      "value": "/fields/Microsoft.VSTS.Common.AcceptanceCriteria"
+    },
+    "field_repro_steps": {
+      "description": "ADO field path for reproduction steps (bugs only)",
+      "value": "/fields/Microsoft.VSTS.TCM.ReproSteps"
+    },
+    "field_system_info": {
+      "description": "ADO field path for system info (bugs only)",
+      "value": "/fields/Microsoft.VSTS.TCM.SystemInfo"
+    },
+    "field_development_summary": {
+      "description": "ADO field path for development summary",
+      "value": "/fields/Custom.DevelopmentSummary"
+    },
+    "field_work_class_type": {
+      "description": "ADO field path for work class type",
+      "value": "/fields/Custom.WorkClassType"
+    },
+    "field_requires_qa": {
+      "description": "ADO field path for requires QA flag",
+      "value": "/fields/Custom.RequiresQA"
+    },
+    "field_tags": {
+      "description": "ADO field path for tags",
+      "value": "/fields/System.Tags"
+    },
+    "field_story_points": {
+      "description": "ADO field path for story points",
+      "value": "/fields/Microsoft.VSTS.Scheduling.StoryPoints"
+    },
+    "field_priority": {
+      "description": "ADO field path for priority (1-4, where 1=must fix, 4=unimportant)",
+      "value": "/fields/Microsoft.VSTS.Common.Priority"
+    },
+    "field_severity": {
+      "description": "ADO field path for severity (Bug/Defect only)",
+      "value": "/fields/Microsoft.VSTS.Common.Severity"
+    },
+    "field_progress": {
+      "description": "ADO field path for progress updates (Feature-level)",
+      "value": "/fields/Custom.Progress"
+    },
+    "field_planned_work": {
+      "description": "ADO field path for planned work (Feature-level)",
+      "value": "/fields/Custom.PlannedWork"
+    },
+    "field_blockers": {
+      "description": "ADO field path for blockers (Feature-level)",
+      "value": "/fields/Custom.Blockers"
+    }
+  },
+  "wsjf_config": {
+    "description": "WSJF (Weighted Shortest Job First) priority calculation configuration",
+    "applies_to": ["Bug", "Defect", "User Story", "Enhancement"],
+    "fibonacci_values": [1, 2, 3, 5, 8, 13, 20],
+    "formula": "(Business Value + Time Criticality + Risk Reduction) / Job Duration",
+    "priority_thresholds": {
+      "P1": { "min_wsjf": 8.0, "ado_priority": 1, "ado_severity": "1 - Critical", "expedite": true },
+      "P2": { "min_wsjf": 4.0, "ado_priority": 2, "ado_severity": "2 - High", "expedite": true },
+      "P3": { "min_wsjf": 1.5, "ado_priority": 3, "ado_severity": "3 - Medium", "expedite": false },
+      "P4": { "min_wsjf": 0, "ado_priority": 4, "ado_severity": "4 - Low", "expedite": false }
+    },
+    "blocker_threshold": 15.0,
+    "severity_values": {
+      "1": "1 - Critical",
+      "2": "2 - High",
+      "3": "3 - Medium",
+      "4": "4 - Low"
+    },
+    "human_review_triggers": {
+      "low_confidence": true,
+      "expedite_candidate": true,
+      "score_change_threshold": 0.25,
+      "dispute_tag": true,
+      "size_verify": true,
+      "top_n_items": 10
+    },
+    "tags": {
+      "wsjf_blocker": "WSJF-Blocker",
+      "expedite": "Expedite",
+      "low_confidence": "WSJF-LowConfidence",
+      "human_review": "WSJF-HumanReview",
+      "expedite_candidate": "WSJF-ExpediteCandidate"
+    },
+    "confidence_thresholds": {
+      "high": {
+        "max_insufficient_evidence": 1,
+        "max_blocking_assumptions": 0,
+        "max_dependency_risk": "low"
+      },
+      "medium": {
+        "max_insufficient_evidence": 3,
+        "max_dependency_risk": "medium"
+      },
+      "low": {
+        "description": "Default when high/medium thresholds not met"
+      }
+    },
+    "guardrail_checks": {
+      "tc_date": {
+        "description": "TC >= 8 requires date/event reference",
+        "threshold": 8,
+        "downgrade_to": 5
+      },
+      "bv_volume": {
+        "description": "BV >= 13 requires known impacted audience",
+        "threshold": 13
+      },
+      "rr_named": {
+        "description": "RR >= 8 requires named risk type",
+        "threshold": 8,
+        "valid_risk_types": ["security", "compliance", "dataIntegrity", "incidentRecurrence"]
+      },
+      "size_split": {
+        "description": "Large size with moderate CoD suggests splitting",
+        "size_threshold": 8,
+        "cod_threshold": 20
+      },
+      "size_verify": {
+        "description": "Small size with high WSJF needs verification",
+        "size_value": 1,
+        "wsjf_threshold": 10
+      }
+    },
+    "job_duration": {
+      "description": "Job Duration (Story Points) calculation - the fourth WSJF dimension",
+      "factors": {
+        "complexity": { "range": [1, 2, 3], "source": "ticket-context.json → solutioning.solution_design" },
+        "risk": { "range": [0, 1, 2, 3], "source": "ticket-context.json → grooming.classification, High-Risk tag" },
+        "uncertainty": { "range": [0, 1, 2, 3], "source": "ticket-context.json → research.assumptions, solutioning.traceability.gaps" }
+      },
+      "fibonacci_mapping": {
+        "0-1": 1,
+        "2": 2,
+        "3": 3,
+        "4-5": 5,
+        "6-7": 8,
+        "8+": 13
+      },
+      "valid_values": [1, 2, 3, 5, 8, 13]
+    }
+  },
+  "project_variables": {
+    "project_name": {
+      "description": "Azure DevOps project name",
+      "value": "{{config.project}}",
+      "default": "Digital Platforms"
+    },
+    "project_id": {
+      "description": "Azure DevOps project ID",
+      "type": "string"
+    }
+  },
+  "unified_context": {
+    "description": "Unified context file replaces individual phase artifacts",
+    "context_file": "ticket-context.json",
+    "context_sections": {
+      "research": ["research.ado_workitem", "research.wiki_search", "research.business_context", "research.journey_maps", "research.salesforce_metadata", "research.dependency_discovery", "research.code_search", "research.web_research", "research.context7_libraries", "research.similar_workitems", "research.assumptions", "research.synthesis", "research.summary_narrative"],
+      "grooming": ["grooming.classification", "grooming.templates_applied", "grooming.organizational_context_match", "grooming.triage_summary_narrative"],
+      "solutioning": ["solutioning.option_analysis", "solutioning.solution_design", "solutioning.traceability", "solutioning.testing"],
+      "wiki": ["wiki.creation_audit", "wiki.content_generated_at"],
+      "finalization": ["finalization.wsjf_evidence", "finalization.context_snapshot"]
+    },
+    "separate_output_files": {
+      "solutioning": ["solution-summary.md"],
+      "wiki": ["wiki-content.md"]
+    }
+  },
+  "prerequisites": {
+    "research": {
+      "required_context_sections": [],
+      "description": "No prerequisites - starting phase, creates context file"
+    },
+    "grooming": {
+      "required_context_file": "{{artifact_paths.context_file}}",
+      "required_context_sections": ["research.synthesis.research_phase_complete"],
+      "description": "Requires research phase complete in unified context"
+    },
+    "solutioning": {
+      "required_context_file": "{{artifact_paths.context_file}}",
+      "required_context_sections": ["research.synthesis", "grooming.classification"],
+      "description": "Requires research and grooming phases complete in unified context"
+    },
+    "wiki": {
+      "required_context_file": "{{artifact_paths.context_file}}",
+      "required_context_sections": ["research.synthesis", "grooming.classification", "solutioning.solution_design"],
+      "description": "Requires all previous phases complete in unified context"
+    },
+    "finalization": {
+      "required_context_file": "{{artifact_paths.context_file}}",
+      "required_context_sections": ["research.synthesis", "grooming.classification", "solutioning.solution_design", "wiki.creation_audit"],
+      "description": "Requires all previous phases complete in unified context"
+    }
+  }
+}
+

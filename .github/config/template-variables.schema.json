@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Template Variables Schema",
+  "description": "Schema for validating template-variables.json configuration",
+  "type": "object",
+  "required": ["runtime_variables", "artifact_paths", "field_paths", "artifact_files", "prerequisites"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "runtime_variables": {
+      "type": "object",
+      "description": "Runtime variables that are resolved at execution time",
+      "required": ["work_item_id", "artifact_path", "timestamp"],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["description", "type"],
+        "properties": {
+          "description": {"type": "string"},
+          "type": {"type": "string", "enum": ["string", "number", "boolean"]},
+          "required": {"type": "boolean"},
+          "computed": {"type": "string"},
+          "format": {"type": "string"},
+          "example": true,
+          "enum": {"type": "array"}
+        }
+      }
+    },
+    "artifact_paths": {
+      "type": "object",
+      "description": "Computed artifact path variables",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["description", "computed"],
+        "properties": {
+          "description": {"type": "string"},
+          "computed": {"type": "string"},
+          "required_for": {
+            "type": "array",
+            "items": {"type": "string", "enum": ["research", "grooming", "solutioning", "wiki", "finalization"]}
+          }
+        }
+      }
+    },
+    "field_paths": {
+      "type": "object",
+      "description": "ADO field path variables",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["description", "value"],
+        "properties": {
+          "description": {"type": "string"},
+          "value": {"type": "string"}
+        }
+      }
+    },
+    "project_variables": {
+      "type": "object",
+      "description": "Project-specific variables",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["description"],
+        "properties": {
+          "description": {"type": "string"},
+          "value": {"type": "string"},
+          "type": {"type": "string"},
+          "default": true
+        }
+      }
+    },
+    "artifact_files": {
+      "type": "object",
+      "description": "Artifact file name variables organized by phase",
+      "properties": {
+        "research": {"type": "object", "additionalProperties": {"type": "string"}},
+        "grooming": {"type": "object", "additionalProperties": {"type": "string"}},
+        "solutioning": {"type": "object", "additionalProperties": {"type": "string"}},
+        "wiki": {"type": "object", "additionalProperties": {"type": "string"}},
+        "finalization": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    },
+    "prerequisites": {
+      "type": "object",
+      "description": "Prerequisites mapping for each phase",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["required_artifacts", "description"],
+        "properties": {
+          "required_artifacts": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "description": {"type": "string"}
+        }
+      }
+    }
+  }
+}
+

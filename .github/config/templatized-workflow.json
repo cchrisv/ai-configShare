@@ -1,0 +1,195 @@
+{
+  "$schema": "./templatized-workflow.schema.json",
+  "process_name": "Copilot Refinement",
+  "version": "1.0",
+  "phases": [
+    {
+      "id": "research",
+      "name": "Research",
+      "description": "Build comprehensive context through multiple research sub-phases",
+      "order": 1,
+      "prerequisites": [],
+      "sub_phases": [
+        "ado",
+        "wiki",
+        "salesforce",
+        "code",
+        "web",
+        "context7",
+        "similar_workitems"
+      ],
+      "artifact_path": "{{research_artifact_path}}",
+      "required_artifacts": [],
+      "output_artifacts": [
+        "{{artifact_files.research.artifact_file_ado_workitem}}",
+        "{{artifact_files.research.artifact_file_wiki_search}}",
+        "{{artifact_files.research.artifact_file_business_context}}",
+        "{{artifact_files.research.artifact_file_salesforce_metadata}}",
+        "{{artifact_files.research.artifact_file_code_search}}",
+        "{{artifact_files.research.artifact_file_web_research}}",
+        "{{artifact_files.research.artifact_file_context7_libraries}}",
+        "{{artifact_files.research.artifact_file_similar_workitems}}",
+        "{{artifact_files.research.artifact_file_assumptions}}",
+        "{{artifact_files.research.artifact_file_assumptions_register}}",
+        "{{artifact_files.research.artifact_file_research_summary}}"
+      ],
+      "prompt_file": ".github/prompts/research-ado.prompt.md"
+    },
+    {
+      "id": "grooming",
+      "name": "Grooming",
+      "description": "Apply classification and business requirements templates",
+      "order": 2,
+      "prerequisites": [
+        {
+          "phase": "research",
+          "required_artifacts": [
+            "{{artifact_files.research.artifact_file_research_summary}}",
+            "{{artifact_files.research.artifact_file_assumptions}}"
+          ]
+        }
+      ],
+      "artifact_path": "{{grooming_artifact_path}}",
+      "required_artifacts": [
+        "{{research_artifact_path}}/{{artifact_files.research.artifact_file_research_summary}}",
+        "{{research_artifact_path}}/{{artifact_files.research.artifact_file_assumptions}}"
+      ],
+      "output_artifacts": [
+        "{{artifact_files.grooming.artifact_file_classification}}",
+        "{{artifact_files.grooming.artifact_file_templates_applied}}",
+        "{{artifact_files.grooming.artifact_file_triage_summary}}"
+      ],
+      "prompt_file": ".github/prompts/grooming.prompt.md"
+    },
+    {
+      "id": "solutioning",
+      "name": "Solutioning",
+      "description": "Design technical solution with architecture decisions",
+      "order": 3,
+      "prerequisites": [
+        {
+          "phase": "research",
+          "required_artifacts": [
+            "{{artifact_files.research.artifact_file_research_summary}}"
+          ]
+        },
+        {
+          "phase": "grooming",
+          "required_artifacts": [
+            "{{artifact_files.grooming.artifact_file_classification}}",
+            "{{artifact_files.grooming.artifact_file_templates_applied}}"
+          ]
+        }
+      ],
+      "artifact_path": "{{solutioning_artifact_path}}",
+      "required_artifacts": [
+        "{{research_artifact_path}}/{{artifact_files.research.artifact_file_research_summary}}",
+        "{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_classification}}",
+        "{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_templates_applied}}"
+      ],
+      "output_artifacts": [
+        "{{artifact_files.solutioning.artifact_file_option_analysis}}",
+        "{{artifact_files.solutioning.artifact_file_solution_design}}",
+        "{{artifact_files.solutioning.artifact_file_traceability}}",
+        "{{artifact_files.solutioning.artifact_file_solution_summary}}"
+      ],
+      "prompt_file": ".github/prompts/solutioning.prompt.md"
+    },
+    {
+      "id": "wiki",
+      "name": "Wiki Creation",
+      "description": "Create comprehensive documentation wiki page",
+      "order": 4,
+      "prerequisites": [
+        {
+          "phase": "research",
+          "required_artifacts": [
+            "{{artifact_files.research.artifact_file_research_summary}}"
+          ]
+        },
+        {
+          "phase": "grooming",
+          "required_artifacts": [
+            "{{artifact_files.grooming.artifact_file_classification}}"
+          ]
+        },
+        {
+          "phase": "solutioning",
+          "required_artifacts": [
+            "{{artifact_files.solutioning.artifact_file_solution_summary}}"
+          ]
+        }
+      ],
+      "artifact_path": "{{wiki_artifact_path}}",
+      "required_artifacts": [
+        "{{research_artifact_path}}/{{artifact_files.research.artifact_file_research_summary}}",
+        "{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_classification}}",
+        "{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_solution_summary}}"
+      ],
+      "output_artifacts": [
+        "{{artifact_files.wiki.artifact_file_wiki_creation}}",
+        "{{artifact_files.wiki.artifact_file_wiki_content}}"
+      ],
+      "prompt_file": ".github/prompts/wiki-creation.prompt.md"
+    },
+    {
+      "id": "finalization",
+      "name": "Finalization",
+      "description": "Create context snapshot, audit task, and completion comment",
+      "order": 5,
+      "prerequisites": [
+        {
+          "phase": "research",
+          "required_artifacts": [
+            "{{artifact_files.research.artifact_file_research_summary}}"
+          ]
+        },
+        {
+          "phase": "grooming",
+          "required_artifacts": [
+            "{{artifact_files.grooming.artifact_file_classification}}"
+          ]
+        },
+        {
+          "phase": "solutioning",
+          "required_artifacts": [
+            "{{artifact_files.solutioning.artifact_file_solution_summary}}"
+          ]
+        },
+        {
+          "phase": "wiki",
+          "required_artifacts": [
+            "{{artifact_files.wiki.artifact_file_wiki_creation}}"
+          ]
+        }
+      ],
+      "artifact_path": "{{artifact_path}}",
+      "required_artifacts": [
+        "{{research_artifact_path}}/{{artifact_files.research.artifact_file_research_summary}}",
+        "{{grooming_artifact_path}}/{{artifact_files.grooming.artifact_file_classification}}",
+        "{{solutioning_artifact_path}}/{{artifact_files.solutioning.artifact_file_solution_summary}}",
+        "{{wiki_artifact_path}}/{{artifact_files.wiki.artifact_file_wiki_creation}}"
+      ],
+      "output_artifacts": [
+        "{{artifact_files.finalization.artifact_file_context_snapshot}}",
+        "{{artifact_files.finalization.artifact_file_run_state}}"
+      ],
+      "prompt_file": ".github/prompts/finalization.prompt.md"
+    }
+  ],
+  "execution_order": [
+    "research",
+    "grooming",
+    "solutioning",
+    "wiki",
+    "finalization"
+  ],
+  "phase_dependencies": {
+    "research": [],
+    "grooming": ["research"],
+    "solutioning": ["research", "grooming"],
+    "wiki": ["research", "grooming", "solutioning"],
+    "finalization": ["research", "grooming", "solutioning", "wiki"]
+  }
+}
+

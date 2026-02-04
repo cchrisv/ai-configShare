@@ -1,0 +1,191 @@
+{
+  "process_name": "Copilot Refinement",
+  "version": "1.0",
+  "commands": {
+    "ticket.prepare": {
+      "name": "Prepare Ticket",
+      "displayName": "Prepare Ticket (Full Workflow)",
+      "description": "Run complete Copilot Refinement workflow (research → grooming → solutioning → wiki → finalization)",
+      "category": "primary",
+      "parameters": [
+        {
+          "name": "workItemId",
+          "type": "number",
+          "description": "Azure DevOps work item ID",
+          "required": true,
+          "template_variable": "{{work_item_id}}"
+        }
+      ],
+      "execution": {
+        "type": "full_workflow",
+        "phases": ["research", "grooming", "solutioning", "wiki", "finalization"],
+        "master_prompt": ".github/prompts/prepare-ticket.prompt.md",
+        "prerequisite_checking": true,
+        "resume_capable": true
+      },
+      "examples": [
+        "/ticket.prepare 12345",
+        "/ticket.prepare 67890"
+      ]
+    },
+    "ticket.research": {
+      "name": "Research Only",
+      "displayName": "Research Only",
+      "description": "Run research phase only - discover context, metadata, patterns",
+      "category": "advanced",
+      "parameters": [
+        {
+          "name": "workItemId",
+          "type": "number",
+          "description": "Azure DevOps work item ID",
+          "required": true,
+          "template_variable": "{{work_item_id}}"
+        }
+      ],
+      "execution": {
+        "type": "single_phase",
+        "phase": "research",
+        "prompt_files": [
+          ".github/prompts/research-ado.prompt.md",
+          ".github/prompts/research-wiki.prompt.md",
+          ".github/prompts/research-salesforce.prompt.md",
+          ".github/prompts/research-code.prompt.md",
+          ".github/prompts/research-web.prompt.md",
+          ".github/prompts/research-context7.prompt.md",
+          ".github/prompts/research-similar-workitems.prompt.md"
+        ],
+        "prerequisite_checking": false,
+        "resume_capable": true
+      },
+      "examples": [
+        "/ticket.research 12345"
+      ]
+    },
+    "ticket.grooming": {
+      "name": "Grooming Only",
+      "displayName": "Grooming Only",
+      "description": "Apply templates, classification, and business requirements",
+      "category": "advanced",
+      "parameters": [
+        {
+          "name": "workItemId",
+          "type": "number",
+          "description": "Azure DevOps work item ID",
+          "required": true,
+          "template_variable": "{{work_item_id}}"
+        }
+      ],
+      "execution": {
+        "type": "single_phase",
+        "phase": "grooming",
+        "prompt_file": ".github/prompts/grooming.prompt.md",
+        "prerequisite_checking": true,
+        "required_prerequisites": ["research"],
+        "resume_capable": true
+      },
+      "examples": [
+        "/ticket.grooming 12345"
+      ]
+    },
+    "ticket.solution": {
+      "name": "Solution Design Only",
+      "displayName": "Solution Design Only",
+      "description": "Design technical solution with architecture decisions",
+      "category": "advanced",
+      "parameters": [
+        {
+          "name": "workItemId",
+          "type": "number",
+          "description": "Azure DevOps work item ID",
+          "required": true,
+          "template_variable": "{{work_item_id}}"
+        }
+      ],
+      "execution": {
+        "type": "single_phase",
+        "phase": "solutioning",
+        "prompt_file": ".github/prompts/solutioning.prompt.md",
+        "prerequisite_checking": true,
+        "required_prerequisites": ["research", "grooming"],
+        "resume_capable": true
+      },
+      "examples": [
+        "/ticket.solution 12345"
+      ]
+    },
+    "ticket.wiki": {
+      "name": "Wiki Creation Only",
+      "displayName": "Wiki Creation Only",
+      "description": "Create comprehensive documentation wiki page",
+      "category": "advanced",
+      "parameters": [
+        {
+          "name": "workItemId",
+          "type": "number",
+          "description": "Azure DevOps work item ID",
+          "required": true,
+          "template_variable": "{{work_item_id}}"
+        }
+      ],
+      "execution": {
+        "type": "single_phase",
+        "phase": "wiki",
+        "prompt_file": ".github/prompts/wiki-creation.prompt.md",
+        "prerequisite_checking": true,
+        "required_prerequisites": ["research", "grooming", "solutioning"],
+        "resume_capable": true
+      },
+      "examples": [
+        "/ticket.wiki 12345"
+      ]
+    },
+    "ticket.finalize": {
+      "name": "Finalize Only",
+      "displayName": "Finalize Only",
+      "description": "Create context snapshot, audit task, and parent comment",
+      "category": "advanced",
+      "parameters": [
+        {
+          "name": "workItemId",
+          "type": "number",
+          "description": "Azure DevOps work item ID",
+          "required": true,
+          "template_variable": "{{work_item_id}}"
+        }
+      ],
+      "execution": {
+        "type": "single_phase",
+        "phase": "finalization",
+        "prompt_file": ".github/prompts/finalization.prompt.md",
+        "prerequisite_checking": true,
+        "required_prerequisites": ["research", "grooming", "solutioning", "wiki"],
+        "resume_capable": true
+      },
+      "examples": [
+        "/ticket.finalize 12345"
+      ]
+    }
+  },
+  "template_variable_injection": {
+    "work_item_id": {
+      "source": "parameter",
+      "parameter_name": "workItemId",
+      "required": true
+    },
+    "artifact_path": {
+      "source": "computed",
+      "formula": ".ai-artifacts/{{work_item_id}}"
+    },
+    "timestamp": {
+      "source": "runtime",
+      "generator": "iso_timestamp"
+    }
+  },
+  "prerequisite_checking": {
+    "enabled": true,
+    "error_message_template": "❌ Prerequisites Missing for {phase_name} Phase\n\nRequired artifacts not found:\n{missing_artifacts}\n\nTo resolve:\nRun {prerequisite_phase} phase first: {command} {work_item_id}",
+    "auto_detect": true,
+    "provide_instructions": true
+  }
+}
+
