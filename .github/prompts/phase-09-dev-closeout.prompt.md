@@ -28,6 +28,7 @@ Input: `{{work_item_id}}`
 | Field Mappings | `{{paths.templates}}/{{template_files.field_mappings}}` |
 | Field HTML (by work item type) | Same as phase-04-grooming (Description, AC, etc.) |
 | Solution Design (HTML) | `{{paths.templates}}/{{template_files.field_solution_design}}` |
+| Release Notes (HTML) | `{{paths.templates}}/{{template_files.field_release_notes}}` |
 | Wiki Format Guide | `{{paths.templates}}/{{template_files.wiki_format}}` |
 
 ## Protocol
@@ -131,20 +132,15 @@ H4 [IO]: Optionally update `{{wiki}}/generated-content.md` and `{{wiki}}/wiki-me
 ### I: Release Notes [GEN + IO]
 Generate a polished, well-formatted release note for the `{{field_paths.release_notes}}` (Custom.ReleaseNotes) field.
 
-I1 [GEN]: Compose the release note from the closeout delta (E), evidence summary (B), and questionnaire (D). The release note should be written for **end users, stakeholders, and QA** — not developers. It must be concise, professional, and high-quality.
+I1 [GEN]: Load the release notes HTML template from `{{paths.templates}}/{{template_files.field_release_notes}}`. Compose content from the closeout delta (E), evidence summary (B), and questionnaire (D). Populate the template placeholders (Summary, What's New / What Changed, Impact, Known Limitations if any, Related Items if any). The release note should be written for **end users, stakeholders, and QA** — not developers. It must be concise, professional, and high-quality.
 
-**Release note structure:**
-- **Summary** (1-2 sentences): Plain-language description of what changed and why it matters. Lead with the business outcome, not technical detail.
-- **What's New / What Changed**: Bullet list of user-visible changes, new capabilities, or behavior differences. Use language the business understands. For bugs, describe the symptom that was fixed.
-- **Impact**: Who is affected and how (e.g. "Sales reps will now see…", "Automated emails will no longer…"). Include any changes to existing workflows.
-- **Known Limitations** (if any): Anything descoped, deferred, or accepted as-is, with brief rationale.
-- **Related Items** (optional): Links to follow-up work items, if relevant to the reader.
+**Template sections** (see the HTML file for exact placeholders): Summary (1-2 sentences), What's New / What Changed (bullet list), Impact (who is affected and how), Known Limitations (optional; omit if none), Related Items (optional; omit if none).
 
 **Quality guidelines:**
 - Write in plain, jargon-free language; avoid Salesforce API names, class names, or internal references unless essential.
 - Focus on *what changed for the user*, not how it was implemented.
 - Be specific: "Contact records now display the preferred phone number" not "Updated Contact object".
-- Format as clean HTML suitable for the ADO rich-text field.
+- For bugs, describe the symptom that was fixed in What's New. Omit empty optional sections from the output.
 
 I2 [IO]: Save release note content to `{{closeout}}/release-notes.html`.
 I3 [IO]: Include `{{field_paths.release_notes}}` in the combined closeout fields payload (see J).

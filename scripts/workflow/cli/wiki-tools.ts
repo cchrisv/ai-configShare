@@ -25,9 +25,9 @@ program
 // Get command
 program
   .command('get')
-  .description('Get a wiki page')
-  .option('--page-id <id>', 'Page ID')
-  .option('-p, --path <path>', 'Page path')
+  .description('Get a wiki page by path or page ID')
+  .option('--page-id <id>', 'Page ID (alternative to --path)')
+  .option('-p, --path <path>', 'Page path (alternative to --page-id)')
   .option('--wiki <id>', 'Wiki ID or name')
   .option('--no-content', 'Exclude content')
   .option('--json', 'Output as JSON (default)')
@@ -60,9 +60,9 @@ program
 // Update command
 program
   .command('update')
-  .description('Update a wiki page')
-  .option('--page-id <id>', 'Page ID')
-  .option('-p, --path <path>', 'Page path')
+  .description('Update an existing wiki page by path or page ID. When --page-id is used, the PATCH endpoint is called which only updates existing pages (never creates new ones).')
+  .option('--page-id <id>', 'Page ID - uses PATCH endpoint (update only, never creates)')
+  .option('-p, --path <path>', 'Page path - uses PUT endpoint (create-or-update)')
   .option('-c, --content <content>', 'Content (string or file path)')
   .option('--comment <comment>', 'Update comment')
   .option('--wiki <id>', 'Wiki ID or name')
@@ -74,8 +74,8 @@ program
         configureLogger({ minLevel: 'debug' });
       }
 
-      if (!options.path) {
-        console.error('Error: --path must be specified');
+      if (!options.pageId && !options.path) {
+        console.error('Error: Either --page-id or --path must be specified');
         process.exit(1);
       }
 

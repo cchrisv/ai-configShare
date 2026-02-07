@@ -58,6 +58,10 @@ After a human developer picks up the ticket they may:
 - **Phase 8: Development Update (iterative)** – Run whenever grooming or solutioning changes during development. Captures deltas via questionnaire and updates ADO fields and local artifacts. Re-runnable. Execute: `#file:.github/prompts/phase-08-dev-update.prompt.md`
 - **Phase 9: Development Closeout** – Run once when development is complete. Reconciles planned vs. actual, updates grooming/solutioning artifacts, wiki (as-built, lessons learned, status), and ADO with final fields and Dev-Complete tag. Execute: `#file:.github/prompts/phase-09-dev-closeout.prompt.md`
 
+### Feature / Epic-level phases
+
+- **Phase 10: Solution Design Document** – Run at the Feature or Epic level after all child user stories have been groomed and solutioned. Supports both Feature (1-level: Feature → User Stories) and Epic (2-level: Epic → Features → User Stories) hierarchies. Aggregates child work item data from ADO (DevelopmentSummary, comments) and wiki pages to generate a comprehensive solution design document covering end-to-end current state, future state, and solution architecture. Produces a local artifact and publishes a wiki page. Execute: `#file:.github/prompts/phase-10-feature-solution-design.prompt.md`
+
 ## Output
 ```
 {{paths.artifacts_root}}/{{work_item_id}}/

@@ -2,22 +2,54 @@
 
 This document defines the formatting standards for all Azure DevOps Wiki pages created by the autonomous ticket preparation workflow.
 
-## Rich HTML Template
+## Rich HTML Templates
 
-**Primary Template:** Use `#file:config/templates/wiki-page-template.html` for all wiki pages.
+Three wiki templates are available, each serving a different purpose:
 
-The HTML template provides:
-- **Gradient headers** for each major section (matching work item field styling)
-- **Card-based layouts** for content organization
-- **Color-coded sections** based on content type:
-  - 🟢 Green: Summary, Success, Goals, Getting Started
-  - 🔵 Blue: Information, Design, Architecture, Research
-  - 🟠 Orange: Assumptions, Warnings, Investigation
-  - 🔴 Red: Risks, Blockers, Critical items, Open Unknowns
-  - 🟣 Purple: Discovery, Investigation Trail
-  - 🩵 Teal: Testing, Validation, Quality
-- **Styled tables** with colored headers
-- **Collapsible sections** for detailed content
+| Template | Purpose | When to Use |
+|----------|---------|-------------|
+| `wiki-page-template.html` | Work item ticket preparation pages | Path contains `/WorkItems/` or header contains "Autonomous Ticket Preparation" |
+| `feature-solution-design-wiki.html` | Feature solution design pages | Path contains `/Features/` or header contains "Feature Solution Design" |
+| `wiki-general-template.html` | Any wiki page (content-agnostic pattern reference) | Fallback — any page not matching the above patterns |
+
+All templates share a unified design system:
+
+### Visual Hierarchy
+
+| Element | Design | Details |
+|---------|--------|---------|
+| **Page header** | Gradient bar | `border-radius: 8px; padding: 14px 16px;` — page title only, no links or metadata |
+| **`##` section headers** | Markdown heading + **6px** gradient accent bar | Provides TOC detection + color-coded section identity |
+| **`###` subsection headers** | Markdown heading + **4px** gradient accent bar | Lighter shade of parent section color for hierarchy |
+| **Content** | White bordered cards | `background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;` |
+| **Callouts** | Colored left-border accent cards | `border-left: 4px solid ACCENT; border-radius: 0 8px 8px 0; padding: 14px;` |
+| **Tables** | HTML styled (NOT markdown) | `#f8f9fa` header rows, `1px solid #dee2e6` borders, `padding: 10px` |
+| **Status badges** | Colored spans | `padding: 2px 8px; border-radius: 3px; font-size: 11px;` |
+| **Section sub-labels** | Bold colored text | `font-weight: 600; color: COLOR; border-bottom: 1px solid #dee2e6;` |
+| **Diagrams** | Mermaid `graph TD` | Always top-down, never left-to-right |
+
+### Color-Coded Sections
+
+Colors are assigned by semantic meaning of each section heading:
+
+- 🟢 **Green** (`#2e7d32 → #1b5e20`): Summary, Overview, Executive Summary, Introduction, Goals
+- 🔵 **Blue** (`#1565c0 → #0d47a1`): Architecture, Design, Information, Current State
+- 🟣 **Purple** (`#7b1fa2 → #4a148c`): Analysis, Research, Investigation, Discovery
+- 🟠 **Orange** (`#e65100 → #bf360c`): Issues, Warnings, Considerations, Recommendations
+- 🔴 **Red** (`#c62828 → #b71c1c`): Critical, Risks, Security, Blockers
+- 🔷 **Indigo** (`#303f9f → #1a237e`): Solution, Implementation, Components, Technical
+- 🩵 **Teal** (`#00796b → #004d40`): Testing, Quality, Validation, Metrics
+- 🟤 **Brown** (`#5d4037 → #3e2723`): Appendix, References, History, Changelog
+
+### Critical Design Rules
+
+- `[[_TOC_]]` MUST be on its own line outside any HTML block
+- Section headers MUST use markdown `##` / `###` syntax for TOC detection
+- HTML blocks must be separated by blank lines from markdown content
+- Each HTML block is self-contained (no wrapping `<div>` around entire page)
+- **NO** `<details>/<summary>` collapsed sections — all content must be fully visible
+- **NO** markdown tables — always use HTML styled tables
+- Mermaid diagrams always use `graph TD` (top-down), never `graph LR`
 
 ## Writing Tone & Narrative Style
 
@@ -58,7 +90,7 @@ We traced 15 references to this handler throughout the codebase, which tells us 
 Each section should work on two levels:
 
 1. **Lead with business context** - Start with why this matters, what problem it solves, or what value it delivers
-2. **Follow with technical depth** - Provide the specifics in tables, code references, or collapsible details for those who need them
+2. **Follow with technical depth** - Provide the specifics in tables, code references, or callout cards for those who need them
 
 **Example Structure:**
 ```markdown
@@ -68,14 +100,21 @@ After evaluating our options, we determined that extending the existing Flow fra
 
 For the technically curious, here's how the options compared:
 
-<details>
-<summary>📊 Detailed Option Analysis (Click to expand)</summary>
-
-| Option | Approach | Trade-offs |
-|--------|----------|------------|
-| Option A | ... | ... |
-
-</details>
+<!-- All content is fully visible — no collapsed sections -->
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Option</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Approach</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Trade-offs</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">Option A</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">...</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">...</td>
+    </tr>
+  </table>
+</div>
 ```
 
 ### Phrases to Use and Avoid
@@ -101,20 +140,28 @@ Azure DevOps Wiki uses a specific flavor of markdown with important differences 
 ### Critical ADO Wiki Rules
 
 1. **HTML Support** - ADO Wiki DOES support HTML in wiki pages (unlike pull requests)
-   - ✅ HTML tags allowed: `<details>`, `<summary>`, `<div>`, `<strong>`, `<em>`, `<p>`, `<br/>`
-   - ⚠️ **Avoid hardcoded colors:** `<font color="blue">` or `style="color:green"` may be invisible in Dark Mode.
+   - ✅ HTML tags allowed: `<div>`, `<strong>`, `<em>`, `<p>`, `<br/>`, `<span>`, `<table>`, `<tr>`, `<td>`, `<ul>`, `<ol>`, `<li>`
+   - ❌ **Do NOT use** `<details>/<summary>` — all content must be fully visible
+   - ⚠️ **Avoid hardcoded colors in markdown blocks** — use inline styles on HTML elements instead
    - ✅ Video embedding: `<video src="url" width=400 controls>`
-   - ⚠️ Use HTML sparingly - prefer markdown for consistency
+   - ✅ Use HTML for styled content cards, tables, callouts, and accent bars
 
 2. **Link Format** - Use standard markdown links, NOT wiki-specific syntax
    - ✅ `[Link Text](Page-Path)` - Standard markdown
    - ❌ `[[Link Text]]` - MediaWiki style (not supported)
 
-3. **Tables** - Must have header row and alignment row
-   ```markdown
-   | Header 1 | Header 2 |
-   |----------|----------|
-   | Value 1  | Value 2  |
+3. **Tables** - Use HTML styled tables (NOT markdown) for consistent styling
+   ```html
+   <table style="width: 100%; border-collapse: collapse;">
+     <tr style="background: #f8f9fa;">
+       <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Header 1</td>
+       <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Header 2</td>
+     </tr>
+     <tr>
+       <td style="padding: 10px; border: 1px solid #dee2e6;">Value 1</td>
+       <td style="padding: 10px; border: 1px solid #dee2e6;">Value 2</td>
+     </tr>
+   </table>
    ```
 
 4. **Code Blocks** - Use lowercase language identifiers
@@ -129,16 +176,11 @@ Azure DevOps Wiki uses a specific flavor of markdown with important differences 
    [[_TOC_]]
    ```
 
-6. **Collapsible Sections** - Use HTML details/summary tags
-   ```markdown
-   <details>
-   <summary>Click to expand!</summary>
-   
-   ## Content inside
-   - List item 1
-   - List item 2
-   
-   </details>
+6. **Content Cards** - Wrap all prose and tables in white bordered cards
+   ```html
+   <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+     <p style="margin: 0; line-height: 1.7;">Content goes inside cards for clean presentation.</p>
+   </div>
    ```
 
 ### Mermaid Diagrams
@@ -149,13 +191,13 @@ Azure DevOps Wiki uses a specific flavor of markdown with important differences 
   - `{{Decision}}` for logic checks
   - `[[Subprocess]]` for major actions
   - `[(Database)]` for storage
-- Use `graph LR` or `graph TD` (avoid `flowchart`).
+- Always use `graph TD` (top-down), never `graph LR` (avoid `flowchart`).
 - Keep node labels concise.
 
 #### Diagram Example
 ```markdown
 ::: mermaid
-graph LR
+graph TD
   trigger([Trigger]) --> assess{{Decision}}
   assess -->|Yes| happy[Primary Path]
   assess -->|No| alternate[Fallback]
@@ -254,9 +296,6 @@ graph LR
 
 **Metadata Dependencies Discovered:**
 
-<details>
-<summary>📊 Component Usage Analysis (Click to expand)</summary>
-
 **Components Using This Metadata:**
 | Type | Component Name | Impact Level | Notes |
 |------|---------------|--------------|-------|
@@ -274,8 +313,6 @@ graph LR
 | [Type] | [Name] | [Why the dependency exists] |
 
 > **Note:** Dependency analysis performed using MetadataComponentDependency Tooling API. For CustomField dependencies, results show object-level relationships as the API tracks field dependencies at the parent object level.
-
-</details>
 
 **Systems We Need to Work With:**
 - [Third-party systems and APIs]
@@ -342,14 +379,9 @@ As we researched, we formed hypotheses and tested them against evidence. Here's 
 
 [Write a brief narrative about the most important hypothesis - what made us think it, how we tested it, and what we learned]
 
-<details>
-<summary>📋 Complete Hypothesis Testing Log (Click to expand)</summary>
-
 | What We Thought | Why We Thought It | What We Found | Verdict |
 |-----------------|-------------------|---------------|---------|
 | [Initial hypothesis] | [Source or reasoning] | [Evidence discovered] | ✅ Confirmed / ❌ Disproven / ⚠️ Partially True |
-
-</details>
 
 ### 🔄 When We Had to Rethink
 
@@ -363,14 +395,9 @@ As we researched, we formed hypotheses and tested them against evidence. Here's 
 
 When we encountered conflicting information, we used this priority order: what's actually in the live system (metadata) > what the code does > what documentation says > what comments suggest.
 
-<details>
-<summary>📋 Conflict Resolution Details (Click to expand)</summary>
-
 | The Conflict | What One Source Said | What Another Said | What We Concluded | Our Reasoning |
 |--------------|---------------------|-------------------|-------------------|---------------|
 | [Topic] | [Source A] | [Source B] | [Resolution] | [Why this makes sense] |
-
-</details>
 
 ### 📊 How Confident Are We?
 
@@ -445,8 +472,7 @@ We evaluated each option against three criteria from the Salesforce Well-Archite
 
 [For each eliminated option, write a brief narrative explanation. Focus on helping readers understand the reasoning, not just listing rejection criteria.]
 
-<details>
-<summary>💡 Option 2: [Option Name] - Why we didn't go this route</summary>
+**💡 Option 2: [Option Name] - Why we didn't go this route**
 
 [Write 2-3 sentences explaining the reasoning in conversational terms]
 
@@ -457,14 +483,9 @@ We evaluated each option against three criteria from the Salesforce Well-Archite
 **When this might be the right choice:**
 [Help future readers know when to reconsider this option]
 
-</details>
-
-<details>
-<summary>💡 Option 3: [Option Name] - Why we didn't go this route</summary>
+**💡 Option 3: [Option Name] - Why we didn't go this route**
 
 [Same narrative approach]
-
-</details>
 
 ### 📏 How Our Standards Guided Us
 
@@ -555,9 +576,6 @@ This matrix ensures every Acceptance Criteria has both happy path AND unhappy pa
 
 Understanding who and what we're testing is crucial. The test data matrix below defines the personas, configurations, and scenarios that form the foundation of our test coverage.
 
-<details>
-<summary>📦 Test Data Setup Guide (Click to expand)</summary>
-
 **Required Configuration:**
 - [ ] [Feature flag or setting 1]
 - [ ] [Feature flag or setting 2]
@@ -571,8 +589,6 @@ Understanding who and what we're testing is crucial. The test data matrix below 
 - [ ] [Integration or mock service setup]
 - [ ] [Data seeding requirements]
 
-</details>
-
 #### 👤 Persona & Scenario Definitions
 
 | Row ID | Persona | Profile / Permissions | Record Context | Key Conditions | Notes |
@@ -583,11 +599,6 @@ Understanding who and what we're testing is crucial. The test data matrix below 
 | ⚠️ D4 | [Negative Scenario] | [Limited permissions] | [Object Context] | [Failure conditions] | Expected to fail gracefully |
 
 > **Legend:** 👤 Persona-focused | 📊 Data variation | ⚠️ Negative/Edge case
-
-<details>
-<summary>📋 Detailed Persona & Data Specifications (Click to expand)</summary>
-
----
 
 #### 👤 D1: [Primary User Persona Name]
 
@@ -677,10 +688,6 @@ Permission Sets: [None or limited]
 
 ---
 
-</details>
-
----
-
 ### 🔴 P1 Critical Path Tests
 
 These tests validate the core functionality that must work for the feature to be considered successful. Failure of any P1 test is a release blocker.
@@ -689,11 +696,6 @@ These tests validate the core functionality that must work for the feature to be
 |----|---------------|:---------:|:---------:|---------------|------------------|:--------:|
 | TC-001 | [Happy path scenario] | ✓ Happy | AC-1, AC-2 | [Key steps] | [Observable result] | D1 |
 | TC-002 | [Critical negative path] | ✗ Negative | AC-1 | [Key steps] | [Observable result] | D2 |
-
-<details>
-<summary>📋 P1 Test Case Details (Click to expand)</summary>
-
----
 
 #### TC-001: [Full Test Title]
 
@@ -739,8 +741,7 @@ These tests validate the core functionality that must work for the feature to be
 - [ ] [Delete test record created]
 - [ ] [Reset any changed settings]
 
-<details>
-<summary>👨‍💻 Developer Validation (Click to expand)</summary>
+**👨‍💻 Developer Validation:**
 
 **Unit Test Pattern:**
 ```apex
@@ -772,10 +773,7 @@ static void test_[Object]_[Action]_[Condition]_Success() {
 - [ ] [Trigger/Flow executed - check debug log for specific entry]
 - [ ] [Platform Event published - verify subscriber received]
 
-</details>
-
-<details>
-<summary>🧪 QA Validation (Click to expand)</summary>
+**🧪 QA Validation:**
 
 **Step-by-Step Navigation:**
 1. App Launcher → [App Name]
@@ -801,8 +799,6 @@ LIMIT 1
 - [ ] Logged in as: [Username from D1]
 - [ ] Feature flag `[Flag_Name__c]` = ON
 - [ ] Permission set `[Permission_Set_Name]` assigned
-
-</details>
 
 ---
 
@@ -837,8 +833,7 @@ LIMIT 1
 **Cleanup Steps:**
 - [ ] [Cleanup item - verify no orphaned records]
 
-<details>
-<summary>👨‍💻 Developer Validation (Click to expand)</summary>
+**👨‍💻 Developer Validation:**
 
 **Unit Test Pattern:**
 ```apex
@@ -870,10 +865,7 @@ static void test_[Object]_[Action]_[ErrorCondition]_FailsGracefully() {
 **Mocks Required:**
 - [ ] [Mock to simulate failure condition if external dependency]
 
-</details>
-
-<details>
-<summary>🧪 QA Validation (Click to expand)</summary>
+**🧪 QA Validation:**
 
 **Step-by-Step Navigation:**
 1. App Launcher → [App Name]
@@ -897,12 +889,6 @@ WHERE CreatedDate = TODAY
 - [ ] Logged in as: [Username from D2 - restricted user]
 - [ ] Permission set `[Permission_Set_Name]` NOT assigned (to trigger error)
 
-</details>
-
----
-
-</details>
-
 ---
 
 ### 🟡 P2 Important Tests
@@ -913,11 +899,6 @@ These tests cover important alternate paths and key negative scenarios. They sho
 |----|---------------|:---------:|:---------:|---------------|------------------|:--------:|
 | TC-003 | [Alternate scenario] | ⚡ Edge | AC-2 | [Key steps] | [Observable result] | D3 |
 | TC-004 | [Negative scenario] | ✗ Negative | AC-3 | [Key steps] | [Observable result] | D4 |
-
-<details>
-<summary>📋 P2 Test Case Details (Click to expand)</summary>
-
----
 
 #### TC-003: [Full Test Title - Edge Case]
 
@@ -949,8 +930,7 @@ These tests cover important alternate paths and key negative scenarios. They sho
 **Cleanup Steps:**
 - [ ] [Cleanup item]
 
-<details>
-<summary>👨‍💻 Developer Validation (Click to expand)</summary>
+**👨‍💻 Developer Validation:**
 
 **Unit Test Pattern:**
 ```apex
@@ -963,16 +943,11 @@ static void test_[Object]_[Action]_[EdgeCondition]_HandlesCorrectly() {
 
 **Key Assertions:** [List specific assertions for this edge case]
 
-</details>
-
-<details>
-<summary>🧪 QA Validation (Click to expand)</summary>
+**🧪 QA Validation:**
 
 **Navigation:** [Step-by-step to trigger edge case]
 **Data Query:** `SELECT ... WHERE [edge condition]`
 **Visual Check:** [What to verify in UI]
-
-</details>
 
 ---
 
@@ -1005,8 +980,7 @@ static void test_[Object]_[Action]_[EdgeCondition]_HandlesCorrectly() {
 **Cleanup Steps:**
 - [ ] [Cleanup item]
 
-<details>
-<summary>👨‍💻 Developer Validation (Click to expand)</summary>
+**👨‍💻 Developer Validation:**
 
 **Unit Test Pattern:**
 ```apex
@@ -1019,27 +993,15 @@ static void test_[Object]_[Action]_[NegativeCondition]_FailsGracefully() {
 
 **Key Assertions:** [List specific assertions for error handling]
 
-</details>
-
-<details>
-<summary>🧪 QA Validation (Click to expand)</summary>
+**🧪 QA Validation:**
 
 **Navigation:** [Step-by-step to trigger negative scenario]
 **Data Query:** `SELECT COUNT() FROM ... -- Expected: unchanged`
 **Visual Check:** [Error message/state to verify]
 
-</details>
-
----
-
-</details>
-
 ---
 
 ### 🟢 P3 Additional Coverage
-
-<details>
-<summary>🟢 P3 Nice-to-Have Tests (Click to expand)</summary>
 
 These tests provide additional coverage for edge cases and long-tail scenarios. They improve confidence but are not required for release.
 
@@ -1072,26 +1034,16 @@ These tests provide additional coverage for edge cases and long-tail scenarios. 
 **Verification Checklist:**
 - [ ] [Verification item]
 
-<details>
-<summary>👨‍💻 Developer Validation (Click to expand)</summary>
+**👨‍💻 Developer Validation:**
 
 **Unit Test Pattern:** [Brief pattern for this scenario]
 **Key Assertions:** [List assertions]
 
-</details>
-
-<details>
-<summary>🧪 QA Validation (Click to expand)</summary>
+**🧪 QA Validation:**
 
 **Navigation:** [Steps]
 **Data Query:** [Verification query]
 **Visual Check:** [UI verification]
-
-</details>
-
----
-
-</details>
 
 ---
 
@@ -1222,7 +1174,6 @@ These items could not be determined during autonomous preparation and require hu
 ---
 
 *📅 Last Updated: {{runtime.timestamp}}*  
-*🤖 Generated by Copilot Refinement*  
 *This single page provides complete documentation of research, decisions, and technical design.*
 
 ## 🎨 Section-Specific Formatting
@@ -1234,7 +1185,7 @@ Every section should **lead with narrative context** before presenting structure
 **Pattern to Follow:**
 1. **Opening narrative** (2-4 sentences) - Set context, explain why this matters
 2. **Key insight callout** - The most important takeaway for skimmers
-3. **Supporting detail** - Tables, lists, or collapsible sections for depth
+3. **Supporting detail** - Tables, lists, or callout cards for depth
 4. **Transition** - Connect to what comes next
 
 ### Research Sections
@@ -1259,7 +1210,7 @@ Every section should **lead with narrative context** before presenting structure
 
 ### Decision Rationale Sections
 - **Lead with** the story of evaluation - what made this decision interesting
-- **Support with** options comparison tables (collapsible for detail)
+- **Support with** options comparison tables and callout cards for detail
 - **Tone:** Transparent decision-maker - "We had three viable paths. Here's why we went with..."
 
 ### Quality Sections
@@ -1272,7 +1223,7 @@ Every section should **lead with narrative context** before presenting structure
 | Audience | What They Need | How to Serve Them |
 |----------|---------------|-------------------|
 | Business Stakeholders | Value, impact, timelines | Lead every section with business context, avoid unexplained jargon |
-| Technical Reviewers | Depth, specifics, rationale | Provide detail in collapsible sections, reference standards explicitly |
+| Technical Reviewers | Depth, specifics, rationale | Provide detail in callout cards and sub-label sections, reference standards explicitly |
 | Future Maintainers | Context, reasoning, gotchas | Document "why" not just "what", flag areas of uncertainty |
 
 ## 🚨 Critical Rules
@@ -1300,11 +1251,12 @@ Every section should **lead with narrative context** before presenting structure
 - ✅ ADO work item IDs for cross-references
 
 ### HTML Usage Guidelines
-- ✅ **Allowed:** `<details>`, `<summary>`, `<strong>`, `<em>`, `<p>`, `<br/>`
-- ✅ **Rich text:** `<font color="blue">`, `<span style="color:green">`
-- ✅ **Layout:** `<center>`, `<div>` with styling
-- ⚠️ **Prefer markdown** for consistency
-- ⚠️ **Use HTML sparingly** - only when markdown can't achieve the effect
+- ✅ **Allowed:** `<div>`, `<span>`, `<strong>`, `<em>`, `<p>`, `<br/>`, `<table>`, `<tr>`, `<td>`, `<ul>`, `<ol>`, `<li>`
+- ✅ **Rich styling:** Inline `style` attributes for content cards, accent bars, callouts, and status badges
+- ✅ **Layout:** `<div>` with styling for content cards and visual elements
+- ❌ **Do NOT use:** `<details>/<summary>` — all content must be fully visible
+- ✅ Use markdown `##` / `###` for section headers (required for TOC detection)
+- ✅ Use HTML for styled content cards, tables, callouts, and accent bars
 
 ## 🔍 Validation Checklist
 
@@ -1560,7 +1512,7 @@ Related work items are linked to this ticket. Check the work item's **Links tab*
 - Fill all placeholders before saving
 - Test blockquotes render correctly (use `>` per line)
 - Use `[[_TOC_]]` for automatic table of contents
-- Use `<details><summary>` for collapsible sections when needed
+- Use content cards, callout cards, and accent bars for visual hierarchy
 - **Direct users to check Links tab** instead of including direct URLs
 - **Reference work item numbers** (e.g., "#12345") instead of full URLs
 - **Embed all test cases and test data directly in the wiki**

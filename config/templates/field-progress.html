@@ -2,89 +2,91 @@
   PROGRESS FIELD HTML TEMPLATE
   Purpose: 6-week rolling window of accomplishments with leadership insights
   Variables: Replace {{variable}} placeholders with actual content
+  
+  Color Scheme (Dark Gradients with White Text):
+  - Green (#2e7d32 → #1b5e20): Progress Header
+  - Blue (#1565c0 → #0d47a1): Weekly Activity (Current Week)
+  - Indigo (#303f9f → #1a237e): Weekly Activity (Previous Weeks)
+  - Purple (#7b1fa2 → #4a148c): Key Insights
 -->
 <div style="font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #333;">
   
-  <!-- PROGRESS BANNER - Clean summary with completion stats -->
-  <div style="background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-      <div>
-        <span style="font-size: 32px; font-weight: 700; color: #2e7d32;">{{completion_percent}}%</span>
-        <span style="font-size: 16px; color: #666; margin-left: 8px;">Complete</span>
-      </div>
-      <div style="text-align: right; color: #666; font-size: 13px;">
-        <div>{{completed_count}} of {{total_count}} descendants closed</div>
-        <div style="color: #999;">Updated: {{update_date}}</div>
-      </div>
+  <!-- PROGRESS HEADER - Green (Success) -->
+  <div style="background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">📈 Progress Summary</span>
+  </div>
+
+  <!-- COMPLETION STATS & PROGRESS BAR -->
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <div style="font-size: 13px; color: #333; line-height: 1.6; margin-bottom: 12px;">
+      <strong style="color: #2e7d32; font-size: 18px;">{{completion_percent}}%</strong>
+      <span style="color: #666; margin-left: 6px;">Complete</span>
+      <span style="color: #999; margin-left: 12px;">{{completed_count}} of {{total_count}} descendants closed | Updated: {{update_date}}</span>
     </div>
     <!-- Progress Bar -->
-    <div style="background: #e0e0e0; border-radius: 4px; height: 8px; margin-top: 12px; overflow: hidden;">
+    <div style="background: #e0e0e0; border-radius: 4px; height: 8px; overflow: hidden;">
       <div style="background: linear-gradient(90deg, #4caf50 0%, #81c784 100%); height: 100%; width: {{completion_percent}}%; border-radius: 4px;"></div>
     </div>
   </div>
-  
-  <!-- STATUS SUMMARY BOX -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-left: 4px solid #0078D4; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 20px;">
-    <div style="font-weight: 600; color: #0078D4; margin-bottom: 6px;">📋 Status Summary</div>
-    <div style="font-size: 13px; line-height: 1.6;">{{overall_status_summary}}</div>
+
+  <!-- STATUS SUMMARY -->
+  <div style="background: #fff; border: 1px solid #dee2e6; border-left: 4px solid #0078d4; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 20px;">
+    <div style="font-weight: 600; color: #0078d4; margin-bottom: 6px;">📋 Status Summary</div>
+    <div style="font-size: 13px; line-height: 1.6; color: #333;">{{overall_status_summary}}</div>
   </div>
-  
-<!-- WEEKLY ACTIVITY SECTION -->
-  <div style="margin-bottom: 20px;">
-    <div style="font-weight: 600; color: #323130; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      📅 Weekly Activity <span style="font-weight: 400; color: #666; font-size: 12px;">({{window_start}} - {{window_end}})</span>
+
+  <!-- WEEKLY ACTIVITY HEADER - Blue (Information) -->
+  <div style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">📅 Weekly Activity <span style="font-weight: 400; font-size: 13px; opacity: 0.9;">({{window_start}} - {{window_end}})</span></span>
+  </div>
+
+  <!-- CURRENT WEEK -->
+  <div style="background: #fff; border: 1px solid #dee2e6; border-left: 4px solid #1976d2; border-radius: 0 8px 8px 0; padding: 16px; margin-bottom: 20px;">
+    <div style="font-weight: 600; color: #1976d2; margin-bottom: 10px;">
+      Week of {{week_start}} - {{week_end}} <span style="background: #1976d2; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 8px;">Current</span>
     </div>
-    
-    <!-- CURRENT WEEK (highlighted) -->
-    <div style="background: #fff; border: 2px solid #1976d2; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
-      <div style="font-weight: 600; color: #1976d2; margin-bottom: 10px;">
-        🔵 Week of {{week_start}} - {{week_end}} <span style="background: #1976d2; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 8px;">Current</span>
-      </div>
-      <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-        <li>{{activity_item}}</li>
-        <li><strong style="color: #2e7d32;">✅ Milestone:</strong> {{milestone_description}}</li>
-      </ul>
+    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
+      <li>{{activity_item}}</li>
+      <li><strong style="color: #2e7d32;">Milestone:</strong> {{milestone_description}}</li>
+    </ul>
+  </div>
+
+  <!-- PREVIOUS WEEKS -->
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <div style="font-weight: 600; color: #495057; margin-bottom: 10px; border-bottom: 1px solid #dee2e6; padding-bottom: 8px;">
+      Week of {{week_start}} - {{week_end}}
     </div>
-    
-    <!-- PREVIOUS WEEKS (standard cards) -->
-    <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
-      <div style="font-weight: 600; color: #495057; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-        Week of {{week_start}} - {{week_end}}
-      </div>
-      <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-        <li>{{activity_item}}</li>
-      </ul>
-    </div>
-    
-    <!-- WEEK WITH NO ACTIVITY -->
-    <div style="background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px;">
-      <div style="color: #999; font-size: 13px;">
-        <span style="font-weight: 600;">Week of {{week_start}} - {{week_end}}:</span> No significant updates
-      </div>
+    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
+      <li>{{activity_item}}</li>
+    </ul>
+  </div>
+
+  <!-- WEEK WITH NO ACTIVITY -->
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;">
+    <div style="color: #999; font-size: 13px;">
+      <span style="font-weight: 600;">Week of {{week_start}} - {{week_end}}:</span> No significant updates
     </div>
   </div>
-  
-  <!-- KEY INSIGHTS SECTION -->
-  <div style="margin-top: 24px;">
-    <div style="font-weight: 600; color: #323130; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      💡 Key Insights
-    </div>
-    
-    <!-- LEADERSHIP HELPED BOX (blue gradient) -->
-    <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-left: 4px solid #2196f3; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
-      <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">🤝 How Leadership Helped</div>
-      <div style="font-size: 13px; color: #1565c0; line-height: 1.6; font-style: italic;">
-        {{leadership_helped_text}}
-      </div>
-    </div>
-    
-    <!-- SUPPORT NEEDED BOX (orange gradient) -->
-    <div style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 14px;">
-      <div style="font-weight: 600; color: #e65100; margin-bottom: 6px;">⚠️ Where Support May Be Needed</div>
-      <div style="font-size: 13px; color: #e65100; line-height: 1.6; font-style: italic;">
-        {{support_needed_text}}
-      </div>
+
+  <!-- KEY INSIGHTS HEADER - Purple (Discovery) -->
+  <div style="background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">💡 Key Insights</span>
+  </div>
+
+  <!-- LEADERSHIP HELPED CALLOUT -->
+  <div style="background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 20px;">
+    <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">🤝 How Leadership Helped</div>
+    <div style="font-size: 13px; color: #333; line-height: 1.6;">
+      {{leadership_helped_text}}
     </div>
   </div>
-  
+
+  <!-- SUPPORT NEEDED CALLOUT -->
+  <div style="background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 20px;">
+    <div style="font-weight: 600; color: #e65100; margin-bottom: 6px;">⚠️ Where Support May Be Needed</div>
+    <div style="font-size: 13px; color: #333; line-height: 1.6;">
+      {{support_needed_text}}
+    </div>
+  </div>
+
 </div>

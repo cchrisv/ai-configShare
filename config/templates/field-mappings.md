@@ -217,6 +217,56 @@ All work item field templates use rich styling with gradients, cards, and color-
 | `field-feature-objectives.html` | `Custom.BusinessObjectivesandImpact` |
 | `field-feature-acceptance-criteria.html` | `Microsoft.VSTS.Common.AcceptanceCriteria` (Feature) |
 | `field-solution-design.html` | `Custom.DevelopmentSummary` |
+| `field-release-notes.html` | `Custom.ReleaseNotes` |
+
+## Wiki Page HTML Templates
+
+Wiki pages use a markdown-first design optimized for Azure DevOps Wiki rendering. These templates are applied via the `util-reformat-ticket` prompt using wiki page ID to update existing pages only.
+
+| Template File | Wiki Page Type | Detection Heuristic |
+|---------------|----------------|---------------------|
+| `wiki-page-template.html` | Work Item Wiki (Autonomous Ticket Prep) | Path contains `/WorkItems/` or header contains "Autonomous Ticket Preparation" |
+| `feature-solution-design-wiki.html` | Feature Solution Design Wiki | Path contains `/Features/` or header contains "Feature Solution Design" |
+| `wiki-general-template.html` | General Wiki Page (content-agnostic) | Fallback — any page not matching work item or feature design patterns |
+
+### Wiki Template Design System
+
+Wiki templates follow a strict visual hierarchy that balances rich styling with ADO Wiki's markdown rendering constraints:
+
+| Element | Design Pattern | Details |
+|---------|---------------|---------|
+| **Page header** | Gradient bar | `border-radius: 8px; padding: 14px 16px;` — ticket # + title only, no links or metadata |
+| **`##` section headers** | Markdown heading + **6px** gradient accent bar | Provides TOC detection + color-coded section identity |
+| **`###` subsection headers** | Markdown heading + **4px** gradient accent bar | Lighter shade of parent section color for hierarchy |
+| **Content** | White bordered cards | `background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;` |
+| **Callouts** | Colored left-border accent cards | `border-left: 4px solid ACCENT; border-radius: 0 8px 8px 0; padding: 14px;` |
+| **Tables** | HTML styled (NOT markdown) | `#f8f9fa` header rows, `1px solid #dee2e6` borders, `padding: 10px` |
+| **Status badges** | Colored spans | `padding: 2px 8px; border-radius: 3px; font-size: 11px;` |
+| **Section sub-labels** | Bold colored text | `font-weight: 600; color: COLOR; border-bottom: 1px solid #dee2e6;` |
+| **Diagrams** | Mermaid `graph TD` | Always top-down, never left-to-right |
+
+**Critical rules:**
+- `[[_TOC_]]` MUST be on its own line outside any HTML block
+- Section headers MUST use markdown `##` / `###` syntax for TOC detection
+- HTML blocks must be separated by blank lines from markdown content
+- NO `<details>/<summary>` collapsed sections — all content must be fully visible
+- NO markdown tables — always use HTML styled tables
+- Each HTML block is self-contained (no wrapping `<div>` around entire page)
+
+### Wiki Page Update Commands
+
+```bash
+# Get wiki page by ID
+{{cli.wiki_get_by_id}} <page_id> --json
+
+# Update wiki page by ID (PATCH endpoint - update only, never creates)
+{{cli.wiki_update_by_id}} <page_id> --content "<file_path>" --comment "Update comment" --json
+
+# Update wiki page by path (PUT endpoint - create-or-update)
+{{cli.wiki_update}} --path "<wiki_path>" --content "<file_path>" --json
+```
+
+**Important**: When reformatting wiki pages, always use `{{cli.wiki_update_by_id}}` with the page ID. This uses the PATCH API endpoint which only updates existing pages and will fail if the page does not exist, preventing accidental creation of duplicate pages.
 
 ## Notes
 

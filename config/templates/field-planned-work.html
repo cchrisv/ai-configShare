@@ -2,48 +2,54 @@
   PLANNED WORK FIELD HTML TEMPLATE
   Purpose: Forward-looking work breakdown with timeline and leadership support needs
   Variables: Replace {{variable}} placeholders with actual content
+  
+  Color Scheme (Dark Gradients with White Text):
+  - Green (#2e7d32 → #1b5e20): Planned Work Header
+  - Blue (#1565c0 → #0d47a1): Immediate (This Week)
+  - Indigo (#303f9f → #1a237e): Near-term (Next 2-4 Weeks)
+  - Blue-gray (#546e7a → #37474f): Upcoming (1-2 Months)
 -->
 <div style="font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #333;">
   
-  <!-- PLANNED WORK BANNER -->
-  <div style="background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-    <div style="font-weight: 700; color: #fff; font-size: 15px; margin-bottom: 10px;">🎯 Planned Work Summary</div>
-    <div style="background: rgba(255,255,255,0.95); border-radius: 6px; padding: 12px;">
-      <div style="font-size: 13px; color: #333; line-height: 1.6;">
-        <strong>Focus:</strong> {{primary_focus_summary}}
-      </div>
+  <!-- PLANNED WORK HEADER - Green (Forward-looking) -->
+  <div style="background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">🎯 Planned Work Summary</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <div style="font-size: 13px; color: #333; line-height: 1.6;">
+      <strong>Focus:</strong> {{primary_focus_summary}}
     </div>
   </div>
   
-  <!-- IMMEDIATE (THIS WEEK) - Highlighted -->
-  <div style="background: #fff; border: 2px solid #1976d2; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #1976d2; margin-bottom: 12px; border-bottom: 2px solid #1976d2; padding-bottom: 8px;">
-      📍 Immediate (This Week)
-    </div>
+  <!-- IMMEDIATE (THIS WEEK) HEADER - Blue (Active) -->
+  <div style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">📍 Immediate (This Week)</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
     <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
       <!-- Work item with status badge -->
       <li>
         <strong style="color: #1976d2;">#{{work_item_id}}</strong> {{work_item_title}} - 
-        <span style="background: #fff3cd; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600;">{{status}}</span>
+        <span style="background: #fff3cd; color: #856404; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600;">{{status}}</span>
         {{description}}
       </li>
       <!-- Priority item -->
       <li>
-        <strong style="color: #dc3545;">🚨 Priority:</strong> 
+        <strong style="color: #dc3545;">Priority:</strong> 
         <strong style="color: #1976d2;">#{{work_item_id}}</strong> - {{urgency_description}}
       </li>
     </ul>
   </div>
   
-<!-- NEAR-TERM (NEXT 2-4 WEEKS) with Table -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #495057; margin-bottom: 12px; border-bottom: 1px solid #dee2e6; padding-bottom: 8px;">
-      📆 Near-term (Next 2-4 Weeks)
-    </div>
+  <!-- NEAR-TERM (NEXT 2-4 WEEKS) HEADER - Indigo (Planning) -->
+  <div style="background: linear-gradient(135deg, #303f9f 0%, #1a237e 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">📆 Near-term (Next 2-4 Weeks)</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
     <div style="font-size: 13px; color: #666; margin-bottom: 12px; line-height: 1.6;">
       {{near_term_context}}
     </div>
-    <!-- Styled Table for work items -->
+    <!-- Work items table -->
     <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
       <tr style="background: #f8f9fa; border-bottom: 1px solid #eee;">
         <td style="padding: 10px; font-weight: 600; width: 80px;">ID</td>
@@ -67,15 +73,15 @@
     </table>
   </div>
   
-  <!-- UPCOMING (1-2 MONTHS) -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #495057; margin-bottom: 12px; border-bottom: 1px solid #dee2e6; padding-bottom: 8px;">
-      🔮 Upcoming (1-2 Months)
-    </div>
+  <!-- UPCOMING (1-2 MONTHS) HEADER - Blue-gray (Horizon) -->
+  <div style="background: linear-gradient(135deg, #546e7a 0%, #37474f 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">🔮 Upcoming (1-2 Months)</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
     <div style="font-size: 13px; color: #666; margin-bottom: 12px; line-height: 1.6;">
       {{upcoming_context}}
     </div>
-    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #666;">
+    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
       <li>
         <strong style="color: #333;">#{{work_item_id}}</strong> {{work_item_title}} - 
         <span style="background: #6c757d; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 11px;">{{effort_level}}</span>
@@ -89,10 +95,10 @@
     </ul>
   </div>
   
-  <!-- LEADERSHIP HELP BOX (blue gradient) -->
-  <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-left: 4px solid #2196f3; border-radius: 0 8px 8px 0; padding: 16px;">
-    <div style="font-weight: 600; color: #1565c0; margin-bottom: 10px;">🤝 Where Leadership Can Help</div>
-    <div style="font-size: 13px; color: #1565c0; line-height: 1.8;">
+  <!-- LEADERSHIP HELP CALLOUT -->
+  <div style="background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 20px;">
+    <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">🤝 Where Leadership Can Help</div>
+    <div style="font-size: 13px; color: #333; line-height: 1.8;">
       <strong>{{ask_category_1}}:</strong> {{ask_detail_1}}
       <br><br>
       <strong>{{ask_category_2}}:</strong> {{ask_detail_2}}

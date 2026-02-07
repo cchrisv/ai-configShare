@@ -21,10 +21,20 @@ Input: `{{work_item_id}}`, `{{wiki_path}}` (optional)
 
 ## Protocol
 1. Follow `{{paths.templates}}/{{template_files.wiki_format}}` for formatting standards
-2. Use `{{paths.templates}}/{{template_files.wiki_page_template}}` for rich HTML styling
+2. Use `{{paths.templates}}/{{template_files.wiki_page_template}}` for rich HTML styling (see design conventions below)
 3. Content from verified artifacts only
 4. Idempotent - update existing pages, don't duplicate
-5. Link back to source work item
+
+## Wiki Template Design Conventions
+- **Page header**: Single gradient bar with `#{{work_item_id}} — {{title}}` only. No "View Work Item" links, no metadata.
+- **`##` section headers**: Markdown `##` for TOC + **6px** gradient accent bar immediately below
+- **`###` subsection headers**: Markdown `###` for TOC + **4px** gradient accent bar immediately below (lighter shade of parent)
+- **Content**: ALL content in white bordered cards (`background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;`)
+- **Callouts**: Colored left-border accent cards inside content cards
+- **Tables**: HTML styled (NOT markdown) with `#f8f9fa` header rows, `1px solid #dee2e6` borders
+- **NO collapsed sections**: Never use `<details>/<summary>` — all content fully visible
+- **Diagrams**: Mermaid `graph TD` (top-down), never `graph LR`
+- **`[[_TOC_]]`**: Must be on its own line outside any HTML block
 
 ## Execution
 

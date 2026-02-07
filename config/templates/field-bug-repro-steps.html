@@ -3,16 +3,20 @@
   Purpose: Rich styled template for Bug Repro Steps field in Azure DevOps
   Sections: Environment, Preconditions, Step-by-step instructions, Expected/Actual
   Variables: Replace {{variable}} placeholders with actual content
+  
+  Color Scheme (Dark Gradients with White Text):
+  - Purple (#7b1fa2 → #4a148c): Reproduction Steps Header
+  - Blue (#1565c0 → #0d47a1): Steps to Reproduce
 -->
 <div style="font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #333;">
 
   <!-- REPRO STEPS HEADER - Purple (Investigation) -->
-  <div style="background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+  <div style="background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
     <span style="font-weight: 700; color: #fff; font-size: 15px;">🔄 Reproduction Steps</span>
   </div>
 
   <!-- ENVIRONMENT & PRECONDITIONS -->
-  <div style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+  <div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
     <!-- Environment Card -->
     <div style="flex: 1; min-width: 200px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px;">
       <div style="font-weight: 600; color: #495057; margin-bottom: 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 8px;">
@@ -36,12 +40,12 @@
     </div>
   </div>
 
-  <!-- NUMBERED STEPS -->
-  <div style="background: #fff; border: 2px solid #1976d2; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #1976d2; margin-bottom: 12px; border-bottom: 2px solid #1976d2; padding-bottom: 8px;">
-      📋 Steps to Reproduce
-    </div>
-    <ol style="margin: 0; padding-left: 24px; font-size: 13px; line-height: 2; color: #333;">
+  <!-- STEPS TO REPRODUCE HEADER - Blue (Action) -->
+  <div style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">📋 Steps to Reproduce</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <ol style="margin: 0; padding-left: 24px; font-size: 13px; line-height: 1.8; color: #333;">
       <li style="padding: 4px 0;">{{step_1}}</li>
       <li style="padding: 4px 0;">{{step_2}}</li>
       <li style="padding: 4px 0;">{{step_3}}</li>
@@ -52,19 +56,19 @@
   </div>
 
   <!-- EXPECTED VS ACTUAL COMPARISON -->
-  <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+  <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;">
     <!-- Expected -->
-    <div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-left: 4px solid #28a745; border-radius: 0 8px 8px 0; padding: 14px;">
-      <div style="font-weight: 600; color: #155724; margin-bottom: 8px;">✅ Expected Result</div>
-      <div style="font-size: 13px; color: #155724; line-height: 1.6;">
+    <div style="flex: 1; min-width: 250px; background: #e8f5e9; border-left: 4px solid #28a745; border-radius: 0 8px 8px 0; padding: 14px;">
+      <div style="font-weight: 600; color: #2e7d32; margin-bottom: 6px;">✅ Expected Result</div>
+      <div style="font-size: 13px; color: #333; line-height: 1.6;">
         {{expected_result}}
       </div>
     </div>
     
     <!-- Actual -->
-    <div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); border-left: 4px solid #dc3545; border-radius: 0 8px 8px 0; padding: 14px;">
-      <div style="font-weight: 600; color: #721c24; margin-bottom: 8px;">❌ Actual Result</div>
-      <div style="font-size: 13px; color: #721c24; line-height: 1.6;">
+    <div style="flex: 1; min-width: 250px; background: #fce4ec; border-left: 4px solid #dc3545; border-radius: 0 8px 8px 0; padding: 14px;">
+      <div style="font-weight: 600; color: #c62828; margin-bottom: 6px;">❌ Actual Result</div>
+      <div style="font-size: 13px; color: #333; line-height: 1.6;">
         {{actual_result}}
       </div>
     </div>

@@ -1,644 +1,571 @@
 <!--
-  WIKI PAGE HTML TEMPLATE
-  Purpose: Rich styled template for Azure DevOps Wiki pages
-  Design: Gradient headers, card layouts, color-coded sections matching work item field templates
-  Note: ADO Wiki supports HTML - this template uses inline styles for dark mode compatibility
-  
-  Color Scheme (Dark Gradients with White Text):
-  - Green (#2e7d32 → #1b5e20): Success, Goals, Acceptance Criteria, Getting Started
-  - Blue (#1565c0 → #0d47a1): Summary, Information, Understanding the Request
-  - Purple (#7b1fa2 → #4a148c): Discovery & Research, User Story, Investigation
-  - Orange (#e65100 → #bf360c): Assumptions, Warnings, Investigation Trail
-  - Red (#c62828 → #b71c1c): Blockers, Known Unknowns, Critical Items
-  - Indigo (#303f9f → #1a237e): Solution Design, Architecture, Technical
-  - Teal (#00796b → #004d40): Testing, Validation, Quality, Metrics
+  WIKI PAGE TEMPLATE
+  Purpose: Rich styled template for Azure DevOps Wiki pages (Work Item Prep)
+  Design: Markdown headers for TOC + gradient accent bars + white content cards
+
+  CRITICAL ADO WIKI RENDERING RULES:
+  - [[_TOC_]] MUST be on its own line outside any HTML block
+  - Section headers MUST use markdown ## / ### syntax for TOC detection
+  - HTML blocks must be separated by blank lines from markdown content
+  - Each HTML block is self-contained (no wrapping <div> around entire page)
+  - NO <details>/<summary> collapsed sections — all content visible
+  - Diagrams use graph TD (top-down), never LR
+
+  VISUAL HIERARCHY:
+  - Page header: gradient bar (border-radius: 8px; padding: 14px 16px) — ticket # + title only
+  - ## sections: 6px gradient accent bar immediately below heading
+  - ### subsections: 4px gradient accent bar immediately below heading
+  - Content: white cards (background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px)
+  - Callouts: colored left-border accent cards inside content cards
+  - Tables: HTML styled (NOT markdown), #f8f9fa header row, 1px #dee2e6 borders
+  - Section sub-labels: bold colored text with border-bottom divider (inside cards)
+
+  Color Scheme (Section Accent Gradients):
+  - Green (#2e7d32 → #1b5e20): Executive Summary, Goals
+  - Blue (#1565c0 → #0d47a1): Page header, Understanding the Request
+  - Purple (#7b1fa2 → #4a148c): Discovery & Research
+  - Orange (#e65100 → #bf360c): Investigation & Discovery Trail
+  - Red (#c62828 → #b71c1c): Open Unknowns, Blockers
+  - Indigo (#303f9f → #1a237e): Solution Design, Architecture
+  - Teal (#00796b → #004d40): Quality & Validation, Testing
   - Brown (#5d4037 → #3e2723): Decision Rationale, Trade-offs
-  - Pink (#ad1457 → #880e4f): Out of Scope, Exclusions
+
+  Subsection accent bars use a lighter shade of the parent section color.
 -->
 
-<div style="font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #333; max-width: 1200px; margin: 0 auto;">
+<div style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+  <span style="font-weight: 700; color: #fff; font-size: 15px;">#{{work_item_id}} — {{work_item_title}}</span>
+</div>
 
-  <!-- PAGE HEADER -->
-  <div style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 12px; padding: 24px; margin-bottom: 24px; color: #fff;">
-    <div style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">
-      📋 Autonomous Ticket Preparation - #{{work_item_id}}
-    </div>
-    <div style="font-size: 14px; opacity: 0.9; margin-bottom: 12px;">
-      <strong>Work Item:</strong> #{{work_item_id}} - {{work_item_title}}
-    </div>
-    <div style="display: flex; gap: 24px; font-size: 13px;">
-      <span>📅 <strong>Generated:</strong> {{timestamp}}</span>
-      <span>✅ <strong>Status:</strong> Ready for Development</span>
-    </div>
-  </div>
+[[_TOC_]]
 
-  <!-- NAVIGATION LINK -->
-  <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; text-align: center;">
-    <a href="{{work_item_url}}" style="color: #0078d4; text-decoration: none; font-weight: 600;">
-      🔗 View Ticket in Azure DevOps →
-    </a>
-  </div>
+---
 
-  <!-- TABLE OF CONTENTS -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-    <div style="font-weight: 700; color: #333; margin-bottom: 12px; font-size: 16px;">📑 Table of Contents</div>
-    [[_TOC_]]
-  </div>
+## 🎯 Executive Summary
+<div style="height: 6px; background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
 
-  <!-- ==================== EXECUTIVE SUMMARY ==================== -->
-  <div style="background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
-    <span style="font-weight: 700; color: #fff; font-size: 15px;">🎯 Executive Summary</span>
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.7;">
+    {{executive_summary_narrative}}
+  </p>
+  <div style="background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #e65100; margin-bottom: 6px;">💡 The Challenge We're Addressing</div>
+    <div style="line-height: 1.6;">{{challenge_description}}</div>
   </div>
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-    <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.7; color: #333;">
-      {{executive_summary_narrative}}
-    </p>
-    
-    <!-- Challenge Card -->
-    <div style="background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
-      <div style="font-weight: 600; color: #e65100; margin-bottom: 6px;">💡 The Challenge We're Addressing</div>
-      <div style="font-size: 13px; color: #333; line-height: 1.6;">{{challenge_description}}</div>
-    </div>
-    
-    <!-- What We Learned Card -->
-    <div style="background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
-      <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">🔍 What We Learned</div>
-      <div style="font-size: 13px; color: #333; line-height: 1.6;">{{key_discoveries}}</div>
-    </div>
-    
-    <!-- Recommended Approach Card -->
-    <div style="background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
-      <div style="font-weight: 600; color: #2e7d32; margin-bottom: 6px;">✅ Our Recommended Approach</div>
-      <div style="font-size: 13px; color: #333; line-height: 1.6;">{{recommended_approach}}</div>
-    </div>
-    
-    <!-- Path Forward Card -->
-    <div style="background: #f3e5f5; border-left: 4px solid #9c27b0; border-radius: 0 8px 8px 0; padding: 14px;">
-      <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 6px;">➡️ The Path Forward</div>
-      <div style="font-size: 13px; color: #333; line-height: 1.6;">{{path_forward}}</div>
-    </div>
+  <div style="background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">🔍 What We Learned</div>
+    <div style="line-height: 1.6;">{{key_discoveries}}</div>
   </div>
+  <div style="background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #2e7d32; margin-bottom: 6px;">✅ Our Recommended Approach</div>
+    <div style="line-height: 1.6;">{{recommended_approach}}</div>
+  </div>
+  <div style="background: #f3e5f5; border-left: 4px solid #9c27b0; border-radius: 0 8px 8px 0; padding: 14px;">
+    <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 6px;">➡️ The Path Forward</div>
+    <div style="line-height: 1.6;">{{path_forward}}</div>
+  </div>
+</div>
 
-  <!-- ==================== UNDERSTANDING THE REQUEST ==================== -->
-  <div style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
-    <span style="font-weight: 700; color: #fff; font-size: 15px;">📋 Understanding the Request</span>
-  </div>
-  
-  <!-- Business Context Sub-section -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #0d47a1; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      🎯 Business Context
-    </div>
-    <p style="margin: 0 0 16px 0; font-size: 13px; line-height: 1.7; color: #333;">
-      {{business_context_narrative}}
-    </p>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">The People This Affects:</div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">{{stakeholders_affected}}</p>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">The Current Situation:</div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">{{current_situation}}</p>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">What Success Looks Like:</div>
-    <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #333;">{{success_definition}}</p>
-  </div>
-  
-  <!-- Requirements Sub-section -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-    <div style="font-weight: 600; color: #0d47a1; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      📊 What We Need to Deliver
-    </div>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">Functional Requirements:</div>
-    <ul style="margin: 0 0 16px 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-      <li>{{functional_req_1}}</li>
-      <li>{{functional_req_2}}</li>
-      <li>{{functional_req_3}}</li>
-    </ul>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">Quality Attributes:</div>
-    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-      <li>{{quality_attr_1}}</li>
-      <li>{{quality_attr_2}}</li>
-    </ul>
-  </div>
+---
 
-  <!-- ==================== DISCOVERY & RESEARCH ==================== -->
-  <div style="background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
-    <span style="font-weight: 700; color: #fff; font-size: 15px;">🔍 Discovery & Research</span>
-  </div>
-  
-  <!-- Existing Knowledge -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      📚 Learning from Existing Knowledge
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">
-      {{existing_knowledge_narrative}}
-    </p>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">What We Found in Our Documentation:</div>
-    <ul style="margin: 0 0 12px 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-      <li>{{doc_finding_1}}</li>
-      <li>{{doc_finding_2}}</li>
-      <li>{{doc_finding_3}}</li>
-    </ul>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">Key Discoveries:</div>
-    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-      <li>{{discovery_1}}</li>
-      <li>{{discovery_2}}</li>
-      <li>{{discovery_3}}</li>
-    </ul>
-  </div>
-  
-  <!-- Technical Environment -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      🏗️ Understanding Our Technical Environment
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">
-      {{technical_env_narrative}}
-    </p>
-    
-    <!-- Metadata Dependencies Collapsible -->
-    <details style="margin-top: 16px;">
-      <summary style="cursor: pointer; font-weight: 600; color: #0078d4; font-size: 13px; padding: 8px 0;">
-        📊 Component Usage Analysis (Click to expand)
-      </summary>
-      <div style="margin-top: 12px; padding: 16px; background: #f8f9fa; border-radius: 8px;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-          <tr style="background: #e3f2fd;">
-            <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Type</td>
-            <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Component Name</td>
-            <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Impact Level</td>
-            <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Notes</td>
-          </tr>
-          <tr>
-            <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_type}}</td>
-            <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_name}}</td>
-            <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 3px; font-size: 11px;">{{impact_level}}</span></td>
-            <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_notes}}</td>
-          </tr>
-        </table>
-      </div>
-    </details>
-  </div>
-  
-  <!-- Code Search -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      💻 Examining the Codebase
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">
-      {{codebase_narrative}}
-    </p>
-    
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px;">
-      <tr style="background: #f3e5f5;">
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Component</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Purpose</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Relevance</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Reusability</td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{code_component_1}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{code_purpose_1}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{code_relevance_1}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{code_reusability_1}}</td>
-      </tr>
-    </table>
-  </div>
-  
-  <!-- Related Work Items -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-    <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      🔗 Related Work Items
-    </div>
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-      <tr style="background: #f8f9fa;">
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Work Item</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Title</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Why It's Related</td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;"><a href="{{related_url_1}}" style="color: #0078d4;">#{{related_id_1}}</a></td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{related_title_1}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{related_reason_1}}</td>
-      </tr>
-    </table>
-  </div>
+## 📋 Understanding the Request
+<div style="height: 6px; background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
 
-  <!-- ==================== INVESTIGATION & DISCOVERY TRAIL ==================== -->
-  <div style="background: linear-gradient(135deg, #e65100 0%, #bf360c 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
-    <span style="font-weight: 700; color: #fff; font-size: 15px;">🔬 Investigation & Discovery Trail</span>
-  </div>
-  
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #e65100; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      🕵️ The Investigation Journey
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.7; color: #333;">
-      {{investigation_journey_narrative}}
-    </p>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">Where We Started:</div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">{{investigation_start}}</p>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">How Our Understanding Evolved:</div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">{{understanding_evolution}}</p>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">Key Turning Points:</div>
-    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-      <li>{{turning_point_1}}</li>
-      <li>{{turning_point_2}}</li>
-    </ul>
-  </div>
-  
-  <!-- Hypothesis Testing -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #e65100; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      🧪 Testing Our Assumptions
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">
-      {{hypothesis_narrative}}
-    </p>
-    
-    <details style="margin-top: 12px;">
-      <summary style="cursor: pointer; font-weight: 600; color: #0078d4; font-size: 13px; padding: 8px 0;">
-        📋 Complete Hypothesis Testing Log (Click to expand)
-      </summary>
-      <div style="margin-top: 12px;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-          <tr style="background: #fff3e0;">
-            <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What We Thought</td>
-            <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Why We Thought It</td>
-            <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What We Found</td>
-            <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Verdict</td>
-          </tr>
-          <tr>
-            <td style="padding: 10px; border: 1px solid #dee2e6;">{{hypothesis_1}}</td>
-            <td style="padding: 10px; border: 1px solid #dee2e6;">{{hypothesis_reason_1}}</td>
-            <td style="padding: 10px; border: 1px solid #dee2e6;">{{hypothesis_finding_1}}</td>
-            <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">✅ Confirmed</span></td>
-          </tr>
-        </table>
-      </div>
-    </details>
-  </div>
-  
-  <!-- Confidence Assessment -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-    <div style="font-weight: 600; color: #e65100; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      📊 How Confident Are We?
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">
-      {{confidence_narrative}}
-    </p>
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-      <tr style="background: #f8f9fa;">
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Area</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Confidence</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What Gives Us Confidence</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What We're Less Sure About</td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{confidence_area}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">High</span></td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{confidence_evidence}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{confidence_uncertainty}}</td>
-      </tr>
-    </table>
-  </div>
+### 🎯 Business Context
+<div style="height: 4px; background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
 
-  <!-- ==================== SOLUTION DESIGN ==================== -->
-  <div style="background: linear-gradient(135deg, #303f9f 0%, #1a237e 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
-    <span style="font-weight: 700; color: #fff; font-size: 15px;">🎨 Solution Design</span>
-  </div>
-  
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <p style="margin: 0 0 16px 0; font-size: 13px; line-height: 1.7; color: #333;">
-      {{solution_overview_narrative}}
-    </p>
-    
-    <div style="font-weight: 600; color: #303f9f; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      🏛️ The Architectural Approach
-    </div>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">Why We Designed It This Way:</div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">{{design_philosophy}}</p>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">The Key Technology Choices:</div>
-    <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #333;">{{technology_choices}}</p>
-  </div>
-  
-  <!-- Components -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #303f9f; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      🧩 How the Pieces Fit Together
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">
-      {{components_narrative}}
-    </p>
-    
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-      <tr style="background: #e3f2fd;">
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Component</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What It Does</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Why It's Needed</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Complexity</td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_name_1}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_desc_1}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_why_1}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 3px; font-size: 11px;">{{component_complexity_1}}</span></td>
-      </tr>
-    </table>
-  </div>
-  
-  <!-- Integration Points -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-    <div style="font-weight: 600; color: #303f9f; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      🔌 Integration Points
-    </div>
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">Working with Other Systems:</div>
-    <ul style="margin: 0 0 12px 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-      <li>{{integration_1}}</li>
-      <li>{{integration_2}}</li>
-    </ul>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">Security Considerations:</div>
-    <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #333;">{{security_considerations}}</p>
-  </div>
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.7;">
+    {{business_context_narrative}}
+  </p>
+  <div style="font-weight: 600; color: #1565c0; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">👥 The People This Affects</div>
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">{{stakeholders_affected}}</p>
+  <div style="font-weight: 600; color: #1565c0; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">📍 The Current Situation</div>
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">{{current_situation}}</p>
+  <div style="font-weight: 600; color: #1565c0; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">🏆 What Success Looks Like</div>
+  <p style="margin: 0; line-height: 1.6;">{{success_definition}}</p>
+</div>
 
-  <!-- ==================== DECISION RATIONALE ==================== -->
-  <div style="background: linear-gradient(135deg, #5d4037 0%, #3e2723 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
-    <span style="font-weight: 700; color: #fff; font-size: 15px;">💭 Decision Rationale</span>
-  </div>
-  
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <p style="margin: 0 0 16px 0; font-size: 13px; line-height: 1.7; color: #333;">
-      {{decision_narrative}}
-    </p>
-    
-    <!-- The Short Version -->
-    <div style="background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 16px;">
-      <div style="font-weight: 600; color: #2e7d32; margin-bottom: 6px;">📝 The Short Version</div>
-      <div style="font-size: 13px; color: #333; line-height: 1.6;">{{decision_summary}}</div>
-    </div>
-    
-    <div style="font-weight: 600; color: #5d4037; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      🎯 The Options We Weighed
-    </div>
-    
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-      <tr style="background: #fff3e0;">
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Option</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">The Approach</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What's Good</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What Gave Us Pause</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Assessment</td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">Option 1</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_1_approach}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_1_pros}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_1_cons}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">✅ Recommended</span></td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">Option 2</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_2_approach}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_2_pros}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_2_cons}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #dc3545; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">❌ Not this time</span></td>
-      </tr>
-    </table>
-  </div>
-  
-  <!-- Trade-offs -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-    <div style="font-weight: 600; color: #5d4037; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      ⚖️ The Trade-offs We're Making
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">
-      {{tradeoffs_narrative}}
-    </p>
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-      <tr style="background: #f8f9fa;">
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">We're Choosing</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Instead Of</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Because</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Risk We're Accepting</td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{choosing}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{instead_of}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{because}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{accepted_risk}}</td>
-      </tr>
-    </table>
-  </div>
+### 📊 What We Need to Deliver
+<div style="height: 4px; background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
 
-  <!-- ==================== QUALITY & VALIDATION ==================== -->
-  <div style="background: linear-gradient(135deg, #00796b 0%, #004d40 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
-    <span style="font-weight: 700; color: #fff; font-size: 15px;">✅ Quality & Validation</span>
-  </div>
-  
-  <!-- Success Criteria -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #00796b; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      📋 How We'll Know We're Successful
-    </div>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">What Users Should Experience:</div>
-    <ol style="margin: 0 0 16px 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-      <li>{{user_success_1}}</li>
-      <li>{{user_success_2}}</li>
-      <li>{{user_success_3}}</li>
-    </ol>
-    
-    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">What the System Must Do:</div>
-    <ol start="4" style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-      <li>{{system_success_1}}</li>
-      <li>{{system_success_2}}</li>
-    </ol>
-  </div>
-  
-  <!-- Testing Strategy -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #00796b; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      🧪 Testing Strategy & Coverage
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.7; color: #333;">
-      {{testing_philosophy}}
-    </p>
-  </div>
-  
-  <!-- P1 Critical Tests -->
-  <div style="background: #fff; border: 2px solid #dc3545; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #dc3545; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f8d7da;">
-      🔴 P1 Critical Path Tests
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">
-      These tests validate the core functionality that must work for the feature to be considered successful. Failure of any P1 test is a release blocker.
-    </p>
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-      <tr style="background: #f8d7da;">
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">ID</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Test Scenario</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Why This Test Matters</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Expected Outcome</td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">TC-001</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{test_scenario_1}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{test_importance_1}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{test_outcome_1}}</td>
-      </tr>
-    </table>
-    
-    <details style="margin-top: 16px;">
-      <summary style="cursor: pointer; font-weight: 600; color: #0078d4; font-size: 13px; padding: 8px 0;">
-        📋 P1 Test Case Details (Click to expand)
-      </summary>
-      <div style="margin-top: 12px; padding: 16px; background: #f8f9fa; border-radius: 8px;">
-        <div style="font-weight: 600; color: #333; margin-bottom: 8px;">TC-001: {{test_full_title_1}}</div>
-        <p style="margin: 0 0 12px 0; font-size: 13px; color: #333;"><strong>Objective:</strong> {{test_objective_1}}</p>
-        
-        <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">Pre-conditions & Setup:</div>
-        <ul style="margin: 0 0 12px 0; padding-left: 20px; font-size: 13px; line-height: 1.6;">
-          <li>{{precondition_1}}</li>
-          <li>{{precondition_2}}</li>
-        </ul>
-        
-        <div style="font-weight: 600; color: #495057; margin-bottom: 8px; font-size: 13px;">Step-by-Step Execution:</div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-          <tr style="background: #e3f2fd;">
-            <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6; width: 50px;">Step</td>
-            <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Action</td>
-            <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Input/Data</td>
-            <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Expected Result</td>
-            <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6; width: 30px;">✓</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">1</td>
-            <td style="padding: 8px; border: 1px solid #dee2e6;">{{step_action_1}}</td>
-            <td style="padding: 8px; border: 1px solid #dee2e6;">{{step_input_1}}</td>
-            <td style="padding: 8px; border: 1px solid #dee2e6;">{{step_expected_1}}</td>
-            <td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">☐</td>
-          </tr>
-        </table>
-      </div>
-    </details>
-  </div>
-  
-  <!-- P2 Important Tests -->
-  <div style="background: #fff; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #856404; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #fff3cd;">
-      🟡 P2 Important Tests
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">
-      These tests cover important alternate paths and key negative scenarios.
-    </p>
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-      <tr style="background: #fff3cd;">
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">ID</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Test Scenario</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Expected Outcome</td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">TC-002</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{p2_test_scenario}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{p2_test_outcome}}</td>
-      </tr>
-    </table>
-  </div>
-  
-  <!-- Traceability Matrix -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #00796b; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      🔗 Requirements Traceability Matrix
-    </div>
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-      <tr style="background: #e0f2f1;">
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Acceptance Criteria</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Description</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Test Cases</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Coverage</td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">AC-1</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{ac_description_1}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">TC-001, TC-002</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">✅ Full</span></td>
-      </tr>
-    </table>
-    <p style="margin: 12px 0 0 0; font-size: 12px; color: #666;">
-      <strong>Legend:</strong> ✅ Fully Covered | ⚠️ Partially Covered | ❌ Coverage Gap
-    </p>
-  </div>
-  
-  <!-- Assumptions Resolution -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
-    <div style="font-weight: 600; color: #00796b; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
-      📋 Assumptions Resolution Log
-    </div>
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-      <tr style="background: #f8f9fa;">
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Assumption</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Phase</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Source</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Status</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Resolution Evidence</td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{assumption_text}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">Research</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{assumption_source}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">✅ Validated</span></td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{assumption_evidence}}</td>
-      </tr>
-    </table>
-    <p style="margin: 12px 0 0 0; font-size: 12px; color: #666;">
-      <strong>Status Legend:</strong> ✅ Validated | ❌ Refuted | ⚠️ Open | 🔄 Superseded
-    </p>
-  </div>
-  
-  <!-- Open Unknowns -->
-  <div style="background: #fff; border: 2px solid #dc3545; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-    <div style="font-weight: 600; color: #dc3545; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f8d7da;">
-      ❓ Open Unknowns
-    </div>
-    <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #333;">
-      These items could not be determined during autonomous preparation and require human input:
-    </p>
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-      <tr style="background: #f8d7da;">
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Unknown</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Why We Couldn't Determine</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Impact if Unresolved</td>
-        <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Suggested Resolution Path</td>
-      </tr>
-      <tr>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_item}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_reason}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_impact}}</td>
-        <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_resolution}}</td>
-      </tr>
-    </table>
-  </div>
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="font-weight: 600; color: #1565c0; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">⚙️ Functional Requirements</div>
+  <ul style="margin: 0 0 16px 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{functional_req_1}}</li>
+    <li>{{functional_req_2}}</li>
+    <li>{{functional_req_3}}</li>
+  </ul>
+  <div style="font-weight: 600; color: #1565c0; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">📐 Quality Attributes</div>
+  <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{quality_attr_1}}</li>
+    <li>{{quality_attr_2}}</li>
+  </ul>
+</div>
 
-  <!-- ==================== FOOTER ==================== -->
-  <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-top: 24px; text-align: center;">
-    <div style="font-size: 13px; color: #666; margin-bottom: 8px;">
-      📅 <strong>Last Updated:</strong> {{timestamp}}
-    </div>
-    <div style="font-size: 12px; color: #999;">
-      🤖 Generated by Copilot Refinement<br/>
-      This single page provides complete documentation of research, decisions, and technical design.
-    </div>
-  </div>
+---
 
+## 🔍 Discovery & Research
+<div style="height: 6px; background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+### 📚 Learning from Existing Knowledge
+<div style="height: 4px; background: linear-gradient(135deg, #ab47bc 0%, #7b1fa2 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{existing_knowledge_narrative}}
+  </p>
+  <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">📄 What We Found in Our Documentation</div>
+  <ul style="margin: 0 0 16px 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{doc_finding_1}}</li>
+    <li>{{doc_finding_2}}</li>
+    <li>{{doc_finding_3}}</li>
+  </ul>
+  <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">💎 Key Discoveries</div>
+  <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{discovery_1}}</li>
+    <li>{{discovery_2}}</li>
+    <li>{{discovery_3}}</li>
+  </ul>
+</div>
+
+### 🏗️ Understanding Our Technical Environment
+<div style="height: 4px; background: linear-gradient(135deg, #ab47bc 0%, #7b1fa2 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{technical_env_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Type</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Component Name</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Impact Level</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Notes</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_type}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_name}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{impact_level}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_notes}}</td>
+    </tr>
+    <!-- Add more component rows as needed -->
+  </table>
+</div>
+
+### 💻 Examining the Codebase
+<div style="height: 4px; background: linear-gradient(135deg, #ab47bc 0%, #7b1fa2 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{codebase_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Component</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Purpose</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Relevance</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Reusability</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{code_component_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{code_purpose_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{code_relevance_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{code_reusability_1}}</td>
+    </tr>
+    <!-- Add more code component rows as needed -->
+  </table>
+</div>
+
+### 🔗 Related Work Items
+<div style="height: 4px; background: linear-gradient(135deg, #ab47bc 0%, #7b1fa2 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Work Item</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Title</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Why It's Related</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><a href="{{related_url_1}}" style="color: #0078d4;">#{{related_id_1}}</a></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{related_title_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{related_reason_1}}</td>
+    </tr>
+    <!-- Add more related work item rows as needed -->
+  </table>
+</div>
+
+---
+
+## 🔬 Investigation & Discovery Trail
+<div style="height: 6px; background: linear-gradient(135deg, #e65100 0%, #bf360c 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+### 🕵️ The Investigation Journey
+<div style="height: 4px; background: linear-gradient(135deg, #ef6c00 0%, #e65100 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.7;">
+    {{investigation_journey_narrative}}
+  </p>
+  <div style="font-weight: 600; color: #e65100; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">🕵️ Where We Started</div>
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">{{investigation_start}}</p>
+  <div style="font-weight: 600; color: #e65100; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">🔄 How Our Understanding Evolved</div>
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">{{understanding_evolution}}</p>
+  <div style="font-weight: 600; color: #e65100; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">⚡ Key Turning Points</div>
+  <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{turning_point_1}}</li>
+    <li>{{turning_point_2}}</li>
+  </ul>
+</div>
+
+### 🧪 Testing Our Assumptions
+<div style="height: 4px; background: linear-gradient(135deg, #ef6c00 0%, #e65100 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{hypothesis_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What We Thought</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Why We Thought It</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What We Found</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Verdict</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{hypothesis_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{hypothesis_reason_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{hypothesis_finding_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">✅ Confirmed</span></td>
+    </tr>
+    <!-- Add more hypothesis rows as needed. Verdict options: ✅ Confirmed (#4caf50), ❌ REFUTED (#dc3545), ⚠️ OPEN (#ffc107 with #333 text) -->
+  </table>
+  <div style="background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 0 8px 8px 0; padding: 14px; margin-top: 16px;">
+    <div style="font-weight: 600; color: #2e7d32; margin-bottom: 6px;">💡 Key Insight</div>
+    <div style="line-height: 1.6;">{{key_insight}}</div>
+  </div>
+</div>
+
+### 📊 How Confident Are We?
+<div style="height: 4px; background: linear-gradient(135deg, #ef6c00 0%, #e65100 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{confidence_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Area</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Confidence</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What Gives Us Confidence</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What We're Less Sure About</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{confidence_area}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">High</span></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{confidence_evidence}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{confidence_uncertainty}}</td>
+    </tr>
+    <!-- Add more confidence rows as needed. Levels: High (#4caf50), Medium (#ffc107 with #333 text), Low (#dc3545) -->
+  </table>
+</div>
+
+---
+
+## 🎨 Solution Design
+<div style="height: 6px; background: linear-gradient(135deg, #303f9f 0%, #1a237e 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.7;">
+    {{solution_overview_narrative}}
+  </p>
+</div>
+
+### 🏛️ The Architectural Approach
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="font-weight: 600; color: #303f9f; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">🏛️ Why We Designed It This Way</div>
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">{{design_philosophy}}</p>
+  <div style="font-weight: 600; color: #303f9f; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">🔧 The Key Technology Choices</div>
+  <p style="margin: 0; line-height: 1.6;">{{technology_choices}}</p>
+</div>
+
+### 🧩 How the Pieces Fit Together
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{components_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Component</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What It Does</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Why It's Needed</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Complexity</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_name_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_desc_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_why_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 3px; font-size: 11px;">{{component_complexity_1}}</span></td>
+    </tr>
+    <!-- Add more component rows as needed. Complexity: LOW (#4caf50), MEDIUM (#ffc107 with #333 text), HIGH (#dc3545), CRITICAL (#b71c1c) -->
+  </table>
+</div>
+
+### 🔌 Integration Points
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="font-weight: 600; color: #303f9f; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">🔌 Working with Other Systems</div>
+  <ul style="margin: 0 0 16px 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{integration_1}}</li>
+    <li>{{integration_2}}</li>
+  </ul>
+  <div style="font-weight: 600; color: #303f9f; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">🔒 Security Considerations</div>
+  <p style="margin: 0; line-height: 1.6;">{{security_considerations}}</p>
+</div>
+
+---
+
+## 💭 Decision Rationale
+<div style="height: 6px; background: linear-gradient(135deg, #5d4037 0%, #3e2723 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.7;">
+    {{decision_narrative}}
+  </p>
+  <div style="background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 0 8px 8px 0; padding: 14px;">
+    <div style="font-weight: 600; color: #2e7d32; margin-bottom: 6px;">📝 The Short Version</div>
+    <div style="line-height: 1.6;">{{decision_summary}}</div>
+  </div>
+</div>
+
+### 🎯 The Options We Weighed
+<div style="height: 4px; background: linear-gradient(135deg, #795548 0%, #5d4037 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Option</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">The Approach</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What's Good</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What Gave Us Pause</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Assessment</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Option 1</strong></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_1_approach}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_1_pros}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_1_cons}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">✅ Recommended</span></td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Option 2</strong></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_2_approach}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_2_pros}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{option_2_cons}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #dc3545; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">❌ Not this time</span></td>
+    </tr>
+    <!-- Add more option rows as needed. Assessment: ✅ Recommended (#4caf50), ❌ Not this time / REJECTED (#dc3545), ❌ DEFERRED (#dc3545) -->
+  </table>
+</div>
+
+### ⚖️ The Trade-offs We're Making
+<div style="height: 4px; background: linear-gradient(135deg, #795548 0%, #5d4037 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{tradeoffs_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">We're Choosing</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Instead Of</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Because</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Risk We're Accepting</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{choosing}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{instead_of}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{because}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{accepted_risk}}</td>
+    </tr>
+    <!-- Add more trade-off rows as needed -->
+  </table>
+</div>
+
+---
+
+## ✅ Quality & Validation
+<div style="height: 6px; background: linear-gradient(135deg, #00796b 0%, #004d40 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+### 📋 How We'll Know We're Successful
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="font-weight: 600; color: #00796b; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">👤 What Users Should Experience</div>
+  <ol style="margin: 0 0 16px 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{user_success_1}}</li>
+    <li>{{user_success_2}}</li>
+    <li>{{user_success_3}}</li>
+  </ol>
+  <div style="font-weight: 600; color: #00796b; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">⚙️ What the System Must Do</div>
+  <ol start="4" style="margin: 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{system_success_1}}</li>
+    <li>{{system_success_2}}</li>
+  </ol>
+</div>
+
+### 🧪 Testing Strategy & Coverage
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0; line-height: 1.7;">
+    {{testing_philosophy}}
+  </p>
+</div>
+
+### 🔴 P1 Critical Path Tests
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    These tests validate the core functionality that must work for the feature to be considered successful. Failure of any P1 test is a release blocker.
+  </p>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">ID</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Test Scenario</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Why This Test Matters</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Expected Outcome</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">TC-001</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{test_scenario_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{test_importance_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{test_outcome_1}}</td>
+    </tr>
+    <!-- Add more test case rows as needed -->
+  </table>
+  <div style="font-weight: 600; color: #00796b; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">📝 TC-001: {{test_full_title_1}}</div>
+  <p style="margin: 0 0 8px 0;"><strong>Objective:</strong> {{test_objective_1}}</p>
+  <p style="margin: 0 0 8px 0;"><strong>Pre-conditions & Setup:</strong></p>
+  <ul style="margin: 0 0 12px 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{precondition_1}}</li>
+    <li>{{precondition_2}}</li>
+  </ul>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Step</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Action</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Input/Data</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Expected Result</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">1</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{step_action_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{step_input_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{step_expected_1}}</td>
+    </tr>
+    <!-- Add more step rows as needed -->
+  </table>
+</div>
+
+### 🟡 P2 Important Tests
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">ID</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Test Scenario</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Expected Outcome</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">TC-002</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{p2_test_scenario}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{p2_test_outcome}}</td>
+    </tr>
+    <!-- Add more P2 test rows as needed -->
+  </table>
+</div>
+
+### 🔗 Requirements Traceability Matrix
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Acceptance Criteria</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Description</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Test Cases</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Coverage</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">AC-1</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{ac_description_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">TC-001, TC-002</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">✅ Covered</span></td>
+    </tr>
+    <!-- Add more AC rows as needed. Coverage: ✅ Covered (#4caf50), ⚠️ Partial (#ffc107 with #333 text), ❌ Gap (#dc3545) -->
+  </table>
+</div>
+
+### 📋 Assumptions Resolution Log
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Assumption</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Phase</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Source</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Status</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Resolution Evidence</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{assumption_text}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">Research</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{assumption_source}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">✅ Validated</span></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{assumption_evidence}}</td>
+    </tr>
+    <!-- Add more assumption rows as needed. Status: ✅ Validated (#4caf50), ❌ Refuted (#dc3545), ⚠️ Open (#ffc107 with #333 text), 🔄 Superseded (#2196f3) -->
+  </table>
+</div>
+
+### ❓ Open Unknowns
+<div style="height: 4px; background: linear-gradient(135deg, #ef5350 0%, #c62828 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="background: #ffebee; border-left: 4px solid #dc3545; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 16px;">
+    <div style="font-weight: 600; color: #dc3545; margin-bottom: 6px;">⚠️ Items Requiring Human Input</div>
+    <div style="line-height: 1.6;">These items could not be determined during autonomous preparation and require human input.</div>
+  </div>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Unknown</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Why We Couldn't Determine</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Impact if Unresolved</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Resolution Path</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_item}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_reason}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_impact}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_resolution}}</td>
+    </tr>
+    <!-- Add more unknown rows as needed -->
+  </table>
+</div>
+
+---
+
+<div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; text-align: center; font-family: 'Segoe UI', sans-serif;">
+  <div style="font-size: 13px; color: #666; margin-bottom: 8px;">📅 <strong>Last Updated:</strong> {{timestamp}}</div>
+  <div style="font-size: 12px; color: #999;">This single page provides complete documentation of research, decisions, and technical design.</div>
 </div>

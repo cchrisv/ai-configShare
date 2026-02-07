@@ -1,0 +1,497 @@
+<!--
+  FEATURE SOLUTION DESIGN WIKI PAGE TEMPLATE
+  Purpose: Rich styled template for Feature-level Solution Design wiki pages
+  Design: Markdown headers for TOC + gradient accent bars + white content cards
+
+  CRITICAL ADO WIKI RENDERING RULES:
+  - [[_TOC_]] MUST be on its own line outside any HTML block
+  - Section headers MUST use markdown ## / ### syntax for TOC detection
+  - HTML blocks must be separated by blank lines from markdown content
+  - Each HTML block is self-contained (no wrapping <div> around entire page)
+  - NO <details>/<summary> collapsed sections — all content visible
+  - Diagrams use graph TD (top-down), never LR
+
+  VISUAL HIERARCHY:
+  - Page header: gradient bar (border-radius: 8px; padding: 14px 16px) — feature # + title only
+  - ## sections: 6px gradient accent bar immediately below heading
+  - ### subsections: 4px gradient accent bar immediately below heading
+  - Content: white cards (background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px)
+  - Callouts: colored left-border accent cards inside content cards
+  - Tables: HTML styled (NOT markdown), #f8f9fa header row, 1px #dee2e6 borders
+  - Section sub-labels: bold colored text with border-bottom divider (inside cards)
+
+  Color Scheme (Section Accent Gradients):
+  - Green (#2e7d32 → #1b5e20): Executive Summary, Goals
+  - Blue (#1565c0 → #0d47a1): Page header, Current State
+  - Indigo (#303f9f → #1a237e): Future State, Solution Architecture
+  - Purple (#7b1fa2 → #4a148c): Requirements Inventory
+  - Teal (#00796b → #004d40): Testing Strategy, Quality
+  - Orange (#e65100 → #bf360c): Implementation Considerations
+  - Red (#c62828 → #b71c1c): Risks and Dependencies, Open Unknowns
+  - Brown (#5d4037 → #3e2723): Appendix
+
+  Subsection accent bars use a lighter shade of the parent section color.
+-->
+
+<div style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+  <span style="font-weight: 700; color: #fff; font-size: 15px;">#{{feature_id}} — {{feature_title}}</span>
+</div>
+
+[[_TOC_]]
+
+---
+
+## 🎯 Executive Summary
+<div style="height: 6px; background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.7;">
+    {{executive_summary_narrative}}
+  </p>
+  <div style="background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #2e7d32; margin-bottom: 6px;">📊 Feature Scope</div>
+    <div style="line-height: 1.6;">{{feature_scope_summary}}</div>
+  </div>
+  <div style="background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">💡 Business Value</div>
+    <div style="line-height: 1.6;">{{business_value_summary}}</div>
+  </div>
+  <div style="background: #f3e5f5; border-left: 4px solid #9c27b0; border-radius: 0 8px 8px 0; padding: 14px;">
+    <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 6px;">✅ Expected Outcomes</div>
+    <div style="line-height: 1.6;">{{expected_outcomes}}</div>
+  </div>
+</div>
+
+---
+
+## 📋 Current State — End-to-End
+<div style="height: 6px; background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+### 🏢 Business Process Today
+<div style="height: 4px; background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0; line-height: 1.7;">
+    {{current_business_process_narrative}}
+  </p>
+</div>
+
+### 🏗️ Current System Landscape
+<div style="height: 4px; background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{current_system_landscape_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">System</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Role</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Current Limitations</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>{{system_name_1}}</strong></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{system_role_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{system_limitation_1}}</td>
+    </tr>
+    <!-- Add more system rows as needed -->
+  </table>
+</div>
+
+### ⚠️ Pain Points & Limitations
+<div style="height: 4px; background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{pain_point_1}}</li>
+    <li>{{pain_point_2}}</li>
+    <li>{{pain_point_3}}</li>
+    <!-- Add more pain points as needed -->
+  </ul>
+</div>
+
+---
+
+## 🚀 Future State — End-to-End
+<div style="height: 6px; background: linear-gradient(135deg, #303f9f 0%, #1a237e 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+### 🏢 Business Process After Implementation
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0; line-height: 1.7;">
+    {{future_business_process_narrative}}
+  </p>
+</div>
+
+### 🏗️ Future System Landscape
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{future_system_landscape_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">System</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Role</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What Changes</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>{{future_system_name_1}}</strong></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{future_system_role_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{future_system_change_1}}</td>
+    </tr>
+    <!-- Add more system rows as needed -->
+  </table>
+</div>
+
+### ✨ Capabilities Gained
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="background: #e8eaf6; border-left: 4px solid #3f51b5; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #303f9f; margin-bottom: 6px;">{{capability_1_title}}</div>
+    <div style="line-height: 1.6;">{{capability_1_description}}</div>
+  </div>
+  <div style="background: #e8eaf6; border-left: 4px solid #3f51b5; border-radius: 0 8px 8px 0; padding: 14px;">
+    <div style="font-weight: 600; color: #303f9f; margin-bottom: 6px;">{{capability_2_title}}</div>
+    <div style="line-height: 1.6;">{{capability_2_description}}</div>
+  </div>
+  <!-- Add more capability cards as needed -->
+</div>
+
+---
+
+## 📊 Requirements Inventory
+<div style="height: 6px; background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+### 📋 User Stories by Functional Area
+<div style="height: 4px; background: linear-gradient(135deg, #ab47bc 0%, #7b1fa2 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{requirements_overview_narrative}}
+  </p>
+  <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">{{functional_area_1_name}}</div>
+  <p style="margin: 0 0 12px 0; line-height: 1.6;">{{functional_area_1_description}}</p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">ID</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Title</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">State</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Key AC Count</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><a href="{{story_url_1}}" style="color: #0078d4;">#{{story_id_1}}</a></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{story_title_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{story_state_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{story_ac_count_1}}</td>
+    </tr>
+    <!-- Add more story rows as needed -->
+  </table>
+  <!-- Add more functional area groups as needed -->
+</div>
+
+### 🔗 Inter-Story Dependencies
+<div style="height: 4px; background: linear-gradient(135deg, #ab47bc 0%, #7b1fa2 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Depends On</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Required By</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Reason</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">#{{dependency_source}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">#{{dependency_target}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{dependency_reason}}</td>
+    </tr>
+    <!-- Add more dependency rows as needed -->
+  </table>
+</div>
+
+---
+
+## 🏗️ Solution Architecture
+<div style="height: 6px; background: linear-gradient(135deg, #303f9f 0%, #1a237e 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+### 🏛️ Architectural Overview
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0; line-height: 1.7;">
+    {{architecture_overview_narrative}}
+  </p>
+</div>
+
+### 🧩 Component Landscape
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{components_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Component</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Type</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Responsibility</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Referenced By</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Status</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>{{component_name}}</strong></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_type}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_responsibility}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_stories}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{component_status}}</td>
+    </tr>
+    <!-- Add more component rows as needed -->
+  </table>
+  <div style="background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 14px;">
+    <div style="font-weight: 600; color: #e65100; margin-bottom: 6px;">🔄 Shared Components</div>
+    <div style="line-height: 1.6;">{{shared_components_narrative}}</div>
+  </div>
+</div>
+
+### 🔌 Cross-Story Integration Points
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{integration_points_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Integration</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Systems</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Stories Involved</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Data Flow</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{integration_name}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{integration_systems}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{integration_stories}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{integration_data_flow}}</td>
+    </tr>
+    <!-- Add more integration rows as needed -->
+  </table>
+</div>
+
+### 💭 Key Design Decisions
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{design_decisions_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Decision</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Chosen Approach</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Rationale</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Affects Stories</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{decision_name}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{decision_approach}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{decision_rationale}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{decision_stories}}</td>
+    </tr>
+    <!-- Add more decision rows as needed -->
+  </table>
+</div>
+
+---
+
+## 🔧 Implementation Considerations
+<div style="height: 6px; background: linear-gradient(135deg, #e65100 0%, #bf360c 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+### 📋 Sequencing & Coordination
+<div style="height: 4px; background: linear-gradient(135deg, #ef6c00 0%, #e65100 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.7;">
+    {{sequencing_narrative}}
+  </p>
+  <div style="background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 14px;">
+    <div style="font-weight: 600; color: #e65100; margin-bottom: 6px;">🏗️ Foundation Stories (Build First)</div>
+    <div style="line-height: 1.6;">{{foundation_stories}}</div>
+  </div>
+</div>
+
+### 📏 Standards & Governance
+<div style="height: 4px; background: linear-gradient(135deg, #ef6c00 0%, #e65100 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Standard</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Applicable Guidance</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Applies To</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{standard_name}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{standard_guidance}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{standard_applies_to}}</td>
+    </tr>
+    <!-- Add more standard rows as needed -->
+  </table>
+</div>
+
+---
+
+## 🧪 Testing Strategy Overview
+<div style="height: 6px; background: linear-gradient(135deg, #00796b 0%, #004d40 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+### 📋 Feature-Level Test Approach
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.7;">
+    {{testing_overview_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Functional Area</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Test Approach</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Stories Covered</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Integration Points</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{test_area_name}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{test_approach}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{test_stories}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{test_integration_points}}</td>
+    </tr>
+    <!-- Add more test area rows as needed -->
+  </table>
+</div>
+
+### 🔗 Cross-Story Integration Testing
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{integration_testing_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Integration Scenario</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Stories Involved</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What to Validate</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{integration_scenario}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{integration_scenario_stories}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{integration_scenario_validation}}</td>
+    </tr>
+    <!-- Add more integration scenario rows as needed -->
+  </table>
+</div>
+
+---
+
+## ⚠️ Risks and Dependencies
+<div style="height: 6px; background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+### 🔴 Risk Register
+<div style="height: 4px; background: linear-gradient(135deg, #ef5350 0%, #c62828 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{risks_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Risk</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Source Stories</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Likelihood</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Impact</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Mitigation</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{risk_description}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{risk_stories}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{risk_likelihood}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{risk_impact}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{risk_mitigation}}</td>
+    </tr>
+    <!-- Add more risk rows as needed -->
+  </table>
+</div>
+
+### 🔗 External Dependencies
+<div style="height: 4px; background: linear-gradient(135deg, #ef5350 0%, #c62828 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Dependency</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Owner / Team</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Status</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Impact if Delayed</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{dependency_name}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{dependency_owner}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{dependency_status}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{dependency_impact}}</td>
+    </tr>
+    <!-- Add more dependency rows as needed -->
+  </table>
+</div>
+
+### ❓ Open Unknowns
+<div style="height: 4px; background: linear-gradient(135deg, #ef5350 0%, #c62828 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="background: #ffebee; border-left: 4px solid #dc3545; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 16px;">
+    <div style="font-weight: 600; color: #dc3545; margin-bottom: 6px;">⚠️ Items Requiring Human Input</div>
+    <div style="line-height: 1.6;">These items could not be fully resolved during solution design and require human input.</div>
+  </div>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Unknown</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Why Unresolved</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Impact if Unresolved</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Suggested Resolution</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_item}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_reason}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_impact}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{unknown_resolution}}</td>
+    </tr>
+    <!-- Add more unknown rows as needed -->
+  </table>
+</div>
+
+---
+
+## 📚 Appendix: Per-Story Solution Details
+<div style="height: 6px; background: linear-gradient(135deg, #5d4037 0%, #3e2723 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    Below are the individual solution designs for each user story under this feature.
+  </p>
+  <div style="background: #efebe9; border-left: 4px solid #795548; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #5d4037; margin-bottom: 6px;">#{{story_id}} — {{story_title}} ({{story_state}})</div>
+    <div style="line-height: 1.6;">{{story_development_summary}}</div>
+    <div style="margin-top: 8px; font-size: 12px;">
+      <a href="{{story_wiki_url}}" style="color: #0078d4;">📄 View full wiki page →</a> &nbsp;|&nbsp;
+      <a href="{{story_ado_url}}" style="color: #0078d4;">🔗 View in ADO →</a>
+    </div>
+  </div>
+  <!-- Repeat per-story card for each child user story -->
+</div>
+
+---
+
+<div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; text-align: center; font-family: 'Segoe UI', sans-serif;">
+  <div style="font-size: 13px; color: #666; margin-bottom: 8px;">📅 <strong>Last Updated:</strong> {{timestamp}}</div>
+  <div style="font-size: 12px; color: #999;">Feature Solution Design Document aggregating {{child_story_count}} user stories.</div>
+</div>

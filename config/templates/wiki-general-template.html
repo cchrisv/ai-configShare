@@ -1,0 +1,282 @@
+<!--
+  GENERAL WIKI PAGE TEMPLATE
+  Purpose: Content-agnostic design reference for formatting ANY Azure DevOps Wiki page
+  Design: Markdown headers for TOC + gradient accent bars + white content cards
+
+  This template is a PATTERN REFERENCE, not a fill-in-the-blanks template.
+  It demonstrates how to apply the design system to any page regardless of content.
+  The reformatting agent should use these patterns to style whatever sections the
+  page already has -- preserving all existing headings, content, and organization.
+
+  CRITICAL ADO WIKI RENDERING RULES:
+  - [[_TOC_]] MUST be on its own line outside any HTML block
+  - Section headers MUST use markdown ## / ### syntax for TOC detection
+  - HTML blocks must be separated by blank lines from markdown content
+  - Each HTML block is self-contained (no wrapping <div> around entire page)
+  - NO <details>/<summary> collapsed sections — all content visible
+  - Diagrams use graph TD (top-down), never LR
+
+  VISUAL HIERARCHY:
+  - Page header: gradient bar (border-radius: 8px; padding: 14px 16px) — page title only
+  - ## sections: 6px gradient accent bar immediately below heading
+  - ### subsections: 4px gradient accent bar immediately below heading
+  - Content: white cards (background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px)
+  - Callouts: colored left-border accent cards inside content cards
+  - Tables: HTML styled (NOT markdown), #f8f9fa header row, 1px #dee2e6 borders
+  - Section sub-labels: bold colored text with border-bottom divider (inside cards)
+  - Code blocks: left as-is (ADO Wiki styles them), but surrounding prose goes in cards
+
+  COLOR ASSIGNMENT STRATEGY:
+  Assign colors by semantic meaning of each section heading. If no match, rotate palette.
+
+  - Green  (#2e7d32 → #1b5e20) / sub (#43a047 → #2e7d32): Summary, Overview, Executive Summary, Introduction, Goals
+  - Blue   (#1565c0 → #0d47a1) / sub (#42a5f5 → #1565c0): Architecture, Design, Information, Current State, Page Header
+  - Purple (#7b1fa2 → #4a148c) / sub (#ab47bc → #7b1fa2): Analysis, Research, Investigation, Discovery, Code Analysis
+  - Orange (#e65100 → #bf360c) / sub (#ef6c00 → #e65100): Issues, Warnings, Considerations, Recommendations
+  - Red    (#c62828 → #b71c1c) / sub (#ef5350 → #c62828): Critical, Risks, Security, Blockers
+  - Indigo (#303f9f → #1a237e) / sub (#5c6bc0 → #303f9f): Solution, Implementation, Components, Technical
+  - Teal   (#00796b → #004d40) / sub (#26a69a → #00796b): Testing, Quality, Validation, Metrics, Logging
+  - Brown  (#5d4037 → #3e2723) / sub (#795548 → #5d4037): Appendix, References, History, Changelog, Conclusion
+
+  Rotation order when no semantic match: Green, Blue, Purple, Orange, Indigo, Teal, Brown, Red
+  (repeat cycle for additional sections)
+
+  STATUS BADGE COLORS:
+  - Critical / Fail:    background: #b71c1c; color: #fff
+  - High / Error:       background: #dc3545; color: #fff
+  - Medium / Warning:   background: #ffc107; color: #333
+  - Low / Info:         background: #4caf50; color: #fff
+  - Good / Pass:        background: #4caf50; color: #fff
+  - Open / Pending:     background: #2196f3; color: #fff
+  - N/A:                background: #9e9e9e; color: #fff
+
+  CALLOUT CARD COLORS (border-left accent + light background):
+  - Info:     background: #e3f2fd; border-left: 4px solid #2196f3; title color: #1565c0
+  - Warning:  background: #fff3e0; border-left: 4px solid #ff9800; title color: #e65100
+  - Success:  background: #e8f5e9; border-left: 4px solid #4caf50; title color: #2e7d32
+  - Critical: background: #ffebee; border-left: 4px solid #dc3545; title color: #c62828
+  - Insight:  background: #f3e5f5; border-left: 4px solid #9c27b0; title color: #7b1fa2
+  - Note:     background: #e8eaf6; border-left: 4px solid #3f51b5; title color: #303f9f
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PATTERN: PAGE HEADER
+     Extract the page title from the first # heading or derive from path.
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<div style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+  <span style="font-weight: 700; color: #fff; font-size: 15px;">{{page_title}}</span>
+</div>
+
+[[_TOC_]]
+
+---
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PATTERN: ## SECTION HEADER (6px gradient accent bar)
+     Every ## heading gets a 6px accent bar immediately below.
+     Color chosen by semantic meaning of the heading text.
+     ═══════════════════════════════════════════════════════════════════ -->
+
+## Section Heading
+<div style="height: 6px; background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PATTERN: CONTENT CARD
+     ALL prose, lists, and tables go inside white bordered cards.
+     Code blocks and mermaid diagrams stay OUTSIDE cards.
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.7;">
+    Narrative paragraph text goes here. Lead with context and significance before presenting data.
+  </p>
+
+  <!-- PATTERN: CALLOUT CARD (Info) -->
+  <div style="background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">🔍 Info Callout Title</div>
+    <div style="line-height: 1.6;">Callout content — use for key insights, important context, or notable findings.</div>
+  </div>
+
+  <!-- PATTERN: CALLOUT CARD (Warning) -->
+  <div style="background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #e65100; margin-bottom: 6px;">⚠️ Warning Callout Title</div>
+    <div style="line-height: 1.6;">Warning content — use for assumptions, caveats, or things to watch out for.</div>
+  </div>
+
+  <!-- PATTERN: CALLOUT CARD (Success) -->
+  <div style="background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #2e7d32; margin-bottom: 6px;">✅ Success Callout Title</div>
+    <div style="line-height: 1.6;">Success content — use for positive findings, compliant patterns, or good news.</div>
+  </div>
+
+  <!-- PATTERN: CALLOUT CARD (Critical) -->
+  <div style="background: #ffebee; border-left: 4px solid #dc3545; border-radius: 0 8px 8px 0; padding: 14px;">
+    <div style="font-weight: 600; color: #c62828; margin-bottom: 6px;">🔴 Critical Callout Title</div>
+    <div style="line-height: 1.6;">Critical content — use for blockers, security issues, or items requiring immediate attention.</div>
+  </div>
+</div>
+
+---
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PATTERN: ### SUBSECTION HEADER (4px gradient accent bar)
+     Every ### heading gets a 4px accent bar — lighter shade of parent.
+     ═══════════════════════════════════════════════════════════════════ -->
+
+### Subsection Heading
+<div style="height: 4px; background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PATTERN: STYLED HTML TABLE
+     All tables MUST be HTML (not markdown). Always include:
+     - #f8f9fa header row background
+     - 1px solid #dee2e6 borders on all cells
+     - padding: 10px on all cells
+     - font-weight: 600 on header cells
+     - Status badges where appropriate
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    Introductory context for the table data.
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Column A</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Column B</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Column C</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Status</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Row 1</strong></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">Value</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">Value</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">✅ Good</span></td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Row 2</strong></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">Value</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">Value</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 3px; font-size: 11px;">⚠️ Medium</span></td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Row 3</strong></td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">Value</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">Value</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #dc3545; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">❌ Critical</span></td>
+    </tr>
+    <!-- Add more rows as needed -->
+  </table>
+</div>
+
+---
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PATTERN: SECTION WITH SUB-LABELS (inside a content card)
+     Use bold colored text with border-bottom as sub-labels within
+     a single content card, when the content doesn't warrant a full
+     ### subsection.
+     ═══════════════════════════════════════════════════════════════════ -->
+
+## Another Section
+<div style="height: 6px; background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%); border-radius: 3px; margin: 0 0 16px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">📋 Sub-Label One</div>
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">Content under this sub-label. Use sub-labels for logical groupings within a single card.</p>
+
+  <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">📊 Sub-Label Two</div>
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">More content. Sub-labels inherit the section's accent color.</p>
+
+  <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">🔧 Sub-Label Three</div>
+  <p style="margin: 0; line-height: 1.6;">Final grouping within this card.</p>
+</div>
+
+---
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PATTERN: CODE BLOCKS
+     Code blocks stay OUTSIDE content cards — ADO Wiki styles them.
+     Wrap surrounding prose in a card, then close the card before
+     the code block, then open a new card after.
+     ═══════════════════════════════════════════════════════════════════ -->
+
+### Code Example Subsection
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 12px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0; line-height: 1.6;">
+    Explanatory text before the code block goes in a content card.
+  </p>
+</div>
+
+```apex
+// Code blocks are left as-is — ADO Wiki provides its own styling
+public class ExampleService {
+    public void doWork() {
+        // implementation
+    }
+}
+```
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0; line-height: 1.6;">
+    Explanatory text after the code block resumes in a new content card.
+  </p>
+</div>
+
+---
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PATTERN: MERMAID DIAGRAMS
+     Mermaid diagrams stay OUTSIDE content cards.
+     Always use graph TD (top-down), never graph LR.
+     ═══════════════════════════════════════════════════════════════════ -->
+
+### Diagram Example
+<div style="height: 4px; background: linear-gradient(135deg, #5c6bc0 0%, #303f9f 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+::: mermaid
+graph TD
+  A[Step 1] --> B[Step 2]
+  B --> C{Decision}
+  C -->|Yes| D[Path A]
+  C -->|No| E[Path B]
+:::
+
+---
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PATTERN: LISTS INSIDE CONTENT CARDS
+     Bullet and numbered lists go inside content cards with proper
+     styling. Use <ul>/<ol> with inline styles for consistency.
+     ═══════════════════════════════════════════════════════════════════ -->
+
+### List Examples
+<div style="height: 4px; background: linear-gradient(135deg, #ab47bc 0%, #7b1fa2 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">Unordered List</div>
+  <ul style="margin: 0 0 16px 0; padding-left: 20px; line-height: 1.8;">
+    <li>First item with context</li>
+    <li>Second item with context</li>
+    <li>Third item with context</li>
+  </ul>
+  <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">Ordered List</div>
+  <ol style="margin: 0; padding-left: 20px; line-height: 1.8;">
+    <li>First step</li>
+    <li>Second step</li>
+    <li>Third step</li>
+  </ol>
+</div>
+
+---
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     PATTERN: FOOTER
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; text-align: center; font-family: 'Segoe UI', sans-serif;">
+  <div style="font-size: 13px; color: #666;">📅 <strong>Last Updated:</strong> {{timestamp}}</div>
+</div>

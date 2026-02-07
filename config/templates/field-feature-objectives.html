@@ -3,20 +3,23 @@
   Purpose: Rich styled template for Feature Business Objectives and Impact field in Azure DevOps
   Target Field: Custom.BusinessObjectivesandImpact
   Variables: Replace {{variable}} placeholders with actual content
+  
+  Color Scheme (Dark Gradients with White Text):
+  - Teal (#00796b → #004d40): Business Objectives Header
 -->
 <div style="font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #333;">
 
   <!-- BUSINESS OBJECTIVES HEADER - Teal (Metrics/Impact) -->
-  <div style="background: linear-gradient(135deg, #00796b 0%, #004d40 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+  <div style="background: linear-gradient(135deg, #00796b 0%, #004d40 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
     <span style="font-weight: 700; color: #fff; font-size: 15px;">📊 Business Objectives & Expected Impact</span>
   </div>
 
   <!-- OBJECTIVES LIST -->
-  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
     
     <!-- Objective 1 -->
-    <div style="padding: 14px; margin-bottom: 12px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 8px;">
-      <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">
+    <div style="background: #f8f9fa; border-left: 4px solid #00796b; border-radius: 0 6px 6px 0; padding: 14px; margin-bottom: 12px;">
+      <div style="font-weight: 600; color: #00796b; margin-bottom: 6px;">
         🎯 {{objective_1_title}}
       </div>
       <div style="font-size: 13px; color: #333; line-height: 1.6;">
@@ -25,8 +28,8 @@
     </div>
     
     <!-- Objective 2 -->
-    <div style="padding: 14px; margin-bottom: 12px; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-radius: 8px;">
-      <div style="font-weight: 600; color: #2e7d32; margin-bottom: 6px;">
+    <div style="background: #f8f9fa; border-left: 4px solid #00796b; border-radius: 0 6px 6px 0; padding: 14px; margin-bottom: 12px;">
+      <div style="font-weight: 600; color: #00796b; margin-bottom: 6px;">
         📈 {{objective_2_title}}
       </div>
       <div style="font-size: 13px; color: #333; line-height: 1.6;">
@@ -35,8 +38,8 @@
     </div>
     
     <!-- Objective 3 -->
-    <div style="padding: 14px; margin-bottom: 12px; background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 8px;">
-      <div style="font-weight: 600; color: #e65100; margin-bottom: 6px;">
+    <div style="background: #f8f9fa; border-left: 4px solid #00796b; border-radius: 0 6px 6px 0; padding: 14px; margin-bottom: 12px;">
+      <div style="font-weight: 600; color: #00796b; margin-bottom: 6px;">
         ⚡ {{objective_3_title}}
       </div>
       <div style="font-size: 13px; color: #333; line-height: 1.6;">
@@ -45,8 +48,8 @@
     </div>
     
     <!-- Objective 4 -->
-    <div style="padding: 14px; margin-bottom: 12px; background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); border-radius: 8px;">
-      <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 6px;">
+    <div style="background: #f8f9fa; border-left: 4px solid #00796b; border-radius: 0 6px 6px 0; padding: 14px; margin-bottom: 12px;">
+      <div style="font-weight: 600; color: #00796b; margin-bottom: 6px;">
         🔧 {{objective_4_title}}
       </div>
       <div style="font-size: 13px; color: #333; line-height: 1.6;">
@@ -55,8 +58,8 @@
     </div>
     
     <!-- Objective 5 -->
-    <div style="padding: 14px; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); border-radius: 8px;">
-      <div style="font-weight: 600; color: #00838f; margin-bottom: 6px;">
+    <div style="background: #f8f9fa; border-left: 4px solid #00796b; border-radius: 0 6px 6px 0; padding: 14px;">
+      <div style="font-weight: 600; color: #00796b; margin-bottom: 6px;">
         🚀 {{objective_5_title}}
       </div>
       <div style="font-size: 13px; color: #333; line-height: 1.6;">

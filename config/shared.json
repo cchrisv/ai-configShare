@@ -33,6 +33,7 @@
     "ado_create": "npx --prefix scripts/workflow ado-tools create",
     "ado_search": "npx --prefix scripts/workflow ado-tools search",
     "ado_link": "npx --prefix scripts/workflow ado-tools link",
+    "ado_unlink": "npx --prefix scripts/workflow ado-tools unlink",
     "ado_relations": "npx --prefix scripts/workflow ado-tools relations",
     "sf_query": "npx --prefix scripts/workflow sf-tools query",
     "sf_describe": "npx --prefix scripts/workflow sf-tools describe",
@@ -42,7 +43,9 @@
     "sf_flows": "npx --prefix scripts/workflow sf-tools flows",
     "sf_validation": "npx --prefix scripts/workflow sf-tools validation-rules",
     "wiki_get": "npx --prefix scripts/workflow wiki-tools get",
+    "wiki_get_by_id": "npx --prefix scripts/workflow wiki-tools get --page-id",
     "wiki_update": "npx --prefix scripts/workflow wiki-tools update",
+    "wiki_update_by_id": "npx --prefix scripts/workflow wiki-tools update --page-id",
     "wiki_create": "npx --prefix scripts/workflow wiki-tools create",
     "wiki_list": "npx --prefix scripts/workflow wiki-tools list",
     "wiki_search": "npx --prefix scripts/workflow wiki-tools search",
@@ -129,9 +132,13 @@
     "field_feature_objectives": "field-feature-objectives.html",
     "field_feature_acceptance_criteria": "field-feature-acceptance-criteria.html",
     "field_solution_design": "field-solution-design.html",
+    "field_release_notes": "field-release-notes.html",
     "field_blockers": "field-blockers.html",
     "field_planned_work": "field-planned-work.html",
-    "field_progress": "field-progress.html"
+    "field_progress": "field-progress.html",
+    "solution_design_document": "feature-solution-design-document-template.md",
+    "solution_design_wiki": "feature-solution-design-wiki.html",
+    "wiki_general_template": "wiki-general-template.html"
   },
   "artifact_files": {
     "run_state": "run-state.json",
@@ -175,6 +182,20 @@
       "delta": "closeout-delta.json",
       "fields": "closeout-fields.json",
       "summary": "closeout-summary.md"
+    },
+    "solution_design": {
+      "collected_data": "collected-data.json",
+      "solution_design_doc": "solution-design.md",
+      "wiki_content": "wiki-content.md",
+      "wiki_metadata": "wiki-metadata.json"
+    },
+    "sequencing": {
+      "collected_tickets": "collected-tickets.json",
+      "existing_links": "existing-links.json",
+      "sequence_plan": "sequence-plan.json",
+      "sequence_plan_approved": "sequence-plan-approved.json",
+      "link_results": "link-results.json",
+      "report": "sequencing-report.md"
     }
   },
   "retry_settings": {

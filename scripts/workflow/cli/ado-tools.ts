@@ -12,7 +12,7 @@ import {
   createWorkItem, 
   searchWorkItems 
 } from '../src/adoWorkItems.js';
-import { linkWorkItems, getWorkItemRelations } from '../src/adoWorkItemLinks.js';
+import { linkWorkItems, unlinkWorkItems, getWorkItemRelations } from '../src/adoWorkItemLinks.js';
 import { configureLogger } from '../src/lib/loggerStructured.js';
 import type { WorkItemType } from '../src/types/adoFieldTypes.js';
 import type { LinkTypeAlias } from '../src/types/adoLinkTypes.js';
@@ -314,6 +314,38 @@ program
         console.log(JSON.stringify(workItem, null, 2));
       } else {
         console.log(`Linked ${sourceId} -> ${targetId} (${options.type})`);
+      }
+    } catch (error) {
+      console.error('Error:', error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
+  });
+
+// Unlink command
+program
+  .command('unlink <sourceId> <targetId>')
+  .description('Remove a link between two work items')
+  .requiredOption('--type <type>', 'Link type to remove (parent, child, related, predecessor, successor)')
+  .option('--json', 'Output as JSON')
+  .option('-v, --verbose', 'Verbose output')
+  .action(async (sourceId: string, targetId: string, options) => {
+    try {
+      if (options.json) {
+        configureLogger({ silent: true });
+      } else if (options.verbose) {
+        configureLogger({ minLevel: 'debug' });
+      }
+
+      const workItem = await unlinkWorkItems(
+        parseInt(sourceId, 10),
+        parseInt(targetId, 10),
+        options.type as LinkTypeAlias,
+      );
+
+      if (options.json) {
+        console.log(JSON.stringify(workItem, null, 2));
+      } else {
+        console.log(`Unlinked ${sourceId} -> ${targetId} (${options.type})`);
       }
     } catch (error) {
       console.error('Error:', error instanceof Error ? error.message : error);

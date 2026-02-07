@@ -36,6 +36,14 @@ interface WikiPageCreateUpdateResponse {
 }
 
 /**
+ * Response from wiki page GET REST API (includes eTag from headers)
+ */
+interface WikiPageGetResponse {
+  page: AdoWikiPage;
+  eTag: string;
+}
+
+/**
  * Get authorization headers for REST API calls
  */
 function getAuthHeaders(): Record<string, string> {
@@ -109,7 +117,7 @@ async function getPageRest(
     includeContent?: boolean;
     recursionLevel?: number;
   }
-): Promise<AdoWikiPage> {
+): Promise<WikiPageGetResponse> {
   const headers = getAuthHeaders();
   
   const queryParams: Record<string, string | number | boolean | undefined> = {
@@ -130,7 +138,98 @@ async function getPageRest(
   }
   
   const page = await response.json() as AdoWikiPage;
-  return page;
+  const responseETag = response.headers.get('ETag') ?? '';
+  return { page, eTag: responseETag };
+}
+
+/**
+ * Make a REST API call to get a wiki page by ID
+ */
+async function getPageByIdRest(
+  orgUrl: string,
+  project: string,
+  wikiIdentifier: string,
+  pageId: number,
+  options?: {
+    includeContent?: boolean;
+    recursionLevel?: number;
+  }
+): Promise<WikiPageGetResponse> {
+  const headers = getAuthHeaders();
+
+  const params = new URLSearchParams();
+  params.set('api-version', '7.1');
+  if (options?.includeContent !== undefined) {
+    params.set('includeContent', String(options.includeContent));
+  } else {
+    params.set('includeContent', 'true');
+  }
+  if (options?.recursionLevel !== undefined) {
+    params.set('recursionLevel', String(options.recursionLevel));
+  }
+
+  const url = `${orgUrl}/${encodeURIComponent(project)}/_apis/wiki/wikis/${encodeURIComponent(wikiIdentifier)}/pages/${pageId}?${params.toString()}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Wiki API error (${response.status}): ${errorText}`);
+  }
+
+  const page = await response.json() as AdoWikiPage;
+  const responseETag = response.headers.get('ETag') ?? '';
+  return { page, eTag: responseETag };
+}
+
+/**
+ * Make a REST API call to update a wiki page by ID (PATCH endpoint)
+ * Uses the Pages - Update Page By Id endpoint which only updates existing pages
+ */
+async function updatePageByIdRest(
+  orgUrl: string,
+  project: string,
+  wikiIdentifier: string,
+  pageId: number,
+  content: string,
+  comment?: string,
+  eTag?: string
+): Promise<WikiPageCreateUpdateResponse> {
+  const headers = getAuthHeaders();
+
+  if (eTag) {
+    headers['If-Match'] = eTag;
+  }
+
+  const params = new URLSearchParams();
+  params.set('api-version', '7.1');
+  if (comment) {
+    params.set('comment', comment);
+  }
+
+  const url = `${orgUrl}/${encodeURIComponent(project)}/_apis/wiki/wikis/${encodeURIComponent(wikiIdentifier)}/pages/${pageId}?${params.toString()}`;
+
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ content }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Wiki API error (${response.status}): ${errorText}`);
+  }
+
+  const page = await response.json() as AdoWikiPage;
+  const responseETag = response.headers.get('ETag') ?? '';
+
+  return {
+    page,
+    eTag: responseETag,
+  };
 }
 
 /**
@@ -220,37 +319,50 @@ export async function getWikiPage(
   config?: AdoConnectionConfig
 ): Promise<WikiPageWithContent> {
   const timer = createTimer();
-  const { path, includeContent = true, recursionLevel } = options;
+  const { path, pageId, includeContent = true, recursionLevel } = options;
 
-  if (!path) {
-    throw new Error('Page path must be specified');
+  if (!path && pageId === undefined) {
+    throw new Error('Either page path or page ID must be specified');
   }
-
-  logInfo(`Getting wiki page: ${path}`);
 
   const orgUrl = config?.orgUrl ?? DEFAULT_ADO_ORG;
   const project = config?.project ?? DEFAULT_ADO_PROJECT;
   const wikiIdentifier = getWikiIdentifier(options.wikiId);
 
-  const page = await retryWithBackoff(
-    () => getPageRest(orgUrl, project, wikiIdentifier, path, {
-      includeContent,
-      recursionLevel: recursionLevel as number | undefined,
-    }),
-    { ...RETRY_PRESETS.standard, operationName: `getWikiPage(${path})` }
-  );
+  let getResult: WikiPageGetResponse;
 
-  if (!page) {
-    throw new Error(`Wiki page ${path} not found`);
+  if (pageId !== undefined) {
+    logInfo(`Getting wiki page by ID: ${pageId}`);
+    getResult = await retryWithBackoff(
+      () => getPageByIdRest(orgUrl, project, wikiIdentifier, pageId, {
+        includeContent,
+        recursionLevel: recursionLevel as number | undefined,
+      }),
+      { ...RETRY_PRESETS.standard, operationName: `getWikiPage(id:${pageId})` }
+    );
+  } else {
+    logInfo(`Getting wiki page: ${path}`);
+    getResult = await retryWithBackoff(
+      () => getPageRest(orgUrl, project, wikiIdentifier, path!, {
+        includeContent,
+        recursionLevel: recursionLevel as number | undefined,
+      }),
+      { ...RETRY_PRESETS.standard, operationName: `getWikiPage(${path})` }
+    );
+  }
+
+  if (!getResult?.page) {
+    throw new Error(`Wiki page ${pageId !== undefined ? `id:${pageId}` : path} not found`);
   }
 
   const result: WikiPageWithContent = {
-    ...convertWikiPage(page),
-    content: page.content ?? '',
-    eTag: (page as { eTag?: string }).eTag,
+    ...convertWikiPage(getResult.page),
+    content: getResult.page.content ?? '',
+    eTag: getResult.eTag || undefined,
   };
 
-  timer.log(`getWikiPage(${path})`);
+  const label = pageId !== undefined ? `id:${pageId}` : path;
+  timer.log(`getWikiPage(${label})`);
   return result;
 }
 
@@ -266,13 +378,11 @@ export async function updateWikiPage(
   config?: AdoConnectionConfig
 ): Promise<WikiPageUpdateResult> {
   const timer = createTimer();
-  const { path, content, comment, eTag } = options;
+  const { path, pageId, content, comment, eTag } = options;
 
-  if (!path) {
-    throw new Error('Page path is required for updates');
+  if (!path && pageId === undefined) {
+    throw new Error('Either page path or page ID is required for updates');
   }
-
-  logInfo(`Updating wiki page: ${path}`);
 
   // Load content from file if it's a file path
   let pageContent = content;
@@ -289,6 +399,46 @@ export async function updateWikiPage(
   const orgUrl = config?.orgUrl ?? DEFAULT_ADO_ORG;
   const project = config?.project ?? DEFAULT_ADO_PROJECT;
   const wikiIdentifier = getWikiIdentifier(options.wikiId);
+
+  // Update by page ID uses the PATCH endpoint (only updates existing pages, never creates)
+  if (pageId !== undefined) {
+    logInfo(`Updating wiki page by ID: ${pageId}`);
+
+    // Get current eTag if not provided
+    let currentETag = eTag;
+    if (!currentETag) {
+      try {
+        const currentPage = await getWikiPage({ pageId, wikiId: options.wikiId }, config);
+        currentETag = currentPage.eTag;
+      } catch {
+        logDebug('Could not get current page eTag, will attempt update without it');
+      }
+    }
+
+    const result = await retryWithBackoff(
+      () => updatePageByIdRest(
+        orgUrl,
+        project,
+        wikiIdentifier,
+        pageId,
+        pageContent,
+        comment ?? 'Updated via API',
+        currentETag
+      ),
+      { ...RETRY_PRESETS.standard, operationName: `updateWikiPage(id:${pageId})` }
+    );
+
+    logInfo(`Successfully updated wiki page ID: ${pageId}`);
+    timer.log(`updateWikiPage(id:${pageId})`);
+
+    return {
+      page: convertWikiPage(result.page),
+      eTag: result.eTag,
+    };
+  }
+
+  // Update by path uses the PUT endpoint (create-or-update)
+  logInfo(`Updating wiki page: ${path}`);
 
   // Get current page to get eTag if not provided
   let currentETag = eTag;
@@ -307,7 +457,7 @@ export async function updateWikiPage(
       orgUrl,
       project,
       wikiIdentifier,
-      path,
+      path!,
       pageContent,
       comment ?? 'Updated via API',
       currentETag
@@ -458,7 +608,7 @@ async function getAllWikiPagesRecursive(
   const project = config?.project ?? DEFAULT_ADO_PROJECT;
   const wikiIdentifier = getWikiIdentifier(wikiId);
 
-  const page = await retryWithBackoff(
+  const getResult = await retryWithBackoff(
     () => getPageRest(orgUrl, project, wikiIdentifier, path, {
       includeContent: false,
       recursionLevel: 120, // Full recursion (OneLevel=1, Full=120)
@@ -466,10 +616,11 @@ async function getAllWikiPagesRecursive(
     { ...RETRY_PRESETS.standard, operationName: `getAllWikiPages(${path})` }
   );
 
-  if (!page) {
+  if (!getResult?.page) {
     return [];
   }
 
+  const page = getResult.page;
   const result: WikiPage[] = [];
   
   // Add current page if it has valid content
@@ -478,7 +629,7 @@ async function getAllWikiPagesRecursive(
   }
 
   // Recursively add subpages
-  function collectSubPages(p: typeof page) {
+  function collectSubPages(p: AdoWikiPage) {
     if (p.subPages) {
       for (const subPage of p.subPages) {
         result.push(convertWikiPage(subPage));
@@ -513,7 +664,7 @@ export async function listWikiPages(
   const project = config?.project ?? DEFAULT_ADO_PROJECT;
   const wikiIdentifier = getWikiIdentifier(wikiId);
 
-  const page = await retryWithBackoff(
+  const getResult = await retryWithBackoff(
     () => getPageRest(orgUrl, project, wikiIdentifier, pagePath, {
       includeContent: false,
       recursionLevel: 1, // OneLevel
@@ -521,11 +672,11 @@ export async function listWikiPages(
     { ...RETRY_PRESETS.standard, operationName: `listWikiPages(${pagePath})` }
   );
 
-  if (!page) {
+  if (!getResult?.page) {
     return [];
   }
 
-  const result = page.subPages?.map(convertWikiPage) ?? [];
+  const result = getResult.page.subPages?.map(convertWikiPage) ?? [];
   
   logDebug(`Found ${result.length} wiki pages under ${pagePath}`);
   timer.log(`listWikiPages(${pagePath})`);
