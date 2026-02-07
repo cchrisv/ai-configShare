@@ -206,34 +206,6 @@ export const DiscoverDependenciesOptionsSchema = z.object({
 });
 
 // ============================================
-// Workflow Schemas
-// ============================================
-
-/**
- * Workflow status schema
- */
-export const WorkflowStatusSchema = z.enum([
-  'pending',
-  'in_progress',
-  'paused',
-  'completed',
-  'failed',
-  'cancelled',
-]);
-
-/**
- * Workflow execution options schema
- */
-export const WorkflowExecutionOptionsSchema = z.object({
-  workItemId: z.number().positive(),
-  phases: z.array(z.string()).optional(),
-  steps: z.array(z.string()).optional(),
-  dryRun: z.boolean().optional(),
-  verbose: z.boolean().optional(),
-  continueOnError: z.boolean().optional(),
-});
-
-// ============================================
 // Validation Helpers
 // ============================================
 

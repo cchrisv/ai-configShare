@@ -1,102 +1,64 @@
 # Prepare Ticket (Full Workflow)
 
-## 1. SYSTEM CONTEXT & PERSONA
-**Role:** You are a Workflow Orchestrator.
-**Mission:** Execute the complete ticket preparation lifecycle from initialization through finalization.
-**Output:** A fully refined work item with research, grooming, solution design, wiki documentation, and ADO updates.
+Role: Workflow Orchestrator
+Mission: Execute complete ticket preparation lifecycle.
+Output: Refined work item with research, grooming, solution design, wiki, and ADO updates.
 
-## 2. INPUT CONFIGURATION
+## Config
+Base: `#file:.github/prompts/util-base.prompt.md`
+Load: `#file:config/shared.json`
+Input: `{{work_item_id}}`
 
-**Runtime Inputs:**
-* `{{work_item_id}}`: Target ADO Work Item ID.
+## Protocol
+1. Sequential execution - each phase depends on previous
+2. Update run-state.json after each phase
+3. Fail fast - stop on phase failure
+4. All phases required for complete workflow
 
-**Configuration Source:**
-* **FIRST:** Load `{{paths.config}}/shared.json` to resolve all path and command variables.
+## Execution
 
-**Variables from shared.json:**
-| Variable | JSON Path | Description |
-|----------|-----------|-------------|
-| `{{paths.artifacts_root}}` | `paths.artifacts_root` | Base artifacts directory |
-| `{{paths.prompts}}` | `paths.prompts` | Prompts directory |
-| `{{cli.workflow_prepare}}` | `cli_commands.workflow_prepare` | Initialize workflow |
-| `{{cli.workflow_status}}` | `cli_commands.workflow_status` | Check status |
+### Phase 1: Initialize [CLI]
+Command: `{{cli.workflow_prepare}} -w {{work_item_id}} --json`
+Verify: `success: true` in response
 
-**Derived Paths:**
-* `{{root}}`: `{{paths.artifacts_root}}/{{work_item_id}}`
-* `{{run_state}}`: `{{root}}/run-state.json`
+### Phase 2: Research [GEN]
+Execute in sequence:
+1. `#file:.github/prompts/phase-03a-research-organization-dictionary.prompt.md`
+2. `#file:.github/prompts/phase-03b-research-ado.prompt.md`
+3. `#file:.github/prompts/phase-03c-research-wiki.prompt.md`
+4. `#file:.github/prompts/phase-03d-research-business-context.prompt.md`
+5. `#file:.github/prompts/phase-03e-research-salesforce.prompt.md`
+6. `#file:.github/prompts/phase-03f-research-similar-workitems.prompt.md`
+7. `#file:.github/prompts/phase-03g-research-code.prompt.md`
+8. `#file:.github/prompts/phase-03h-research-web.prompt.md`
+9. `#file:.github/prompts/phase-03z-research-synthesis.prompt.md`
 
-## 3. PROTOCOL & GUARDRAILS
-1. **Sequential Execution:** Phases must execute in order; each depends on the previous.
-2. **Run State Tracking:** Update `run-state.json` after each phase completes.
-3. **Fail Fast:** If a phase fails, stop execution and report the error.
-4. **No Skipping:** All phases are required for a complete workflow.
+### Phase 3: Grooming [GEN]
+Execute: `#file:.github/prompts/phase-04-grooming.prompt.md`
 
-## 4. EXECUTION WORKFLOW
+### Phase 4: Solutioning [GEN]
+Execute: `#file:.github/prompts/phase-05-solutioning.prompt.md`
 
-### PHASE 1: INITIALIZATION [TYPE: CLI]
-* **Command:** `{{cli.workflow_prepare}} -w {{work_item_id}} --json`
-* **Action:** Creates folder structure, initializes run-state.json, saves work item snapshot.
-* **Verify:** Check command output for `success: true`.
+### Phase 5: Wiki [GEN]
+Execute: `#file:.github/prompts/phase-06-wiki.prompt.md`
 
-### PHASE 2: RESEARCH [TYPE: GEN]
-* **Execute:** `{{paths.prompts}}/phase-03a-research-organization-dictionary.prompt.md`
-* **Execute:** `{{paths.prompts}}/phase-03b-research-ado.prompt.md`
-* **Execute:** `{{paths.prompts}}/phase-03c-research-wiki.prompt.md`
-* **Execute:** `{{paths.prompts}}/phase-03d-research-business-context.prompt.md`
-* **Execute:** `{{paths.prompts}}/phase-03e-research-salesforce.prompt.md`
-* **Execute:** `{{paths.prompts}}/phase-03f-research-similar-workitems.prompt.md`
-* **Execute:** `{{paths.prompts}}/phase-03g-research-code.prompt.md`
-* **Execute:** `{{paths.prompts}}/phase-03h-research-web.prompt.md`
-* **Execute:** `{{paths.prompts}}/phase-03z-research-synthesis.prompt.md`
-* **Output:** Research artifacts in `{{root}}/research/`
+### Phase 6: Finalization [API]
+Execute: `#file:.github/prompts/phase-07-finalization.prompt.md`
 
-### PHASE 3: GROOMING [TYPE: GEN]
-* **Execute:** `{{paths.prompts}}/phase-04-grooming.prompt.md`
-* **Output:** `{{root}}/grooming/grooming-result.json`
+### Verification [CLI]
+Command: `{{cli.workflow_status}} -w {{work_item_id}} --json`
+Verify: All phases complete, no errors
 
-### PHASE 4: SOLUTIONING [TYPE: GEN]
-* **Execute:** `{{paths.prompts}}/phase-05-solutioning.prompt.md`
-* **Output:** Solution artifacts in `{{root}}/solutioning/`
-
-### PHASE 5: WIKI CREATION [TYPE: GEN]
-* **Execute:** `{{paths.prompts}}/phase-06a-wiki-creation.prompt.md`
-* **Output:** Wiki artifacts in `{{root}}/wiki/`
-
-### PHASE 6: FINALIZATION [TYPE: API]
-* **Execute:** `{{paths.prompts}}/phase-07-finalization.prompt.md`
-* **Output:** Updates ADO work item with final status.
-
-### VERIFICATION [TYPE: CLI]
-* **Command:** `{{cli.workflow_status}} -w {{work_item_id}} --json`
-* **Verify:** All phases complete, no errors.
-
-## 5. OUTPUT MANIFEST
-
-Upon completion, the workflow produces:
-
+## Output
 ```
 {{paths.artifacts_root}}/{{work_item_id}}/
-├── run-state.json                    # Workflow tracking
+├── run-state.json
 ├── research/
-│   ├── 00-organization-dictionary.json
-│   ├── 01-ado-workitem.json
-│   ├── 02-wiki-research.json
-│   ├── 03a-dependency-discovery.json
-│   ├── 04-similar-workitems.json
-│   ├── 05-business-context.json
-│   ├── research-summary.json
-│   └── assumptions.json
 ├── grooming/
-│   └── grooming-result.json
 ├── solutioning/
-│   ├── solution-design.json
-│   └── task-breakdown.json
 └── wiki/
-    └── wiki-page.md
 ```
 
-## 6. ERROR HANDLING
-
-* **Phase Failure:** Log error to `run-state.json`, report phase name and error message, STOP.
-* **CLI Failure:** Check exit code, parse error from JSON output, STOP.
-* **Recovery:** Use `re-phase-*.prompt.md` variants to re-run failed phases after fixing issues.
+## Error Handling
+- Phase failure: Log to run-state.json, report error, STOP
+- Recovery: Use `#file:.github/prompts/re-phase.prompt.md` to re-run failed phase

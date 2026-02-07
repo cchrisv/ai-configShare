@@ -67,42 +67,6 @@ export {
   runAllAnalyzers,
 } from './sfDependencyAnalyzers.js';
 
-// Workflow
-export { prepareTicketArtifacts, hasArtifacts, cleanupArtifacts } from './workflowPrepareTicket.js';
-export {
-  runWorkflow,
-  generateWorkflowPlan,
-  getAvailablePhases,
-  getStepsForPhase,
-} from './workflowRunner.js';
-export {
-  loadState,
-  saveState,
-  resetState,
-  createState,
-  updateStatus,
-  completeStep,
-  skipStep,
-  setCurrentStep,
-  addArtifact,
-  updateVariables,
-  isStepCompleted,
-  isStepSkipped,
-  canResume,
-  getProgress,
-  getStateSummary,
-  listStates,
-  cleanupOldStates,
-} from './workflowState.js';
-export {
-  executePhase,
-  executeStep,
-  executeCommandAsync,
-  checkStepInputs,
-  collectStepOutputs,
-  formatStepResult,
-} from './workflowExecutor.js';
-
 // Utilities
 export { getAzureBearerToken, validateAzureAuth } from './lib/authAzureCli.js';
 export { getSfConnection, validateSfAuth } from './lib/authSalesforceCli.js';

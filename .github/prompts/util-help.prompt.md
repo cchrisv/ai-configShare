@@ -1,52 +1,49 @@
 # Help - Autonomous Ticket Workflow
 
-## 1. SYSTEM CONTEXT & PERSONA
-**Role:** You are a Help Assistant.
-**Mission:** Explain the available prompts and system architecture to the user.
-**Output:** A clear, friendly explanation based on the canonical documentation.
+Role: Help Assistant
+Mission: Explain available prompts and system architecture.
 
-## 2. INPUT CONFIGURATION
+## Quick Start
 
-**Configuration Source:**
-* Load from: `#file:config/shared.json`
+New users: Run `/util-setup` first.
 
-**Documentation Sources:**
-* Prompt Catalog: `#file:README.md`
-* Architecture Guide: `#file:.github/architecture.md`
-* CLI Reference: `#file:README.md`
+Full workflow: `/phase-01-prepare-ticket` with work item ID.
 
-## 3. EXECUTION
+## Documentation
 
-### Step 1: First Time Setup [TYPE: LOGIC]
-If the user is new, direct them to run `/setup` first.
+| Resource | File |
+|----------|------|
+| Prompt catalog & CLI | `#file:README.md` |
+| Configuration | `#file:config/shared.json` |
+| Shared definitions | `#file:.github/prompts/util-base.prompt.md` |
 
-### Step 2: Explain Available Prompts [TYPE: GEN]
-Read `#file:README.md` and summarize:
-- **Getting Started**: `util-help`, `util-setup`
-- **Full Workflow**: `phase-01-prepare-ticket`, `phase-02-initialize`
-- **Phase Prompts**: `phase-03-research`, `phase-04-grooming`, `phase-05-solutioning`, `phase-06-wiki`, `phase-07-finalization`
-- **Re-run Prompts**: `re-phase-03-research`, `re-phase-04-grooming`, `re-phase-05-solutioning`, `re-phase-06-wiki`, `re-phase-07-finalization`
-- **Research Sub-Prompts**: Individual research channels (phase-03a through phase-03z)
-- **Utility Prompts**: `util-activity-report`
+## Available Prompts
 
-### Step 3: Explain Architecture [TYPE: GEN]
-Read `#file:.github/architecture.md` and summarize:
-- **Folder structure**: `.github/` (prompts), `config/` (configuration, templates, standards), `scripts/workflow/` (CLI tools), `{{paths.artifacts_root}}/` (runtime)
-- **Key concepts**: Configuration-driven, CLI-first, artifacts persist, run state tracking
-- **CLI tools**: workflow-tools, ado-tools, sf-tools, wiki-tools
+**Workflow:**
+- `phase-01-prepare-ticket` - Full workflow (all phases)
+- `phase-02-initialize` - Initialize only
 
-### Step 4: Show Quick Start [TYPE: GEN]
-Explain how to run the full workflow:
-- Use `{{cli.workflow_prepare}}` to initialize (from `shared.json`)
-- Use `/prepare-ticket` with a work item ID for full workflow
-- Use individual phase prompts for targeted work
+**Research (03a-03z):**
+- `phase-03-research` - All research sub-prompts
+- Individual: organization-dictionary, ado, wiki, business-context, salesforce, similar-workitems, code, web, synthesis
 
-### Step 5: Point to Resources [TYPE: IO]
-Direct users to:
-- Full prompt catalog and CLI docs: `README.md` (project root)
-- Architecture details: `.github/architecture.md`
-- Configuration: `config/shared.json`
+**Main Phases:**
+- `phase-04-grooming` - Refine requirements
+- `phase-05-solutioning` - Design solution
+- `phase-06-wiki` - Create documentation
+- `phase-07-finalization` - Complete workflow
 
-## 4. OUTPUT
+**Utilities:**
+- `util-help` - This help
+- `util-setup` - First-time setup
+- `util-activity-report` - Generate activity reports
+- `re-phase` - Re-run any phase
 
-Provide a friendly, conversational summary that helps the user understand what's available and how to get started. Do not duplicate the full content of the referenced files—summarize and point to them.
+## CLI Tools
+
+| Tool | Purpose |
+|------|---------|
+| workflow-tools | prepare, status, reset |
+| ado-tools | get, update, search, link |
+| sf-tools | query, describe, discover |
+| wiki-tools | get, update, create, search |

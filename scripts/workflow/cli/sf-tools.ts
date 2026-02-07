@@ -65,14 +65,15 @@ program
 
 // Describe command
 program
-  .command('describe <objectName>')
-  .description('Describe an SObject')
+  .command('describe <objectNames>')
+  .description('Describe one or more SObjects (comma-separated for batch)')
   .option('-f, --field <fieldName>', 'Describe a specific field')
   .option('--fields-only', 'Only output field information')
+  .option('--batch', 'Process multiple objects in parallel (comma-separated)')
   .option('-o, --org <alias>', 'Org alias (uses default org if not specified)')
   .option('--json', 'Output as JSON (default)')
   .option('-v, --verbose', 'Verbose output')
-  .action(async (objectName: string, options) => {
+  .action(async (objectNames: string, options) => {
     try {
       // Silence logs by default for clean JSON output, unless verbose
       if (options.verbose) {
@@ -81,13 +82,39 @@ program
         configureLogger({ silent: true });
       }
 
+      // Batch processing for multiple objects
+      if (options.batch || objectNames.includes(',')) {
+        const objectList = objectNames.split(',').map(s => s.trim());
+        const results = await Promise.all(
+          objectList.map(async (objName) => {
+            try {
+              const describe = await describeObject(objName, { alias: options.org });
+              return {
+                objectName: objName,
+                success: true,
+                data: options.fieldsOnly ? describe.fields : describe
+              };
+            } catch (error) {
+              return {
+                objectName: objName,
+                success: false,
+                error: error instanceof Error ? error.message : String(error)
+              };
+            }
+          })
+        );
+        console.log(JSON.stringify(results, null, 2));
+        return;
+      }
+
+      // Single object processing
       if (options.field) {
         // Describe specific field
-        const field = await describeField(objectName, options.field, { alias: options.org });
+        const field = await describeField(objectNames, options.field, { alias: options.org });
         console.log(JSON.stringify(field, null, 2));
       } else {
         // Describe object
-        const describe = await describeObject(objectName, { alias: options.org });
+        const describe = await describeObject(objectNames, { alias: options.org });
         
         if (options.fieldsOnly) {
           console.log(JSON.stringify(describe.fields, null, 2));
@@ -104,11 +131,12 @@ program
 // Discover command
 program
   .command('discover')
-  .description('Discover metadata dependencies')
+  .description('Discover metadata dependencies for one or more components')
   .requiredOption('--type <type>', 'Metadata type (CustomObject, CustomField, ApexClass, etc.)')
-  .requiredOption('--name <name>', 'Component name')
+  .requiredOption('--name <names>', 'Component name (comma-separated for batch)')
   .option('--depth <n>', 'Maximum traversal depth', parseInt, 3)
   .option('--include-standard', 'Include standard objects')
+  .option('--batch', 'Process multiple components in parallel (comma-separated)')
   .option('-o, --org <alias>', 'Org alias (uses default org if not specified)')
   .option('--json', 'Output as JSON (default)')
   .option('-v, --verbose', 'Verbose output')
@@ -121,6 +149,44 @@ program
         configureLogger({ silent: true });
       }
 
+      // Batch processing for multiple components
+      if (options.batch || options.name.includes(',')) {
+        const nameList = options.name.split(',').map((s: string) => s.trim());
+        const results = await Promise.all(
+          nameList.map(async (componentName: string) => {
+            try {
+              const result = await discoverDependencies(
+                {
+                  rootType: options.type as MetadataType,
+                  rootName: componentName,
+                  maxDepth: options.depth,
+                  includeStandardObjects: options.includeStandard,
+                },
+                { alias: options.org }
+              );
+
+              return {
+                componentName,
+                success: true,
+                graph: JSON.parse(exportGraphToJson(result.graph)),
+                pills: result.pills,
+                warnings: result.warnings,
+                executionTime: result.executionTime,
+              };
+            } catch (error) {
+              return {
+                componentName,
+                success: false,
+                error: error instanceof Error ? error.message : String(error)
+              };
+            }
+          })
+        );
+        console.log(JSON.stringify(results, null, 2));
+        return;
+      }
+
+      // Single component processing
       const result = await discoverDependencies(
         {
           rootType: options.type as MetadataType,
@@ -198,13 +264,14 @@ program
 
 // Validation rules command
 program
-  .command('validation-rules <objectName>')
-  .description('List validation rules for an object')
+  .command('validation-rules <objectNames>')
+  .description('List validation rules for one or more objects (comma-separated for batch)')
   .option('--all', 'Include inactive rules')
+  .option('--batch', 'Process multiple objects in parallel (comma-separated)')
   .option('-o, --org <alias>', 'Org alias (uses default org if not specified)')
   .option('--json', 'Output as JSON (default)')
   .option('-v, --verbose', 'Verbose output')
-  .action(async (objectName: string, options) => {
+  .action(async (objectNames: string, options) => {
     try {
       // Silence logs by default for clean JSON output, unless verbose
       if (options.verbose) {
@@ -213,7 +280,33 @@ program
         configureLogger({ silent: true });
       }
 
-      const rules = await getValidationRules(objectName, !options.all, { alias: options.org });
+      // Batch processing for multiple objects
+      if (options.batch || objectNames.includes(',')) {
+        const objectList = objectNames.split(',').map(s => s.trim());
+        const results = await Promise.all(
+          objectList.map(async (objName) => {
+            try {
+              const rules = await getValidationRules(objName, !options.all, { alias: options.org });
+              return {
+                objectName: objName,
+                success: true,
+                rules: rules
+              };
+            } catch (error) {
+              return {
+                objectName: objName,
+                success: false,
+                error: error instanceof Error ? error.message : String(error)
+              };
+            }
+          })
+        );
+        console.log(JSON.stringify(results, null, 2));
+        return;
+      }
+
+      // Single object processing
+      const rules = await getValidationRules(objectNames, !options.all, { alias: options.org });
       console.log(JSON.stringify(rules, null, 2));
     } catch (error) {
       console.error('Error:', error instanceof Error ? error.message : error);

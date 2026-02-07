@@ -6,7 +6,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import type { SharedConfig, TemplateVariables, StepManifest } from '../types/configTypes.js';
+import type { SharedConfig, TemplateVariables } from '../types/configTypes.js';
 
 /**
  * Get the project root directory (where .github lives)
@@ -82,35 +82,6 @@ export function loadTemplateVariables(configPath?: string): TemplateVariables {
   }
   
   return loadJsonFile<TemplateVariables>(path);
-}
-
-/**
- * Load step manifests
- * 
- * @param configPath - Optional explicit path to step-manifests.json
- * @returns Array of step manifests
- */
-export function loadStepManifests(configPath?: string): StepManifest[] {
-  const path = configPath ?? resolve(getConfigDir(), 'step-manifests.json');
-  const data = loadJsonFile<{ steps: StepManifest[] } | StepManifest[]>(path);
-  
-  // Handle both array and object with steps property
-  if (Array.isArray(data)) {
-    return data;
-  }
-  return data.steps;
-}
-
-/**
- * Load a specific step manifest by ID
- * 
- * @param stepId - Step ID to find
- * @param configPath - Optional explicit path to step-manifests.json
- * @returns Step manifest or undefined
- */
-export function loadStepManifest(stepId: string, configPath?: string): StepManifest | undefined {
-  const manifests = loadStepManifests(configPath);
-  return manifests.find(m => m.id === stepId);
 }
 
 /**
