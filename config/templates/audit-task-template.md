@@ -19,11 +19,10 @@ This template is used in Phase 5 (Finalization) to create a simple audit task th
   <li>Phase 5: Finalization</li>
 </ul>
 
-<h3>Estimation Snapshot</h3>
-<p><strong>Story Points:</strong> 5 (Complexity 2 · Risk 1 · Uncertainty 1)</p>
-
-<h3>Estimation Snapshot</h3>
-<p><strong>Story Points:</strong> {story_points} (Complexity {complexity_factor} · Risk {risk_factor} · Uncertainty {uncertainty_factor})</p>
+<h3>WSJF Priority Score</h3>
+<p><strong>WSJF Score:</strong> {wsjf_score} → Priority {priority}<br>
+<strong>Job Duration (Story Points):</strong> {story_points} (Complexity {complexity_factor} · Risk {risk_factor} · Uncertainty {uncertainty_factor})<br>
+<strong>Confidence:</strong> {confidence} | <strong>Class:</strong> {class_of_service}</p>
 
 <h3>📚 Complete Documentation</h3>
 <p>All research findings, decisions, and technical design details are available in the comprehensive wiki documentation.</p>
@@ -41,8 +40,12 @@ Load this template in finalization.prompt.md and replace the placeholders:
 - `{work_item_title}` - The work item title  
 - `{iso_timestamp}` - ISO 8601 timestamp of completion
 - `{wiki_url}` - The wiki page URL from wiki-creation.json
-- `{story_points}` - Fibonacci story point value written to the work item
-- `{complexity_factor}` / `{risk_factor}` / `{uncertainty_factor}` - Numeric factors (1–3) contributing to the estimate
+- `{wsjf_score}` - Calculated WSJF score (e.g., 8.67)
+- `{priority}` - WSJF-derived priority (1-4)
+- `{story_points}` - Job Duration / Fibonacci story point value (1, 2, 3, 5, 8, 13)
+- `{complexity_factor}` / `{risk_factor}` / `{uncertainty_factor}` - Numeric factors contributing to Job Duration
+- `{confidence}` - Overall WSJF confidence (High/Med/Low)
+- `{class_of_service}` - Class of service (Standard/ExpediteCandidate)
 
 ## Example
 
@@ -60,6 +63,11 @@ Load this template in finalization.prompt.md and replace the placeholders:
   <li>Phase 4: Wiki Creation</li>
   <li>Phase 5: Finalization</li>
 </ul>
+
+<h3>WSJF Priority Score</h3>
+<p><strong>WSJF Score:</strong> 8.67 → Priority 1<br>
+<strong>Job Duration (Story Points):</strong> 3 (Complexity 2 · Risk 0 · Uncertainty 1)<br>
+<strong>Confidence:</strong> High | <strong>Class:</strong> ExpediteCandidate</p>
 
 <h3>📚 Complete Documentation</h3>
 <p>All research findings, decisions, and technical design details are available in the comprehensive wiki documentation.</p>

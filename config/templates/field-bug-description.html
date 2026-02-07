@@ -1,0 +1,51 @@
+<!--
+  BUG DESCRIPTION FIELD HTML TEMPLATE
+  Purpose: Rich styled template for Bug Description field in Azure DevOps
+  Sections: Summary (actual vs expected, business impact)
+  Variables: Replace {{variable}} placeholders with actual content
+-->
+<div style="font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #333;">
+
+  <!-- BUG SUMMARY BANNER -->
+  <div style="background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">🐛 Bug Summary</span>
+  </div>
+
+  <!-- SUMMARY CONTENT -->
+  <div style="background: #fff; border: 2px solid #dc3545; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <div style="font-size: 13px; line-height: 1.8; color: #333;">
+      <p style="margin: 0 0 12px 0;">
+        {{bug_summary_description}}
+      </p>
+      
+      <!-- Actual vs Expected -->
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px;">
+        <tr style="border-bottom: 1px solid #f5c6cb;">
+          <td style="padding: 10px; width: 100px; vertical-align: top;"><strong style="color: #dc3545;">Expected:</strong></td>
+          <td style="padding: 10px;">{{expected_behavior}}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #f5c6cb;">
+          <td style="padding: 10px; vertical-align: top;"><strong style="color: #dc3545;">Actual:</strong></td>
+          <td style="padding: 10px;">{{actual_behavior}}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- BUSINESS IMPACT -->
+  <div style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 20px;">
+    <div style="font-weight: 600; color: #e65100; margin-bottom: 6px;">📊 Business Impact</div>
+    <div style="font-size: 13px; color: #e65100; line-height: 1.6;">
+      {{business_impact}}
+    </div>
+  </div>
+
+  <!-- AFFECTED AREA -->
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px;">
+    <div style="font-weight: 600; color: #495057; margin-bottom: 8px;">Affected Functionality</div>
+    <div style="font-size: 13px; color: #666; line-height: 1.6;">
+      {{affected_functionality}}
+    </div>
+  </div>
+
+</div>

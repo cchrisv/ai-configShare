@@ -13,6 +13,14 @@ Input: `{{work_item_id}}`
 - `{{research}}/research-summary.json` exists
 - `{{research}}/{{artifact_files.research.dependency_discovery}}` exists
 
+## Templates
+| Type | File |
+|------|------|
+| Solution Design (HTML) | `{{paths.templates}}/{{template_files.field_solution_design}}` |
+| Solution Design (Guide) | `{{paths.templates}}/{{template_files.solution_design}}` |
+| Field Mappings | `{{paths.templates}}/{{template_files.field_mappings}}` |
+| Test Case | `{{paths.templates}}/{{template_files.test_case}}` |
+
 ## Protocol
 1. Reference standards in `{{paths.standards}}/`
 2. Consider dependency impact from research

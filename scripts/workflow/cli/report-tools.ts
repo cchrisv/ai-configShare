@@ -27,7 +27,7 @@ program
     'People to track in format "Name|email@domain.com"'
   )
   .option('-d, --days <days>', 'Number of days to look back', '30')
-  .option('-o, --output <dir>', 'Output directory for reports', 'reports')
+  .option('-o, --output <dir>', 'Output directory for reports', '.ai-artifacts/reports')
   .option('--no-wiki', 'Exclude wiki activities')
   .option('--no-prs', 'Exclude pull request activities')
   .option('--fast', 'Fast mode (~20s) - only direct activity, may miss mentions from others')

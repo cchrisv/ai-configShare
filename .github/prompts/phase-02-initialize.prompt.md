@@ -44,7 +44,8 @@ Output confirmation:
 │   └── 01-ado-workitem.json
 ├── grooming/
 ├── solutioning/
-└── wiki/
+├── wiki/
+└── finalization/
 ```
 
 ## CLI Reference

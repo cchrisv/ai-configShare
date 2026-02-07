@@ -2,6 +2,23 @@
 
 This document defines the formatting standards for all Azure DevOps Wiki pages created by the autonomous ticket preparation workflow.
 
+## Rich HTML Template
+
+**Primary Template:** Use `#file:config/templates/wiki-page-template.html` for all wiki pages.
+
+The HTML template provides:
+- **Gradient headers** for each major section (matching work item field styling)
+- **Card-based layouts** for content organization
+- **Color-coded sections** based on content type:
+  - 🟢 Green: Summary, Success, Goals, Getting Started
+  - 🔵 Blue: Information, Design, Architecture, Research
+  - 🟠 Orange: Assumptions, Warnings, Investigation
+  - 🔴 Red: Risks, Blockers, Critical items, Open Unknowns
+  - 🟣 Purple: Discovery, Investigation Trail
+  - 🩵 Teal: Testing, Validation, Quality
+- **Styled tables** with colored headers
+- **Collapsible sections** for detailed content
+
 ## Writing Tone & Narrative Style
 
 ### The Voice: Knowledgeable Guide
@@ -504,6 +521,36 @@ For the record, here are approaches we explicitly decided against. This isn't to
 
 ---
 
+### 🎯 AC-Centric Test Coverage Matrix
+
+This matrix ensures every Acceptance Criteria has both happy path AND unhappy path test coverage. No AC is considered fully covered without both.
+
+| AC ID | Acceptance Criteria | Happy Path Tests | Unhappy Path Tests | Coverage Status |
+|:-----:|---------------------|------------------|-------------------|:---------------:|
+| AC-1 | [First acceptance criterion] | TC-001, TC-002 | TC-005, TC-006 | ✅ Full |
+| AC-2 | [Second acceptance criterion] | TC-003 | TC-007 | ✅ Full |
+| AC-3 | [Third acceptance criterion] | TC-004 | — | ⚠️ Partial |
+| AC-4 | [Fourth acceptance criterion] | — | — | ❌ Gap |
+
+> **Coverage Legend:**
+> - ✅ **Full** = Has at least one Happy Path test AND one Unhappy Path test
+> - ⚠️ **Partial** = Has only Happy Path OR only Unhappy Path tests (requires justification)
+> - ❌ **Gap** = No test coverage (blocker - must be addressed)
+
+**Path Type Definitions:**
+| Path Type | Symbol | Description |
+|-----------|:------:|-------------|
+| Happy Path | ✓ | Validates AC works as expected under normal conditions with valid inputs |
+| Negative | ✗ | Validates error handling, invalid inputs, permission failures, missing data |
+| Edge Case | ⚡ | Validates boundary conditions, bulk operations, timing, concurrent access |
+| Security | 🔒 | Validates access controls, data isolation, FLS/CRUD enforcement, sharing rules |
+
+**Coverage Notes:**
+- **AC-3 (Partial):** [Explanation of what's covered and what's not, and why - e.g., "No negative test because feature degrades gracefully with no user-facing error"]
+- **AC-4 (Gap):** [Explanation of why no test exists and recommended action]
+
+---
+
 ### 📊 Test Data Matrix
 
 Understanding who and what we're testing is crucial. The test data matrix below defines the personas, configurations, and scenarios that form the foundation of our test coverage.
@@ -638,10 +685,10 @@ Permission Sets: [None or limited]
 
 These tests validate the core functionality that must work for the feature to be considered successful. Failure of any P1 test is a release blocker.
 
-| ID | Test Scenario | Why This Test Matters | Steps Summary | Expected Outcome | Data Row |
-|----|---------------|----------------------|---------------|------------------|:--------:|
-| TC-001 | [Happy path scenario] | [Business impact if this fails] | [Key steps] | [Observable result] | D1 |
-| TC-002 | [Critical alternate path] | [Business impact if this fails] | [Key steps] | [Observable result] | D2 |
+| ID | Test Scenario | Path Type | Covers AC | Steps Summary | Expected Outcome | Data Row |
+|----|---------------|:---------:|:---------:|---------------|------------------|:--------:|
+| TC-001 | [Happy path scenario] | ✓ Happy | AC-1, AC-2 | [Key steps] | [Observable result] | D1 |
+| TC-002 | [Critical negative path] | ✗ Negative | AC-1 | [Key steps] | [Observable result] | D2 |
 
 <details>
 <summary>📋 P1 Test Case Details (Click to expand)</summary>
@@ -653,6 +700,8 @@ These tests validate the core functionality that must work for the feature to be
 | | |
 |---|---|
 | **Objective** | [What we're validating and what proves success - the "oracle" that determines pass/fail] |
+| **Path Type** | ✓ Happy Path |
+| **Covers AC** | AC-1, AC-2 |
 | **Priority** | 🔴 P1 - Critical Path |
 | **Data Row** | D1 |
 | **Estimated Duration** | [X minutes] |
@@ -690,34 +739,165 @@ These tests validate the core functionality that must work for the feature to be
 - [ ] [Delete test record created]
 - [ ] [Reset any changed settings]
 
+<details>
+<summary>👨‍💻 Developer Validation (Click to expand)</summary>
+
+**Unit Test Pattern:**
+```apex
+@IsTest
+static void test_[Object]_[Action]_[Condition]_Success() {
+    // Arrange
+    [Setup test data matching D1 persona]
+    
+    // Act
+    Test.startTest();
+    [Execute the action being tested]
+    Test.stopTest();
+    
+    // Assert
+    System.assertEquals([expected], [actual], '[Descriptive message]');
+}
+```
+
+**Assertions to Implement:**
+- `System.assertEquals([expected_value], [actual_value], '[Field] should be [expected]');`
+- `System.assertNotEquals(null, [record].Id, 'Record should be created');`
+- `System.assertEquals([expected_count], [query_results].size(), 'Expected N records');`
+
+**Mocks Required:**
+- [ ] [External service mock - if applicable]
+- [ ] [HTTP callout mock - if applicable]
+
+**Integration Points to Verify:**
+- [ ] [Trigger/Flow executed - check debug log for specific entry]
+- [ ] [Platform Event published - verify subscriber received]
+
+</details>
+
+<details>
+<summary>🧪 QA Validation (Click to expand)</summary>
+
+**Step-by-Step Navigation:**
+1. App Launcher → [App Name]
+2. [Object] tab → [List View or New button]
+3. [Specific page/component] → [Action to perform]
+
+**Data Verification Query:**
+```sql
+SELECT Id, [Field1], [Field2], [Field3], CreatedDate
+FROM [Object__c]
+WHERE [Condition]
+ORDER BY CreatedDate DESC
+LIMIT 1
+-- Expected: [Describe expected field values]
+```
+
+**Visual Verification Checkpoints:**
+- [ ] [UI element 1] displays [expected state]
+- [ ] [Toast/message] shows [expected text]
+- [ ] [Record detail page] shows [expected field values]
+
+**Environment Prerequisites:**
+- [ ] Logged in as: [Username from D1]
+- [ ] Feature flag `[Flag_Name__c]` = ON
+- [ ] Permission set `[Permission_Set_Name]` assigned
+
+</details>
+
 ---
 
-#### TC-002: [Full Test Title]
+#### TC-002: [Full Test Title - Negative Scenario]
 
 | | |
 |---|---|
-| **Objective** | [What we're validating] |
+| **Objective** | [What we're validating - error handling, graceful failure] |
+| **Path Type** | ✗ Negative |
+| **Covers AC** | AC-1 |
 | **Priority** | 🔴 P1 - Critical Path |
 | **Data Row** | D2 |
 | **Estimated Duration** | [X minutes] |
 
 **Pre-conditions & Setup:**
 - [ ] [Required setup items]
+- [ ] [Condition that triggers the negative path - e.g., missing permission]
 
 **Step-by-Step Execution:**
 
 | Step | Action | Input/Data | Expected Result | ✓ |
 |:----:|--------|------------|-----------------|:-:|
-| 1 | [Action] | [Input] | [Expected] | ☐ |
-| 2 | [Action] | [Input] | [Expected] | ☐ |
-| 3 | [Action] | [Input] | [Expected] | ☐ |
+| 1 | [Action that should trigger error] | [Invalid/missing input] | [Error is caught gracefully] | ☐ |
+| 2 | [Verify error handling] | [Check error message/state] | [User-friendly error displayed] | ☐ |
+| 3 | [Verify no data corruption] | [Check related records] | [No orphaned/partial records] | ☐ |
 
 **Verification Checklist:**
-- [ ] [Verification item 1]
-- [ ] [Verification item 2]
+- [ ] Error message is user-friendly and actionable
+- [ ] No data corruption occurred
+- [ ] User can recover from error state
 
 **Cleanup Steps:**
-- [ ] [Cleanup item]
+- [ ] [Cleanup item - verify no orphaned records]
+
+<details>
+<summary>👨‍💻 Developer Validation (Click to expand)</summary>
+
+**Unit Test Pattern:**
+```apex
+@IsTest
+static void test_[Object]_[Action]_[ErrorCondition]_FailsGracefully() {
+    // Arrange
+    [Setup test data matching D2 persona - with error condition]
+    
+    // Act & Assert
+    Test.startTest();
+    try {
+        [Execute the action that should fail]
+        System.assert(false, 'Expected exception was not thrown');
+    } catch ([ExpectedException] e) {
+        System.assert(e.getMessage().contains('[expected message]'), 'Error message should be user-friendly');
+    }
+    Test.stopTest();
+    
+    // Verify no side effects
+    System.assertEquals(0, [SELECT COUNT() FROM Object__c WHERE ...], 'No records should be created');
+}
+```
+
+**Assertions to Implement:**
+- Verify exception is thrown with correct message
+- Verify no partial data was committed
+- Verify error is logged appropriately
+
+**Mocks Required:**
+- [ ] [Mock to simulate failure condition if external dependency]
+
+</details>
+
+<details>
+<summary>🧪 QA Validation (Click to expand)</summary>
+
+**Step-by-Step Navigation:**
+1. App Launcher → [App Name]
+2. [Object] tab → [Action that triggers error]
+3. [Observe error handling]
+
+**Data Verification Query:**
+```sql
+SELECT COUNT()
+FROM [Object__c]
+WHERE CreatedDate = TODAY
+-- Expected: No new records created (or count unchanged)
+```
+
+**Visual Verification Checkpoints:**
+- [ ] Error toast/message displays [expected text]
+- [ ] User is NOT redirected to broken page
+- [ ] User can retry or navigate away
+
+**Environment Prerequisites:**
+- [ ] Logged in as: [Username from D2 - restricted user]
+- [ ] Permission set `[Permission_Set_Name]` NOT assigned (to trigger error)
+
+</details>
 
 ---
 
@@ -729,36 +909,38 @@ These tests validate the core functionality that must work for the feature to be
 
 These tests cover important alternate paths and key negative scenarios. They should pass before release but may not block deployment in exceptional circumstances.
 
-| ID | Test Scenario | Steps Summary | Expected Outcome | Data Row |
-|----|---------------|---------------|------------------|:--------:|
-| TC-003 | [Alternate scenario] | [Key steps] | [Observable result] | D3 |
-| TC-004 | [Edge case scenario] | [Key steps] | [Observable result] | D4 |
+| ID | Test Scenario | Path Type | Covers AC | Steps Summary | Expected Outcome | Data Row |
+|----|---------------|:---------:|:---------:|---------------|------------------|:--------:|
+| TC-003 | [Alternate scenario] | ⚡ Edge | AC-2 | [Key steps] | [Observable result] | D3 |
+| TC-004 | [Negative scenario] | ✗ Negative | AC-3 | [Key steps] | [Observable result] | D4 |
 
 <details>
 <summary>📋 P2 Test Case Details (Click to expand)</summary>
 
 ---
 
-#### TC-003: [Full Test Title]
+#### TC-003: [Full Test Title - Edge Case]
 
 | | |
 |---|---|
 | **Objective** | [What we're validating - specific alternate path or edge case] |
+| **Path Type** | ⚡ Edge Case |
+| **Covers AC** | AC-2 |
 | **Priority** | 🟡 P2 - Important |
 | **Data Row** | D3 |
 | **Estimated Duration** | [X minutes] |
 
 **Pre-conditions & Setup:**
 - [ ] [Required setup items]
-- [ ] [Specific data conditions for this scenario]
+- [ ] [Specific data conditions for this scenario - e.g., bulk records, boundary values]
 
 **Step-by-Step Execution:**
 
 | Step | Action | Input/Data | Expected Result | ✓ |
 |:----:|--------|------------|-----------------|:-:|
-| 1 | [Action] | [Input] | [Expected] | ☐ |
-| 2 | [Action] | [Input] | [Expected] | ☐ |
-| 3 | [Action] | [Input] | [Expected] | ☐ |
+| 1 | [Action with edge condition] | [Boundary input] | [Expected handling] | ☐ |
+| 2 | [Verify edge case handled] | [Check results] | [Expected outcome] | ☐ |
+| 3 | [Verify no side effects] | [Check related data] | [No unexpected changes] | ☐ |
 
 **Verification Checklist:**
 - [ ] [Verification item 1]
@@ -767,13 +949,40 @@ These tests cover important alternate paths and key negative scenarios. They sho
 **Cleanup Steps:**
 - [ ] [Cleanup item]
 
+<details>
+<summary>👨‍💻 Developer Validation (Click to expand)</summary>
+
+**Unit Test Pattern:**
+```apex
+@IsTest
+static void test_[Object]_[Action]_[EdgeCondition]_HandlesCorrectly() {
+    // Setup edge case data (e.g., bulk, boundary)
+    // Execute and verify handling
+}
+```
+
+**Key Assertions:** [List specific assertions for this edge case]
+
+</details>
+
+<details>
+<summary>🧪 QA Validation (Click to expand)</summary>
+
+**Navigation:** [Step-by-step to trigger edge case]
+**Data Query:** `SELECT ... WHERE [edge condition]`
+**Visual Check:** [What to verify in UI]
+
+</details>
+
 ---
 
-#### TC-004: [Full Test Title]
+#### TC-004: [Full Test Title - Negative Scenario]
 
 | | |
 |---|---|
 | **Objective** | [What we're validating - negative/error scenario] |
+| **Path Type** | ✗ Negative |
+| **Covers AC** | AC-3 |
 | **Priority** | 🟡 P2 - Important |
 | **Data Row** | D4 |
 | **Estimated Duration** | [X minutes] |
@@ -796,6 +1005,31 @@ These tests cover important alternate paths and key negative scenarios. They sho
 **Cleanup Steps:**
 - [ ] [Cleanup item]
 
+<details>
+<summary>👨‍💻 Developer Validation (Click to expand)</summary>
+
+**Unit Test Pattern:**
+```apex
+@IsTest
+static void test_[Object]_[Action]_[NegativeCondition]_FailsGracefully() {
+    // Setup negative condition
+    // Verify exception or graceful handling
+}
+```
+
+**Key Assertions:** [List specific assertions for error handling]
+
+</details>
+
+<details>
+<summary>🧪 QA Validation (Click to expand)</summary>
+
+**Navigation:** [Step-by-step to trigger negative scenario]
+**Data Query:** `SELECT COUNT() FROM ... -- Expected: unchanged`
+**Visual Check:** [Error message/state to verify]
+
+</details>
+
 ---
 
 </details>
@@ -809,17 +1043,19 @@ These tests cover important alternate paths and key negative scenarios. They sho
 
 These tests provide additional coverage for edge cases and long-tail scenarios. They improve confidence but are not required for release.
 
-| ID | Test Scenario | Steps Summary | Expected Outcome | Data Row |
-|----|---------------|---------------|------------------|:--------:|
-| TC-005 | [Long-tail scenario] | [Key steps] | [Observable result] | D5 |
+| ID | Test Scenario | Path Type | Covers AC | Steps Summary | Expected Outcome | Data Row |
+|----|---------------|:---------:|:---------:|---------------|------------------|:--------:|
+| TC-005 | [Long-tail scenario] | 🔒 Security | AC-4 | [Key steps] | [Observable result] | D5 |
 
 ---
 
-#### TC-005: [Full Test Title]
+#### TC-005: [Full Test Title - Security/Long-tail]
 
 | | |
 |---|---|
-| **Objective** | [What we're validating - long-tail or edge scenario] |
+| **Objective** | [What we're validating - long-tail or security scenario] |
+| **Path Type** | 🔒 Security |
+| **Covers AC** | AC-4 |
 | **Priority** | 🟢 P3 - Nice to Have |
 | **Data Row** | D5 |
 
@@ -836,6 +1072,23 @@ These tests provide additional coverage for edge cases and long-tail scenarios. 
 **Verification Checklist:**
 - [ ] [Verification item]
 
+<details>
+<summary>👨‍💻 Developer Validation (Click to expand)</summary>
+
+**Unit Test Pattern:** [Brief pattern for this scenario]
+**Key Assertions:** [List assertions]
+
+</details>
+
+<details>
+<summary>🧪 QA Validation (Click to expand)</summary>
+
+**Navigation:** [Steps]
+**Data Query:** [Verification query]
+**Visual Check:** [UI verification]
+
+</details>
+
 ---
 
 </details>
@@ -844,20 +1097,23 @@ These tests provide additional coverage for edge cases and long-tail scenarios. 
 
 ### 🔗 Requirements Traceability Matrix
 
-This matrix ensures every acceptance criterion has corresponding test coverage and highlights any gaps.
+This matrix provides a detailed view linking each acceptance criterion to its test cases, organized by path type. This supplements the AC-Centric Coverage Matrix above with additional detail.
 
-| Acceptance Criteria | Description | Test Cases | Coverage |
-|:-------------------:|-------------|------------|:--------:|
-| AC-1 | [First acceptance criterion] | TC-001, TC-003 | ✅ Full |
-| AC-2 | [Second acceptance criterion] | TC-002 | ✅ Full |
-| AC-3 | [Third acceptance criterion] | TC-004 | ⚠️ Partial |
-| AC-4 | [Fourth acceptance criterion] | — | ❌ Gap |
+| AC ID | Description | Happy Path Tests | Unhappy Path Tests | Coverage |
+|:-----:|-------------|------------------|-------------------|:--------:|
+| AC-1 | [First acceptance criterion] | TC-001 | TC-002 | ✅ Full |
+| AC-2 | [Second acceptance criterion] | TC-001 | TC-003 | ✅ Full |
+| AC-3 | [Third acceptance criterion] | TC-004 | — | ⚠️ Partial |
+| AC-4 | [Fourth acceptance criterion] | — | TC-005 | ⚠️ Partial |
 
-> **Coverage Legend:** ✅ Fully Covered | ⚠️ Partially Covered (see notes) | ❌ Coverage Gap (requires attention)
+> **Coverage Legend:** 
+> - ✅ **Full** = Has at least one Happy Path AND one Unhappy Path test
+> - ⚠️ **Partial** = Missing either Happy Path or Unhappy Path coverage
+> - ❌ **Gap** = No test coverage at all
 
 **Coverage Notes:**
-- **AC-3 (Partial):** [Explanation of what's covered and what's not, and why]
-- **AC-4 (Gap):** [Explanation of why no test exists and recommended action]
+- **AC-3 (Partial):** [Explanation - e.g., "Missing negative test because error condition cannot occur in this context"]
+- **AC-4 (Partial):** [Explanation - e.g., "Happy path covered by AC-1 tests; security test added for defense-in-depth"]
 
 ---
 
@@ -955,41 +1211,6 @@ These items could not be determined during autonomous preparation and require hu
 
 ---
 
-## ➡️ Getting Started
-
-[If you're the developer picking up this work, this section is for you. We've done the research and design work - now here's how to hit the ground running.]
-
-### 🎯 Before You Dive In
-
-**Take a few minutes to orient yourself:**
-
-We recommend starting by reading through the Executive Summary and Decision Rationale sections above. Understanding *why* we made certain choices will help you make good decisions when you encounter situations we didn't anticipate.
-
-**Key things to have in place:**
-- [ ] You understand who this feature is for and why it matters to them
-- [ ] You've reviewed the component design and understand how the pieces connect
-- [ ] You know which existing components you'll be extending (check the Discovery section)
-- [ ] You've noted any open unknowns that might need clarification
-
-### 🛤️ Suggested Path Forward
-
-Here's a recommended sequence based on the design. Adjust as makes sense for your situation:
-
-1. **Start with the foundation** - [Specific first step based on design]
-2. **Build the core logic** - [Next logical step]
-3. **Connect the integration points** - [Integration work]
-4. **Validate thoroughly** - [Testing approach]
-
-### 📚 Resources & Support
-
-**Need more context?** The work item's Links tab contains related documentation and prior art.
-
-**Have questions?** [Guidance on who to ask for what types of questions]
-
-> **A note on this documentation:** This wiki page captures our understanding at the time of refinement. If you discover something that contradicts what's written here, please update the wiki - future developers will thank you.
-
----
-
 ## 📚 Additional Resources
 
 - **Audit Trail:** Check the work item's Links tab for the child audit task with complete decision walkthrough
@@ -1062,7 +1283,7 @@ Every section should **lead with narrative context** before presenting structure
 - ❌ Block-level blockquotes without `>` on each line
 - ❌ Multiple separate pages
 - ❌ Local file paths (`.ai-artifacts/`, `.github/`, `#file:`, `file://`)
-- ❌ References to artifact files (`test-cases.json`, `solution-design.json`)
+- ❌ References to artifact files (`solution-output.json` or any internal section names)
 - ❌ Timeline estimates, delivery dates, or sprint assignments
 - ❌ Story point estimates or velocity-based planning
 
@@ -1106,10 +1327,11 @@ Before creating the wiki page, verify:
 
 **Content Exclusion Rules (CRITICAL):**
 - [ ] No local file paths (`.ai-artifacts/`, `.github/`, `#file:`, `file://`)
-- [ ] No artifact file references (`test-cases.json`, `solution-design.json`, etc.)
+- [ ] No artifact file references (`solution-output.json` or any JSON file names)
 - [ ] No timeline estimates or delivery dates
 - [ ] No sprint assignments or velocity-based estimates
 - [ ] No story point estimates (these belong in work items only)
+- [ ] No implementation plans or step-by-step development guides
 - [ ] All test case content embedded directly (not referenced externally)
 - [ ] All test data definitions included inline (not in external files)
 
@@ -1148,7 +1370,6 @@ Before creating the wiki page, verify:
 - **Solution Design** - Architecture approach and component design
 - **Decision Rationale** - Options considered, why alternatives were eliminated, standards that influenced decisions
 - **Quality & Validation** - Acceptance criteria, testing strategy, test data, test cases, traceability matrix, assumptions resolution
-- **Getting Started** - Developer quick start and key resources
 
 ### Navigation
 - Table of contents at top for easy navigation
@@ -1226,7 +1447,7 @@ Every page must end with this footer:
 
 **Why This Matters:** Improves data accuracy, reduces manual effort, and provides foundation for future filtering needs.
 
-**What to Expect:** Medium effort (2-3 weeks) with reusable components for future projects.
+**What to Expect:** Moderate complexity with reusable components for future projects.
 
 ---
 
@@ -1294,35 +1515,6 @@ Every page must end with this footer:
 
 ---
 
-## ➡️ Getting Started
-
-### 🎯 Ready to Build? Here's How
-
-**Before You Write Any Code:**
-1. ✅ Review the business context and requirements
-2. ✅ Understand the technical architecture and design
-3. ✅ Set up your development environment
-4. ✅ Review existing components for reuse opportunities
-
-**Your Step-by-Step Guide:**
-1. ⬜ Set up the project structure and dependencies
-2. ⬜ Implement core components following the design
-3. ⬜ Write unit tests for each component
-4. ⬜ Implement integration points and external APIs
-5. ⬜ Perform integration testing
-6. ⬜ Deploy to test environment for validation
-7. ⬜ Conduct user acceptance testing
-8. ⬜ Deploy to production and monitor
-
-**Helpful Resources:**
-- **Work Item:** Check the work item's Links tab to access related documentation
-- **Documentation:** Refer to Salesforce Developer Guides and internal standards
-- **Support:** Contact @dev-lead for architecture questions
-
-> **Note:** Direct URLs are not included in wiki pages to prevent link breakage. Check the work item's Links tab for active links to related pages and documentation.
-
----
-
 ## 🔄 Related Work Items
 
 Related work items are linked to this ticket. Check the work item's **Links tab** to view:
@@ -1354,7 +1546,8 @@ Related work items are linked to this ticket. Check the work item's **Links tab*
 - **Include direct URLs to work items or wiki pages** - they break easily
 - **Reference local file paths** (`.ai-artifacts/`, `.github/`, `#file:`)
 - **Include timeline or sprint estimates** - these belong in work items
-- **Reference artifact files** (`test-cases.json`, `solution-design.json`)
+- **Include implementation plans or step-by-step guides** - focus on design, not how to build
+- **Reference artifact files** (`solution-output.json` or any JSON file names)
 - **Leave test cases as external references** - embed them directly
 
 ✅ **DO:**

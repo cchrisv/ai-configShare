@@ -65,7 +65,8 @@ Verify: All phases complete, no errors
 ├── research/
 ├── grooming/
 ├── solutioning/
-└── wiki/
+├── wiki/
+└── finalization/
 ```
 
 ## Performance

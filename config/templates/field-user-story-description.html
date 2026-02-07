@@ -1,0 +1,131 @@
+<!--
+  USER STORY DESCRIPTION FIELD HTML TEMPLATE
+  Purpose: Rich styled template for User Story Description field in Azure DevOps
+  Sections: Summary, User Story, Goals & Business Value, Assumptions, Known Unknowns, Constraints, Out of Scope
+  Variables: Replace {{variable}} placeholders with actual content
+  
+  Color Scheme (Dark Gradients with White Text):
+  - Blue (#1565c0 → #0d47a1): Summary
+  - Purple (#7b1fa2 → #4a148c): User Story
+  - Green (#2e7d32 → #1b5e20): Goals & Business Value
+  - Orange (#e65100 → #bf360c): Assumptions
+  - Red (#c62828 → #b71c1c): Known Unknowns
+  - Indigo (#303f9f → #1a237e): Constraints
+  - Pink (#ad1457 → #880e4f): Out of Scope
+-->
+<div style="font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #333;">
+
+  <!-- SUMMARY SECTION - Blue (Information) -->
+  <div style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">📋 Summary</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #333;">
+      {{summary_text}}
+    </p>
+  </div>
+
+  <!-- USER STORY SECTION - Purple (Discovery of user needs) -->
+  <div style="background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">✍️ User Story</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <p style="margin: 0; font-size: 13px; line-height: 1.8; color: #333;">
+      <strong style="color: #7b1fa2;">As a</strong> {{persona}},<br>
+      <strong style="color: #7b1fa2;">I want to</strong> {{action}},<br>
+      <strong style="color: #7b1fa2;">so that</strong> {{business_value}}.
+    </p>
+  </div>
+
+  <!-- GOALS & BUSINESS VALUE SECTION -->
+  <div style="background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">🌟 Goals & Business Value</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
+      <li>{{goal_1}}</li>
+      <li>{{goal_2}}</li>
+      <li>{{goal_3}}</li>
+      <!-- Add more goals as needed -->
+    </ul>
+  </div>
+
+  <!-- ASSUMPTIONS SECTION -->
+  <div style="background: linear-gradient(135deg, #e65100 0%, #bf360c 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">💡 Assumptions</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <div style="font-size: 13px; color: #666; margin-bottom: 12px; line-height: 1.6;">
+      Technical approaches and architectural decisions discovered during research. These assumptions will be validated during solutioning.
+    </div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <tr style="background: #f8f9fa; border-bottom: 1px solid #eee;">
+        <td style="padding: 10px; font-weight: 600; width: 60px;">ID</td>
+        <td style="padding: 10px; font-weight: 600;">Statement</td>
+        <td style="padding: 10px; font-weight: 600; width: 100px;">Confidence</td>
+        <td style="padding: 10px; font-weight: 600; width: 80px;">Status</td>
+        <td style="padding: 10px; font-weight: 600;">How to Falsify</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #eee;">
+        <td style="padding: 10px;">{{assumption_id}}</td>
+        <td style="padding: 10px;">{{assumption_statement}}</td>
+        <td style="padding: 10px;">{{assumption_confidence}}</td>
+        <td style="padding: 10px;"><span style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 3px; font-size: 11px;">{{assumption_status}}</span></td>
+        <td style="padding: 10px;">{{assumption_falsify}}</td>
+      </tr>
+      <!-- Add more assumption rows as needed -->
+    </table>
+  </div>
+
+  <!-- KNOWN UNKNOWNS SECTION -->
+  <div style="background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">❓ Known Unknowns</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px;">
+      <tr style="background: #f8f9fa; border-bottom: 1px solid #eee;">
+        <td style="padding: 10px; font-weight: 600; width: 60px;">ID</td>
+        <td style="padding: 10px; font-weight: 600;">Question</td>
+        <td style="padding: 10px; font-weight: 600;">Impact</td>
+        <td style="padding: 10px; font-weight: 600;">Who Can Clarify</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #eee;">
+        <td style="padding: 10px;">{{unknown_id}}</td>
+        <td style="padding: 10px;">{{unknown_question}}</td>
+        <td style="padding: 10px;">{{unknown_impact}}</td>
+        <td style="padding: 10px;">{{unknown_who}}</td>
+      </tr>
+      <!-- Add more rows as needed -->
+    </table>
+    <div style="background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 0 6px 6px 0; padding: 10px; font-size: 12px; color: #856404;">
+      <strong>Note:</strong> Critical unknowns must be resolved before development begins.
+    </div>
+  </div>
+
+  <!-- CONSTRAINTS SECTION - Indigo (Technical boundaries) -->
+  <div style="background: linear-gradient(135deg, #303f9f 0%, #1a237e 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">🔒 Constraints</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
+      <li>{{constraint_1}}</li>
+      <li>{{constraint_2}}</li>
+      <li>{{constraint_3}}</li>
+      <!-- Add more constraints as needed -->
+    </ul>
+  </div>
+
+  <!-- OUT OF SCOPE SECTION - Pink (Exclusions) -->
+  <div style="background: linear-gradient(135deg, #ad1457 0%, #880e4f 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">🚫 Out of Scope</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
+      <li>{{out_of_scope_1}}</li>
+      <li>{{out_of_scope_2}}</li>
+      <li>{{out_of_scope_3}}</li>
+      <!-- Add more out of scope items as needed -->
+    </ul>
+  </div>
+
+</div>

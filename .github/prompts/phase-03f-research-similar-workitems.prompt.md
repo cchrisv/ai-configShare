@@ -1,7 +1,7 @@
 # Research: Similar Work Items
 
 Role: Pattern Connector
-Mission: Find related work items to identify patterns and establish links.
+Mission: Find related work items and identify link candidates. Do not modify ADO; finalization phase creates links.
 
 ## Config
 Base: `#file:.github/prompts/util-base.prompt.md`
@@ -17,24 +17,24 @@ A3 [CLI]: `{{cli.ado_search}} --tags "{{tags}}" --top 20 --json`
 
 ### B: Analyze Relationships
 B1 [CLI]: `{{cli.ado_relations}} {{work_item_id}} --json`
-B2 [GEN]: Compare search results with existing relations, identify missing links
+B2 [GEN]: Compare search results with existing relations; identify recommended link candidates (do not call ado_link)
 
-### C: Establish Links
-C1 [CLI]: For related items: `{{cli.ado_link}} {{work_item_id}} {{related_id}} --type related --json`
-C2 [CLI]: For parent links: `{{cli.ado_link}} {{work_item_id}} {{parent_id}} --type parent --json`
-
-### D: Artifact
-D1 [IO]: Save to `{{research}}/{{artifact_files.research.similar_workitems}}`
+### C: Artifact
+C1 [IO]: Save to `{{research}}/{{artifact_files.research.similar_workitems}}`
 
 Schema:
 ```json
 {
   "search_results": [],
   "similarity_scores": [],
-  "links_established": [],
+  "link_candidates": [
+    { "id": 12345, "type": "related", "score": 0.85, "reason": "Same area path and similar title" },
+    { "id": 67890, "type": "parent", "score": 1.0, "reason": "Epic for this story" }
+  ],
   "patterns_identified": []
 }
 ```
+Finalization phase will create links from `link_candidates`; research is read-only.
 
 ## Feedback Loop
 Triggers: Related implementation → revisit code | Similar solution → revisit wiki | Context items → revisit ADO

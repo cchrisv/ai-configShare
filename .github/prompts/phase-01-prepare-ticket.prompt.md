@@ -17,11 +17,13 @@ Input: `{{work_item_id}}`
 
 ## Execution
 
-### Phase 1: Initialize [CLI]
+Phases 1-6 map to prompt files phase-02 through phase-07.
+
+### Phase 1: Initialize [CLI] (phase-02)
 Command: `{{cli.workflow_prepare}} -w {{work_item_id}} --json`
 Verify: `success: true` in response
 
-### Phase 2: Research [GEN]
+### Phase 2: Research [GEN] (phase-03)
 Execute in sequence:
 1. `#file:.github/prompts/phase-03a-research-organization-dictionary.prompt.md`
 2. `#file:.github/prompts/phase-03b-research-ado.prompt.md`
@@ -33,16 +35,16 @@ Execute in sequence:
 8. `#file:.github/prompts/phase-03h-research-web.prompt.md`
 9. `#file:.github/prompts/phase-03z-research-synthesis.prompt.md`
 
-### Phase 3: Grooming [GEN]
+### Phase 3: Grooming [GEN] (phase-04)
 Execute: `#file:.github/prompts/phase-04-grooming.prompt.md`
 
-### Phase 4: Solutioning [GEN]
+### Phase 4: Solutioning [GEN] (phase-05)
 Execute: `#file:.github/prompts/phase-05-solutioning.prompt.md`
 
-### Phase 5: Wiki [GEN]
+### Phase 5: Wiki [GEN] (phase-06)
 Execute: `#file:.github/prompts/phase-06-wiki.prompt.md`
 
-### Phase 6: Finalization [API]
+### Phase 6: Finalization [API] (phase-07)
 Execute: `#file:.github/prompts/phase-07-finalization.prompt.md`
 
 ### Verification [CLI]
@@ -56,7 +58,8 @@ Verify: All phases complete, no errors
 ├── research/
 ├── grooming/
 ├── solutioning/
-└── wiki/
+├── wiki/
+└── finalization/
 ```
 
 ## Error Handling

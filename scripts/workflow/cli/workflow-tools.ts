@@ -45,6 +45,7 @@ program
       const groomingDir = resolve(root, 'grooming');
       const solutioningDir = resolve(root, 'solutioning');
       const wikiDir = resolve(root, 'wiki');
+      const finalizationDir = resolve(root, 'finalization');
       const runStatePath = resolve(root, 'run-state.json');
       
       // Check if already initialized
@@ -63,7 +64,7 @@ program
       
       // Create directories
       const dirsCreated: string[] = [];
-      for (const dir of [root, researchDir, groomingDir, solutioningDir, wikiDir]) {
+      for (const dir of [root, researchDir, groomingDir, solutioningDir, wikiDir, finalizationDir]) {
         if (!existsSync(dir)) {
           mkdirSync(dir, { recursive: true });
           dirsCreated.push(dir);

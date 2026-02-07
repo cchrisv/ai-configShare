@@ -8,14 +8,14 @@ Base: `#file:.github/prompts/util-base.prompt.md`
 Research: `#file:.github/prompts/util-research-base.prompt.md`
 Input: `{{work_item_id}}`
 
-## Prerequisite
-`{{research}}/{{artifact_files.research.organization_dictionary}}` must exist.
+## Prerequisite (parallel-safe)
+Optional: If `{{research}}/{{artifact_files.research.organization_dictionary}}` exists, use it for term expansion when extracting keywords; otherwise proceed with ADO data only. This allows 03b to run in Wave 1 alongside 03a.
 
 ## Execution
 
 ### A: Init
 A1 [IO]: Load shared.json
-A2 [LOGIC]: Verify dictionary exists, STOP if missing
+A2 [IO]: If organization_dictionary artifact exists, load it for optional term expansion; else skip
 A3 [IO]: Ensure `{{research}}` exists
 
 ### B: Evidence Gathering

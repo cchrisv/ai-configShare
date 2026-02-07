@@ -19,8 +19,8 @@ A1 [LOGIC]: Load technology context from prior research
 A2 [GEN]: Generate search strategy queue
 
 ### B: Targeted Discovery
-B1 [CLI]: Framework searches:
-  - "Salesforce [Tech] best practices 2025"
+B1 [CLI]: Framework searches (prioritize last 24 months / current year):
+  - "Salesforce [Tech] best practices" (current year or recent)
   - "Salesforce [Pattern] vs [Alternative]"
   - "Salesforce [Tech] governor limits performance"
 B2 [CLI]: Integration/library searches (if found)

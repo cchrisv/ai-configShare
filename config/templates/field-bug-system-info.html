@@ -1,0 +1,72 @@
+<!--
+  BUG SYSTEM INFO FIELD HTML TEMPLATE
+  Purpose: Rich styled template for Bug System Info field in Azure DevOps
+  Sections: Screenshots/Videos, Error Messages, Logs, Test Data
+  Variables: Replace {{variable}} placeholders with actual content
+-->
+<div style="font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #333;">
+
+  <!-- SYSTEM INFO HEADER - Teal (Technical Data) -->
+  <div style="background: linear-gradient(135deg, #00796b 0%, #004d40 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">📊 Test Data and Supporting Information</span>
+  </div>
+
+  <!-- SCREENSHOTS/VIDEOS CARD -->
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 8px;">
+      📸 Screenshots/Videos
+    </div>
+    <div style="font-size: 13px; color: #333; line-height: 1.6;">
+      {{screenshots_videos}}
+    </div>
+  </div>
+
+  <!-- ERROR MESSAGES CARD -->
+  <div style="background: #fff; border: 2px solid #dc3545; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #dc3545; margin-bottom: 8px; border-bottom: 2px solid #dc3545; padding-bottom: 8px;">
+      ⚠️ Error Messages
+    </div>
+    <div style="font-size: 13px; color: #333; line-height: 1.6;">
+      <ul style="margin: 0; padding-left: 20px;">
+        <li><strong>UI Error:</strong> {{ui_error_message}}</li>
+        <li><strong>Debug Log:</strong> {{debug_log_error}}</li>
+        <!-- Add more error messages as needed -->
+      </ul>
+    </div>
+  </div>
+
+  <!-- LOGS CARD -->
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 8px;">
+      📋 Logs
+    </div>
+    <div style="background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 6px; font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; line-height: 1.6; overflow-x: auto;">
+      <pre style="margin: 0; white-space: pre-wrap; word-wrap: break-word;">{{log_content}}</pre>
+    </div>
+  </div>
+
+  <!-- TEST DATA CARD -->
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #495057; margin-bottom: 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 8px;">
+      🧪 Test Data
+    </div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <tr style="border-bottom: 1px solid #eee;">
+        <td style="padding: 8px; width: 150px;"><strong>Record ID:</strong></td>
+        <td style="padding: 8px; font-family: 'Consolas', monospace;">{{record_id}}</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #eee;">
+        <td style="padding: 8px;"><strong>Test Contact:</strong></td>
+        <td style="padding: 8px;">{{test_contact_details}}</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #eee;">
+        <td style="padding: 8px;"><strong>Reproducible:</strong></td>
+        <td style="padding: 8px;">
+          <span style="background: {{reproducible_color}}; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">{{reproducible_status}}</span>
+        </td>
+      </tr>
+      <!-- Add more test data rows as needed -->
+    </table>
+  </div>
+
+</div>

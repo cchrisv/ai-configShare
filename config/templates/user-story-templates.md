@@ -25,14 +25,17 @@ This templates guide focuses on clarity and testability to help developers make 
 
 Note: Write WHAT/WHY only in Summary and User Story; move any HOW to Assumptions. This separation helps developers understand business context without being locked into specific technical approaches.
 
-**CRITICAL:** Prepend the Copilot-Generated Content disclaimer at the very top of this template. See `#file:config/templates/field-disclaimer.md` for the disclaimer HTML block.
+**CRITICAL:** Use the rich HTML template for this field. See `#file:config/templates/field-user-story-description.html` for the complete styled template.
+
+The template includes:
+- Summary section with green gradient header
+- User Story section with blue gradient header
+- Goals & Business Value section
+- Assumptions & Constraints section with styled tables
+- Out of Scope section with red gradient header
 
 ```html
-<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 8px; margin-bottom: 16px; color: #212529;">
-  <p style="margin: 0; font-weight: bold; color: #212529;">⚠️ <strong>Copilot-Generated Content:</strong> This field was populated during the autonomous Copilot process. Please review for accuracy before continuing.</p>
-  <p style="margin: 4px 0 0 0; color: #212529;">This message should be deleted once the story has been validated and updated.</p>
-</div>
-
+<!-- See field-user-story-description.html for the complete styled template -->
 <h2>📋 Summary</h2>
 <p>[What is needed and why, based on research context. Focus on business capability, not technical implementation. Keep to 1-2 sentences.]</p>
 
@@ -263,14 +266,14 @@ Each acceptance criterion must follow the Given/When/Then (GWT) format. We use t
 
 ### Full Template (HTML)
 
-**CRITICAL:** Prepend the Copilot-Generated Content disclaimer at the very top of this template. See `#file:config/templates/field-disclaimer.md` for the disclaimer HTML block.
+**CRITICAL:** Use the rich HTML template for this field. See `#file:config/templates/field-user-story-acceptance-criteria.html` for the complete styled template.
+
+The template includes:
+- Scenario cards with blue-styled borders
+- Given/When/Then format with visual styling
 
 ```html
-<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 8px; margin-bottom: 16px; color: #212529;">
-  <p style="margin: 0; font-weight: bold; color: #212529;">⚠️ <strong>Copilot-Generated Content:</strong> This field was populated during the autonomous Copilot process. Please review for accuracy before continuing.</p>
-  <p style="margin: 4px 0 0 0; color: #212529;">This message should be deleted once the story has been validated and updated.</p>
-</div>
-
+<!-- See field-user-story-acceptance-criteria.html for the complete styled template -->
 <h2>⭐ Acceptance Criteria</h2>
 
 <h3>Scenario 1: [Happy Path from research]</h3>

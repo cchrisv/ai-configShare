@@ -13,11 +13,18 @@ Input: `{{work_item_id}}`, `{{wiki_path}}` (optional)
 - `{{solutioning}}/technical-spec.md` exists
 - `{{grooming}}/grooming-result.json` exists
 
+## Templates
+| Type | File |
+|------|------|
+| Wiki Format Guide | `{{paths.templates}}/{{template_files.wiki_format}}` |
+| Wiki Page HTML | `{{paths.templates}}/{{template_files.wiki_page_template}}` |
+
 ## Protocol
-1. Follow `{{paths.templates}}/{{template_files.wiki_format}}`
-2. Content from verified artifacts only
-3. Idempotent - update existing pages, don't duplicate
-4. Link back to source work item
+1. Follow `{{paths.templates}}/{{template_files.wiki_format}}` for formatting standards
+2. Use `{{paths.templates}}/{{template_files.wiki_page_template}}` for rich HTML styling
+3. Content from verified artifacts only
+4. Idempotent - update existing pages, don't duplicate
+5. Link back to source work item
 
 ## Execution
 

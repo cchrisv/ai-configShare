@@ -143,7 +143,8 @@ export function mergeVariables(
  * @returns Full path to the prompt file
  */
 export function getPromptPath(promptName: string): string {
-  const promptsDir = resolve(getConfigDir(), '..', 'prompts');
+  // Prompts are in .github/prompts/
+  const promptsDir = resolve(getProjectRoot(), '.github', 'prompts');
   return resolve(promptsDir, `${promptName}.prompt.md`);
 }
 
@@ -154,8 +155,8 @@ export function getPromptPath(promptName: string): string {
  * @returns Full path to the template file
  */
 export function getTemplatePath(templateName: string): string {
-  // Templates are in .github/templates
-  const templatesDir = resolve(getConfigDir(), '..', 'templates');
+  // Templates are in config/templates/
+  const templatesDir = resolve(getConfigDir(), 'templates');
   return resolve(templatesDir, templateName);
 }
 
@@ -166,7 +167,7 @@ export function getTemplatePath(templateName: string): string {
  * @returns Full path to the standards file
  */
 export function getStandardPath(standardName: string): string {
-  // Standards are in .github/standards
-  const standardsDir = resolve(getConfigDir(), '..', 'standards');
+  // Standards are in config/standards/
+  const standardsDir = resolve(getConfigDir(), 'standards');
   return resolve(standardsDir, standardName);
 }

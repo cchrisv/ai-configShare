@@ -45,12 +45,15 @@ project-root/
 │   ├── templates/           # ADO field templates
 │   └── standards/           # Development standards
 ├── scripts/workflow/        # TypeScript CLI tools
-└── .ai-artifacts/{id}/      # Runtime artifacts (gitignored)
-    ├── run-state.json
-    ├── research/
-    ├── grooming/
-    ├── solutioning/
-    └── wiki/
+└── .ai-artifacts/           # Runtime artifacts (gitignored)
+    ├── {id}/                # Per-work-item artifacts
+    │   ├── run-state.json
+    │   ├── research/
+    │   ├── grooming/
+    │   ├── solutioning/
+    │   ├── wiki/
+    │   └── finalization/
+    └── reports/             # Activity report CSVs
 ```
 
 ## CLI Tools

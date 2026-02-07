@@ -8,13 +8,13 @@ Base: `#file:.github/prompts/util-base.prompt.md`
 Research: `#file:.github/prompts/util-research-base.prompt.md`
 Input: `{{work_item_id}}`, `{{metadata_keywords}}`
 
-## Prerequisite
-`{{research}}/{{artifact_files.research.ado_workitem}}` must exist.
+## Prerequisite (parallel-safe)
+Optional: If `{{research}}/{{artifact_files.research.ado_workitem}}` exists, use its `keywords` and `technical_context` for `{{metadata_keywords}}`; otherwise call `{{cli.ado_get}} {{work_item_id}} --expand All --json` and extract search terms from title, description, and tags. This allows 03c to run in Wave 1 alongside 03b.
 
 ## Execution
 
 ### A: Init
-A1 [LOGIC]: Verify ADO artifact exists
+A1 [IO]: Load metadata_keywords: from ado_workitem artifact if present, else from fresh `{{cli.ado_get}} {{work_item_id}} --expand All --json`
 A2 [IO]: Ensure `{{research}}` exists
 
 ### B: Evidence Gathering

@@ -146,7 +146,7 @@ E3 [GEN]: Flag non-compliant patterns (e.g., multiple triggers per object)
 
 ### F: Artifact Generation
 
-F1 [IO]: Save detailed dependency data to `{{research}}/03a-dependency-discovery.json`
+F1 [IO]: Save detailed dependency data to `{{research}}/{{artifact_files.research.dependency_discovery}}`
 
 Schema:
 ```json
@@ -192,7 +192,7 @@ Schema:
 }
 ```
 
-F2 [IO]: Save summary to `{{research}}/03b-dependency-summary.json`
+F2 [IO]: Save summary to `{{research}}/{{artifact_files.research.dependency_summary}}`
 
 Schema:
 ```json
@@ -259,8 +259,8 @@ If no SF objects extracted from work item:
 ## Output
 
 Artifacts:
-- `{{research}}/03a-dependency-discovery.json` (detailed)
-- `{{research}}/03b-dependency-summary.json` (executive summary)
+- `{{research}}/{{artifact_files.research.dependency_discovery}}` (detailed)
+- `{{research}}/{{artifact_files.research.dependency_summary}}` (executive summary)
 
 Update `{{run_state}}`:
 - Add to `completedSteps[]`

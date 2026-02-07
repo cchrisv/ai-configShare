@@ -75,8 +75,8 @@ Add to `completedSteps[]`, increment `metrics.phases.research.stepsCompleted`.
 | 4 | 03d | 05-business-context.json |
 | 5 | 03e | 03a-dependency-discovery.json |
 | 6 | 03f | 04-similar-workitems.json |
-| 7 | 03g | 05-code-analysis.json |
-| 8 | 03h | 06-web-research.json |
+| 7 | 03g | 06-code-analysis.json |
+| 8 | 03h | 07-web-research.json |
 | 9 | 03z | research-summary.json, assumptions.json |
 
 ## Common CLI Commands

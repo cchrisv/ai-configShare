@@ -19,14 +19,15 @@ Bug descriptions contain only a Summary section focusing on actual vs expected b
 
 ### Full Template (HTML)
 
-**CRITICAL:** Prepend the Copilot-Generated Content disclaimer at the very top of this template. See `#file:config/templates/field-disclaimer.md` for the disclaimer HTML block.
+**CRITICAL:** Use the rich HTML template for this field. See `#file:config/templates/field-bug-description.html` for the complete styled template.
+
+The template includes:
+- Bug summary with actual vs expected behavior
+- Business impact callout
+- Affected functionality section
 
 ```html
-<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 8px; margin-bottom: 16px; color: #212529;">
-  <p style="margin: 0; font-weight: bold; color: #212529;">⚠️ <strong>Copilot-Generated Content:</strong> This field was populated during the autonomous Copilot process. Please review for accuracy before continuing.</p>
-  <p style="margin: 4px 0 0 0; color: #212529;">This message should be deleted once the story has been validated and updated.</p>
-</div>
-
+<!-- See field-bug-description.html for the complete styled template -->
 <h2>📋 Summary</h2>
 <p>[Actual vs expected behavior, affected functionality/area, and business impact. Avoid technical cause speculation. Focus on WHAT is broken, not HOW to fix it.]</p>
 ```
@@ -53,14 +54,15 @@ Repro Steps include: Environment, Preconditions, Step-by-step instructions, Expe
 
 ### Full Template (HTML)
 
-**CRITICAL:** Prepend the Copilot-Generated Content disclaimer at the very top of this template. See `#file:config/templates/field-disclaimer.md` for the disclaimer HTML block.
+**CRITICAL:** Use the rich HTML template for this field. See `#file:config/templates/field-bug-repro-steps.html` for the complete styled template.
+
+The template includes:
+- Environment and preconditions cards
+- Numbered steps with visual styling
+- Expected vs actual comparison with color-coded callouts
 
 ```html
-<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 8px; margin-bottom: 16px; color: #212529;">
-  <p style="margin: 0; font-weight: bold; color: #212529;">⚠️ <strong>Copilot-Generated Content:</strong> This field was populated during the autonomous Copilot process. Please review for accuracy before continuing.</p>
-  <p style="margin: 4px 0 0 0; color: #212529;">This message should be deleted once the story has been validated and updated.</p>
-</div>
-
+<!-- See field-bug-repro-steps.html for the complete styled template -->
 <h2>🔄 Repro Steps</h2>
 <p><strong>Environment:</strong> [Org name, user profile, browser/device]</p>
 <p><strong>Preconditions:</strong> [Required setup, data, permissions]</p>
@@ -115,14 +117,16 @@ System Info includes: Screenshots/Videos, Error Messages, Logs, Test Data. This 
 
 ### Full Template (HTML)
 
-**CRITICAL:** Prepend the Copilot-Generated Content disclaimer at the very top of this template. See `#file:config/templates/field-disclaimer.md` for the disclaimer HTML block.
+**CRITICAL:** Use the rich HTML template for this field. See `#file:config/templates/field-bug-system-info.html` for the complete styled template.
+
+The template includes:
+- Screenshots/videos card
+- Error messages card with red accent
+- Logs section with code formatting
+- Test data table
 
 ```html
-<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 8px; margin-bottom: 16px; color: #212529;">
-  <p style="margin: 0; font-weight: bold; color: #212529;">⚠️ <strong>Copilot-Generated Content:</strong> This field was populated during the autonomous Copilot process. Please review for accuracy before continuing.</p>
-  <p style="margin: 4px 0 0 0; color: #212529;">This message should be deleted once the story has been validated and updated.</p>
-</div>
-
+<!-- See field-bug-system-info.html for the complete styled template -->
 <h2>📊 Test Data and Supporting Information</h2>
 <p><strong>Screenshots/Videos:</strong> [Links or descriptions if available]</p>
 <p><strong>Error Messages:</strong> [Exact error message text from UI or logs]</p>
@@ -193,14 +197,15 @@ Bug Acceptance Criteria focus on **fix validation** (WHAT should happen after fi
 
 ### Full Template (HTML)
 
-**CRITICAL:** Prepend the Copilot-Generated Content disclaimer at the very top of this template. See `#file:config/templates/field-disclaimer.md` for the disclaimer HTML block.
+**CRITICAL:** Use the rich HTML template for this field. See `#file:config/templates/field-bug-acceptance-criteria.html` for the complete styled template.
+
+The template includes:
+- Fix Validation section with blue accent
+- Regression Testing section with blue accent
+- Given/When/Then format with visual styling
 
 ```html
-<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 8px; margin-bottom: 16px; color: #212529;">
-  <p style="margin: 0; font-weight: bold; color: #212529;">⚠️ <strong>Copilot-Generated Content:</strong> This field was populated during the autonomous Copilot process. Please review for accuracy before continuing.</p>
-  <p style="margin: 4px 0 0 0; color: #212529;">This message should be deleted once the story has been validated and updated.</p>
-</div>
-
+<!-- See field-bug-acceptance-criteria.html for the complete styled template -->
 <h2>⭐ Acceptance Criteria</h2>
 
 <p><strong>Fix Validation (WHAT should happen after fix)</strong></p>

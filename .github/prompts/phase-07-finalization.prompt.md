@@ -13,10 +13,21 @@ Input: `{{work_item_id}}`
 - `{{solutioning}}/solution-design.json` exists
 - `{{wiki}}/wiki-metadata.json` exists
 
+## Templates
+| Type | File |
+|------|------|
+| WSJF Scoring Anchors | `{{paths.templates}}/{{template_files.wsjf_scoring}}` |
+| Audit Task | `{{paths.templates}}/{{template_files.audit_task}}` |
+| Field Mappings | `{{paths.templates}}/{{template_files.field_mappings}}` |
+| Field: Blockers | `{{paths.templates}}/{{template_files.field_blockers}}` |
+| Field: Planned Work | `{{paths.templates}}/{{template_files.field_planned_work}}` |
+| Field: Progress | `{{paths.templates}}/{{template_files.field_progress}}` |
+
 ## Protocol
 1. Single ADO update call for final changes
 2. Verify all artifacts before finalizing
 3. Idempotent - don't create duplicate links
+4. Use WSJF scoring anchors for consistent priority scoring
 
 ## Execution
 
@@ -28,10 +39,10 @@ A4 [IO]: Create `{{finalization}}`, load all phase artifacts
 
 ### B: Artifact Collection
 B1 [IO]: Load research-summary, similar-workitems, grooming, solutioning, wiki metadata
-B2 [LOGIC]: Extract related work item IDs above relevance threshold
+B2 [LOGIC]: Extract link candidates from `{{research}}/{{artifact_files.research.similar_workitems}}` (field `link_candidates`); filter by relevance threshold
 
 ### C: ADO Operations
-C1 [CLI]: Link related items:
+C1 [CLI]: Create links from link_candidates (idempotent; skip if link already exists):
   `{{cli.ado_link}} {{work_item_id}} {{related_id}} --type related --json`
 C2 [IO]: Prepare final update payload with `{{tags.refined}}` tag
 C3 [CLI]: Update work item:

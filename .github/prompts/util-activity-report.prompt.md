@@ -28,7 +28,7 @@ A3 [LOGIC]: Set defaults if not provided
 Options:
 - `--people`: One or more "Name|email" entries (required)
 - `--days`: Lookback period (default: 30)
-- `--output`: Output directory (default: reports)
+- `--output`: Output directory (default: {{paths.reports}})
 - `--json`: JSON output
 
 ### C: Present Results [GEN]
@@ -39,7 +39,7 @@ Display:
 - Activity counts
 
 ## Output
-CSV files in `reports/` directory with timestamps.
+CSV files in `{{paths.reports}}/` directory with timestamps.
 
 ## Errors
 | Condition | Action |

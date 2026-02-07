@@ -1,6 +1,6 @@
 # Azure DevOps Field Mappings - Digital Platforms Project
 
-This document provides authoritative field path references for all work item types in Azure DevOps. Use these exact field paths when updating work items via `mcp_ado_wit_update_work_item`.
+This document provides authoritative field path references for all work item types in Azure DevOps. Use these exact field paths when updating work items via the workflow CLI: `{{cli.ado_update}}` (see config/shared.json). Prompts pass a fields JSON file: `{{cli.ado_update}} {{work_item_id}} --fields-file "{{path}}/payload.json" --json`.
 
 ## User Story Fields
 
@@ -10,13 +10,13 @@ This document provides authoritative field path references for all work item typ
 | `/fields/System.Description` | 5-section business requirements template | HTML | Yes | Summary, User Story, Goals, Assumptions, Out of Scope |
 | `/fields/Microsoft.VSTS.Common.AcceptanceCriteria` | GWT acceptance criteria scenarios | HTML | Yes | Given/When/Then format, minimum 3 scenarios |
 | `/fields/Custom.DevelopmentSummary` | Technical solution design | HTML | Yes (Solutioning) | Complete solution design document populated during Solutioning phase |
-| `/fields/Custom.WorkClassType` | Work classification | String | Yes | Values: `Critical/Escalation`, `Development`, `Fixed Date Delivery`, `Maintenance/Recurring Tasks`, `Standard` |
+| `/fields/Custom.WorkClassType` | Work classification | String | Yes | Values: `Development`, `Critical/Escalation`, `Fixed Delivery`, `Maintenance/Recurring Tasks`, `Standard` |
 | `/fields/Custom.RequiresQA` | QA requirement flag | String | Yes | Values: `Yes` or `No` |
-| `/fields/System.Tags` | Classification tags | Semicolon-delimited string | Yes | Format: `Triaged;CoPilot-Refined;[CoPilot-Solutioned];[WorkType];[Effort];[Risk]` |
+| `/fields/System.Tags` | Classification tags | Semicolon-delimited string | Yes | Format: `Triaged;AI-Refined;[Solutioned];[WorkType];[Effort];[Risk]` (see config/shared.json `tags`) |
 | `/fields/System.State` | Workflow state | String | No | Do NOT update - leave at current state for human workflow control |
 | `/fields/System.AreaPath` | Team board classification | String | Yes | Must match parent work item (Connect/FastTrack) |
 | `/fields/System.IterationPath` | Sprint/iteration | String | Yes | Must match parent work item |
-| `/fields/Microsoft.VSTS.Scheduling.StoryPoints` | Relative effort estimate | Number | Yes (Finalization) | Populate during Finalization using Fibonacci mapping (0, 1, 2, 3, 5, 8, 13) |
+| `/fields/Microsoft.VSTS.Scheduling.StoryPoints` | Relative effort estimate (Job Duration) | Number | Yes (Finalization) | Derived from WSJF Job Duration. Fibonacci: 1, 2, 3, 5, 8, 13 |
 
 ## Bug/Defect Fields
 
@@ -63,10 +63,11 @@ This document provides authoritative field path references for all work item typ
 
 Tags are semicolon-delimited. Always include base tags first:
 
-**Base Tags:**
+**Base Tags (values from config/shared.json `tags`):**
 - `Triaged` - Always present
-- `CoPilot-Refined` - Added after AI Refinement phase
-- `CoPilot-Solutioned` - Added after Solutioning phase (optional)
+- `AI-Refined` - Added after AI Refinement phase (`tags.refined`)
+- `Solutioned` - Added after Solutioning phase (optional) (`tags.solutioned`)
+- `Groomed` - Added after Grooming phase (optional) (`tags.groomed`)
 
 **Work Type (select ONE):**
 - `Admin` OR `Dev` (never both)
@@ -84,10 +85,10 @@ Tags are semicolon-delimited. Always include base tags first:
 **Examples:**
 ```
 # After AI Refinement:
-Triaged;CoPilot-Refined;Dev;Medium-Effort;Medium-Risk
+Triaged;AI-Refined;Dev;Medium-Effort;Medium-Risk
 
 # After Solutioning:
-Triaged;CoPilot-Refined;CoPilot-Solutioned;Dev;Medium-Effort;Medium-Risk
+Triaged;AI-Refined;Solutioned;Dev;Medium-Effort;Medium-Risk
 ```
 
 **Optional Tags (add as needed):**
@@ -99,39 +100,87 @@ Triaged;CoPilot-Refined;CoPilot-Solutioned;Dev;Medium-Effort;Medium-Risk
 - `Safety-Review-Needed` - If safety gate fails
 - `INVEST-Review-Needed` - If INVEST validation fails
 
-### Story Points Field
+**WSJF Priority Tags (added during Finalization):**
 
-- Only populate during Finalization after completing the complexity/risk/uncertainty heuristic.
-- Values must align to Fibonacci numbers: 0, 1, 2, 3, 5, 8, or 13.
-- Persist the rationale (factor breakdown and total score) to `run-state.json.finalization.storyPoints` for traceability.
+These tags are automatically applied based on WSJF scoring in the Finalization phase:
 
-## Field Path Usage in Code
+| Tag | Condition | Description |
+|-----|-----------|-------------|
+| `Expedite` | WSJF-derived Priority ≤ 2 | Work item should skip normal backlog and be addressed immediately |
+| `WSJF-Blocker` | WSJF Score ≥ 15.0 | Critical blocker requiring war room attention |
+| `WSJF-LowConfidence` | Overall WSJF Confidence = Low | Scoring has significant uncertainty; human validation recommended |
+| `WSJF-HumanReview` | Human review required | One or more review triggers activated (see below) |
+| `WSJF-ExpediteCandidate` | Class of Service = ExpediteCandidate | WSJF ≥ 8.0 or Priority 1 indicators present |
 
-Always use the `/fields/` prefix when updating work items:
+**Human Review Triggers:**
+- Overall Confidence = Low
+- Class of Service = ExpediteCandidate
+- WSJF score changed > 25% from previous scoring
+- `Dispute` tag present on work item
+- Job Duration = 1 with WSJF > 10 (size verification needed)
 
-```python
-mcp_ado_wit_update_work_item(
-  project="Digital Platforms",
-  id=[WORK_ITEM_ID],
-  updates=[
-    {
-      "path": "/fields/System.Description",
-      "value": "[HTML formatted content]"
-    },
-    {
-      "path": "/fields/Microsoft.VSTS.Common.AcceptanceCriteria",
-      "value": "[HTML formatted AC scenarios]"
-    },
-    {
-      "path": "/fields/Custom.WorkClassType",
-      "value": "Development"
-    },
-    {
-      "path": "/fields/System.Tags",
-      "value": "Triaged;CoPilot-Refined;Dev;Medium-Effort;Medium-Risk"
-    }
-  ]
-)
+**Examples:**
+```
+# High-priority defect after Finalization:
+Triaged;AI-Refined;Solutioned;Dev;Low-Effort;Low-Risk;Expedite;WSJF-ExpediteCandidate
+
+# Work item needing human review:
+Triaged;AI-Refined;Solutioned;Dev;Medium-Effort;Medium-Risk;WSJF-HumanReview;WSJF-LowConfidence
+
+# Critical blocker:
+Triaged;AI-Refined;Solutioned;Dev;Low-Effort;High-Risk;Expedite;WSJF-Blocker
+```
+
+### Priority Field
+
+The Priority field (`/fields/Microsoft.VSTS.Common.Priority`) is set during Finalization based on WSJF score:
+
+| Priority | WSJF Range | Description |
+|----------|------------|-------------|
+| 1 | ≥ 8.0 | Must fix - highest priority |
+| 2 | 4.0 – 7.9 | High priority - fix next sprint |
+| 3 | 1.5 – 3.9 | Medium priority - normal backlog |
+| 4 | < 1.5 | Low priority - backlog or icebox |
+
+**Note:** Priority is now set for ALL work item types (User Stories, Enhancements, Bugs, Defects), not just Bugs.
+
+### Severity Field (Bugs/Defects Only)
+
+The Severity field (`/fields/Microsoft.VSTS.Common.Severity`) is set during Finalization for Bug/Defect work items only:
+
+| Severity | WSJF Range | Value |
+|----------|------------|-------|
+| 1 | ≥ 8.0 | `1 - Critical` |
+| 2 | 4.0 – 7.9 | `2 - High` |
+| 3 | 1.5 – 3.9 | `3 - Medium` |
+| 4 | < 1.5 | `4 - Low` |
+
+### Story Points Field (Job Duration)
+
+- Story Points are derived from the Job Duration dimension of WSJF scoring during Finalization.
+- Job Duration is calculated from: Complexity (1-3) + Risk (0-3) + Uncertainty (0-3), mapped to Fibonacci.
+- Values must align to Fibonacci numbers: 1, 2, 3, 5, 8, or 13.
+- Full scoring rationale (including factor breakdown) is persisted to `wsjf-evidence.json` in the finalization artifacts folder.
+
+## Field Path Usage (CLI)
+
+Workflow prompts use `{{cli.ado_update}}` from config/shared.json. Prepare a JSON payload with field paths and values, then call:
+
+```bash
+{{cli.ado_update}} <work_item_id> --fields-file "<path>/payload.json" --json
+```
+
+Payload format (use `/fields/` prefix for paths; see artifact_files in shared.json for phase-specific payload files):
+
+```json
+{
+  "fields": {
+    "System.Description": "[HTML formatted content]",
+    "Microsoft.VSTS.Common.AcceptanceCriteria": "[HTML formatted AC scenarios]",
+    "Custom.WorkClassType": "Development",
+    "System.Tags": "Triaged;AI-Refined;Dev;Medium-Effort;Medium-Risk"
+  }
+}
 ```
 
 ## HTML Formatting Requirements
@@ -151,31 +200,23 @@ All HTML fields must use UTF-8 encoding and follow these structure rules:
 
 **All HTML tags must be properly closed.** Azure DevOps will render malformed HTML incorrectly.
 
-## Copilot-Generated Content Disclaimers
+## Rich HTML Templates
 
-**CRITICAL:** All HTML fields populated by the autonomous Copilot process include a disclaimer at the top indicating the content was Copilot-generated and should be reviewed for accuracy.
+All work item field templates use rich styling with gradients, cards, and color-coded sections:
 
-### Fields That Include Disclaimers
-
-- `System.Description` - Copilot-Generated Content disclaimer prepended
-- `Microsoft.VSTS.Common.AcceptanceCriteria` - Copilot-Generated Content disclaimer prepended
-- `Microsoft.VSTS.TCM.ReproSteps` - Copilot-Generated Content disclaimer prepended (bugs only)
-- `Microsoft.VSTS.TCM.SystemInfo` - Copilot-Generated Content disclaimer prepended (bugs only)
-- `Custom.DevelopmentSummary` - Copilot-Generated Content disclaimer prepended
-
-**NOTE:** Comments are no longer posted by the autonomous workflow.
-
-### Fields That Do NOT Include Disclaimers
-
-- `System.Title` - User requested exclusion
-- `Custom.WorkClassType` - Classification field
-- `Custom.RequiresQA` - Classification field
-- `System.Tags` - Classification tags
-- `Microsoft.VSTS.Scheduling.StoryPoints` - Numeric field (disclaimer note included in rationale JSON instead)
-
-### Disclaimer Template
-
-See `#file:config/templates/field-disclaimer.md` for the standardized disclaimer HTML blocks used for fields.
+| Template File | Target Field |
+|---------------|--------------|
+| `field-user-story-description.html` | `System.Description` (User Story) |
+| `field-user-story-acceptance-criteria.html` | `Microsoft.VSTS.Common.AcceptanceCriteria` (User Story) |
+| `field-bug-description.html` | `System.Description` (Bug) |
+| `field-bug-repro-steps.html` | `Microsoft.VSTS.TCM.ReproSteps` |
+| `field-bug-system-info.html` | `Microsoft.VSTS.TCM.SystemInfo` |
+| `field-bug-acceptance-criteria.html` | `Microsoft.VSTS.Common.AcceptanceCriteria` (Bug) |
+| `field-feature-description.html` | `System.Description` (Feature) |
+| `field-feature-business-value.html` | `Custom.BusinessProblemandValueStatement` |
+| `field-feature-objectives.html` | `Custom.BusinessObjectivesandImpact` |
+| `field-feature-acceptance-criteria.html` | `Microsoft.VSTS.Common.AcceptanceCriteria` (Feature) |
+| `field-solution-design.html` | `Custom.DevelopmentSummary` |
 
 ## Notes
 
@@ -186,5 +227,4 @@ See `#file:config/templates/field-disclaimer.md` for the standardized disclaimer
 - Microsoft fields use `Microsoft.VSTS.` prefix (e.g., `Microsoft.VSTS.Common.AcceptanceCriteria`)
 - Tags are semicolon-delimited strings, not arrays
 - HTML content must be properly escaped if using in JSON
-- All Copilot-generated HTML fields must include the appropriate disclaimer at the top
 
