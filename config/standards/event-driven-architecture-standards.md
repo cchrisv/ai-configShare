@@ -459,8 +459,7 @@ public class EventHandler {
 ## Related Standards
 
 - [Async Processing Standards](./async-processing-standards.md)
-- [Integration Standards](./integration-standards.md)
-- [Logging Standards](./logging-standards.md)
+- [Nebula Logger Standards](./nebula-logger-standards.md)
 
 ## Resources
 

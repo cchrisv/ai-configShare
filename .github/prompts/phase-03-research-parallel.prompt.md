@@ -1,4 +1,4 @@
-````prompt
+```prompt
 # Research Phase (Parallel Execution with Subagents)
 
 Role: Research Coordinator
@@ -134,4 +134,3 @@ All research artifacts from sub-phases (03a-03z).
 | Total Parallel | 8-12 minutes | ~60% reduction |
 
 ```
-````

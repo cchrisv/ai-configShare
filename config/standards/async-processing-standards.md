@@ -5,7 +5,7 @@ category: architecture
 version: 1.1
 last_updated: 2025-12-03
 source_url: https://architect.salesforce.com/decision-guides/async-processing
-framework_source: https://architect.salesforce.com/decision-guides/step_based_asyc_framework
+framework_source: https://architect.salesforce.com/decision-guides/step_based_async_framework
 mass_action_scheduler: https://github.com/sfdx-mass-action-scheduler/sfdx-mass-action-scheduler
 applies_to: salesforce, apex, batch, queueable, future, platform-events, flows, mass-action-scheduler
 ---
@@ -1000,7 +1000,7 @@ Use this matrix to select the appropriate async pattern. **Follow the Flow-First
 
 ### Salesforce Architect Guides
 - [Salesforce Async Processing Decision Guide](https://architect.salesforce.com/decision-guides/async-processing)
-- [Step-Based Async Framework](https://architect.salesforce.com/decision-guides/step_based_asyc_framework)
+- [Step-Based Async Framework](https://architect.salesforce.com/decision-guides/step_based_async_framework)
 
 ### Mass Action Scheduler
 - [Mass Action Scheduler GitHub](https://github.com/sfdx-mass-action-scheduler/sfdx-mass-action-scheduler)

@@ -3,7 +3,7 @@
  * Traverses and analyzes dependency graphs
  */
 
-import { logDebug, logWarn } from './lib/loggerStructured.js';
+import { logWarn } from './lib/loggerStructured.js';
 import type {
   DependencyNode,
   DependencyEdge,
@@ -83,7 +83,7 @@ export function traverseDependencies(
 export function detectCycles(
   nodes: Map<string, DependencyNode>,
   edges: DependencyEdge[],
-  startNodeId: string
+  _startNodeId: string
 ): CycleDetectionResult {
   const visited = new Set<string>();
   const recursionStack = new Set<string>();

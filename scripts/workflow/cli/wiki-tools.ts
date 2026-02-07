@@ -197,7 +197,7 @@ program
 
       const pages = await searchWikiPages(text, options.wiki);
       
-      if (options.json || true) {
+      if (options.json) {
         console.log(JSON.stringify({ 
           searchText: text,
           count: pages.length,

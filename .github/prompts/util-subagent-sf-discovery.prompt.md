@@ -1,4 +1,4 @@
-````prompt
+```prompt
 # Salesforce Object Dependency Subagent Template
 
 **Purpose:** Template for discovering dependencies for a single Salesforce object.
@@ -236,4 +236,3 @@ const aggregated = {
 | **Debugging** | Easy to re-run single object if needed |
 
 ```
-````

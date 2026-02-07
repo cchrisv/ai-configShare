@@ -9,7 +9,10 @@ import { fileURLToPath } from 'url';
 import type { SharedConfig, TemplateVariables } from '../types/configTypes.js';
 
 /**
- * Get the project root directory (where .github lives)
+ * Get the project root directory (where .github and config live).
+ * Searches cwd and parent directories for config/shared.json.
+ *
+ * @returns Absolute path to project root, or process.cwd() if not found
  */
 export function getProjectRoot(): string {
   // Try to find .github relative to cwd or script location
@@ -137,10 +140,10 @@ export function mergeVariables(
 }
 
 /**
- * Get the path to a prompt file
- * 
- * @param promptName - Name of the prompt (without extension)
- * @returns Full path to the prompt file
+ * Get the path to a prompt file in .github/prompts.
+ *
+ * @param promptName - Name of the prompt without extension (e.g. "phase-01-prepare-ticket")
+ * @returns Absolute path to the .prompt.md file
  */
 export function getPromptPath(promptName: string): string {
   // Prompts are in .github/prompts/
@@ -149,10 +152,10 @@ export function getPromptPath(promptName: string): string {
 }
 
 /**
- * Get the path to a template file
- * 
- * @param templateName - Name of the template
- * @returns Full path to the template file
+ * Get the path to a template file in config/templates.
+ *
+ * @param templateName - Template filename or path relative to config/templates
+ * @returns Absolute path to the template file
  */
 export function getTemplatePath(templateName: string): string {
   // Templates are in config/templates/
@@ -161,10 +164,10 @@ export function getTemplatePath(templateName: string): string {
 }
 
 /**
- * Get the path to a standards file
- * 
- * @param standardName - Name of the standard
- * @returns Full path to the standards file
+ * Get the path to a standards file in config/standards.
+ *
+ * @param standardName - Standards filename or path relative to config/standards
+ * @returns Absolute path to the standards file
  */
 export function getStandardPath(standardName: string): string {
   // Standards are in config/standards/

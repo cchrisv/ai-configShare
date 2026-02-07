@@ -1,4 +1,4 @@
-````prompt
+```prompt
 # Subagent Research Template
 
 **Purpose:** Standard template for invoking research sub-phases as subagents.
@@ -207,4 +207,3 @@ Feedback loops identified by subagents:
 Coordinator aggregates all feedback loops and executes high-priority revisits before proceeding to next wave.
 
 ```
-````

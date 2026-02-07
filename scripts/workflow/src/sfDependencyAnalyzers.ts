@@ -9,8 +9,6 @@ import type { SfConnectionConfig } from './sfClient.js';
 import type {
   DependencyNode,
   DependencyEdge,
-  MetadataType,
-  DependencyRelationship,
 } from './types/sfDependencyTypes.js';
 
 /**

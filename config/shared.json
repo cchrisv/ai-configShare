@@ -8,8 +8,10 @@
   },
   "ado_defaults": {
     "organization": "https://dev.azure.com/UMGC",
+    "organization_name": "UMGC",
     "project": "Digital Platforms",
-    "wiki": "Digital Platforms.wiki"
+    "wiki": "Digital Platforms.wiki",
+    "wiki_repo_id": "c7b64b09-35f3-4d8a-889c-5650655281ee"
   },
   "sf_defaults": {
     "default_org": "q2dev",
@@ -87,7 +89,8 @@
     "development_summary": "Custom.DevelopmentSummary",
     "root_cause_detail": "Custom.RootCauseDetail",
     "business_problem_and_value": "Custom.BusinessProblemandValueStatement",
-    "business_objectives_and_impact": "Custom.BusinessObjectivesandImpact"
+    "business_objectives_and_impact": "Custom.BusinessObjectivesandImpact",
+    "release_notes": "Custom.ReleaseNotes"
   },
   "tags": {
     "refined": "AI-Refined",

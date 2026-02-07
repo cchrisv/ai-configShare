@@ -4,7 +4,7 @@
  */
 
 import { Connection } from '@salesforce/core';
-import { getSfConnection, validateSfAuth, type SfOrgDetails } from './lib/authSalesforceCli.js';
+import { getSfConnection, validateSfAuth } from './lib/authSalesforceCli.js';
 import { SF_DEFAULTS } from './types/sfMetadataTypes.js';
 import { logInfo, logDebug } from './lib/loggerStructured.js';
 
@@ -75,8 +75,11 @@ export async function createSfConnection(
 }
 
 /**
- * Get the jsforce Connection object directly
- * Convenience function for when you need the raw connection
+ * Get the jsforce Connection object directly.
+ * Convenience function for when you need the raw connection.
+ *
+ * @param config - Optional connection config (alias, apiVersion, skipAuthValidation)
+ * @returns The underlying jsforce Connection instance
  */
 export async function getConnection(
   config?: SfConnectionConfig
@@ -86,8 +89,12 @@ export async function getConnection(
 }
 
 /**
- * Execute a SOQL query
- * Convenience wrapper that creates connection if needed
+ * Execute a SOQL query.
+ * Convenience wrapper that creates connection if needed.
+ *
+ * @param soql - SOQL query string
+ * @param config - Optional connection config
+ * @returns Array of record objects
  */
 export async function query<T = Record<string, unknown>>(
   soql: string,
@@ -99,8 +106,12 @@ export async function query<T = Record<string, unknown>>(
 }
 
 /**
- * Execute a Tooling API query
- * Convenience wrapper that creates connection if needed
+ * Execute a Tooling API query.
+ * Convenience wrapper that creates connection if needed.
+ *
+ * @param soql - SOQL query string for Tooling API
+ * @param config - Optional connection config
+ * @returns Array of record objects
  */
 export async function toolingQuery<T = Record<string, unknown>>(
   soql: string,
@@ -112,7 +123,10 @@ export async function toolingQuery<T = Record<string, unknown>>(
 }
 
 /**
- * Get the identity of the authenticated user
+ * Get the identity of the authenticated user.
+ *
+ * @param config - Optional connection config
+ * @returns User identity (userId, username, organizationId, displayName, email)
  */
 export async function getIdentity(
   config?: SfConnectionConfig
@@ -141,7 +155,10 @@ export interface SfIdentity {
 }
 
 /**
- * Get organization limits
+ * Get organization limits (e.g. API calls, storage).
+ *
+ * @param config - Optional connection config
+ * @returns Map of limit name to { Max, Remaining }
  */
 export async function getOrgLimits(
   config?: SfConnectionConfig
@@ -160,7 +177,10 @@ export interface OrgLimit {
 }
 
 /**
- * Test connection to Salesforce
+ * Test connection to Salesforce and return identity or error.
+ *
+ * @param config - Optional connection config
+ * @returns Success flag, username/orgId/responseTimeMs on success, or error message on failure
  */
 export async function testConnection(
   config?: SfConnectionConfig

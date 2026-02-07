@@ -8,12 +8,10 @@ import { logInfo, logDebug, createTimer } from './lib/loggerStructured.js';
 import type { SfConnectionConfig } from './sfClient.js';
 import type {
   DependencyGraph,
-  DependencyNode,
   UsagePill,
   UsagePillType,
   UsageSeverity,
   EnrichmentOptions,
-  EnrichmentResult,
 } from './types/sfDependencyTypes.js';
 
 /**
@@ -206,7 +204,7 @@ async function analyzeValidationUsage(
     }
   }
 
-  for (const [objectName, fields] of fieldsByObject) {
+  for (const [objectName, _fields] of fieldsByObject) {
     try {
       const query = `
         SELECT Id, ValidationName, ErrorMessage, Active

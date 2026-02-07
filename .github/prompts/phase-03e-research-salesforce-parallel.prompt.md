@@ -1,4 +1,4 @@
-````prompt
+```prompt
 # Research: Salesforce Metadata (Parallel with Batch Operations)
 
 Role: Technical Analyst & Research Coordinator
@@ -268,4 +268,3 @@ Update `{{run_state}}`:
 - Set step: `"03e-salesforce-parallel"`
 
 ```
-````

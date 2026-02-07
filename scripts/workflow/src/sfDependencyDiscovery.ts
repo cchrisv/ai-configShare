@@ -3,9 +3,9 @@
  * Discovers metadata dependencies for a given component
  */
 
-import { createSfConnection, type SfConnectionConfig } from './sfClient.js';
-import { executeToolingQuery, executeSoqlQuery } from './sfQueryExecutor.js';
-import { traverseDependencies, detectCycles } from './sfDependencyTraverser.js';
+import { type SfConnectionConfig } from './sfClient.js';
+import { executeToolingQuery } from './sfQueryExecutor.js';
+import { detectCycles } from './sfDependencyTraverser.js';
 import { enrichWithUsagePills } from './sfDependencyEnrichment.js';
 import { logInfo, logDebug, logWarn, createTimer } from './lib/loggerStructured.js';
 import { validate, DiscoverDependenciesOptionsSchema } from './lib/validationSchemas.js';
@@ -335,13 +335,13 @@ async function discoverCustomObjectDependencies(
  */
 async function discoverCustomFieldDependencies(
   fieldName: string,
-  currentDepth: number,
-  maxDepth: number,
-  nodes: Map<string, DependencyNode>,
-  edges: DependencyEdge[],
-  warnings: string[],
-  options: DiscoverDependenciesOptions,
-  config?: SfConnectionConfig
+  _currentDepth: number,
+  _maxDepth: number,
+  _nodes: Map<string, DependencyNode>,
+  _edges: DependencyEdge[],
+  _warnings: string[],
+  _options: DiscoverDependenciesOptions,
+  _config?: SfConnectionConfig
 ): Promise<void> {
   // Field dependencies are typically handled through the parent object
   // This would analyze formula fields, lookup references, etc.
@@ -358,7 +358,7 @@ async function discoverApexClassDependencies(
   nodes: Map<string, DependencyNode>,
   edges: DependencyEdge[],
   warnings: string[],
-  options: DiscoverDependenciesOptions,
+  _options: DiscoverDependenciesOptions,
   config?: SfConnectionConfig
 ): Promise<void> {
   const sourceId = createNodeId('ApexClass', className);
@@ -422,7 +422,7 @@ async function discoverApexTriggerDependencies(
   nodes: Map<string, DependencyNode>,
   edges: DependencyEdge[],
   warnings: string[],
-  options: DiscoverDependenciesOptions,
+  _options: DiscoverDependenciesOptions,
   config?: SfConnectionConfig
 ): Promise<void> {
   const sourceId = createNodeId('ApexTrigger', triggerName);
@@ -471,7 +471,7 @@ async function discoverFlowDependencies(
   nodes: Map<string, DependencyNode>,
   edges: DependencyEdge[],
   warnings: string[],
-  options: DiscoverDependenciesOptions,
+  _options: DiscoverDependenciesOptions,
   config?: SfConnectionConfig
 ): Promise<void> {
   const sourceId = createNodeId('Flow', flowName);

@@ -66,14 +66,18 @@ let config: LoggerConfig = {
 };
 
 /**
- * Configure the logger
+ * Configure the logger (minLevel, jsonOutput, silent, etc.).
+ *
+ * @param newConfig - Partial config to merge with current
  */
 export function configureLogger(newConfig: Partial<LoggerConfig>): void {
   config = { ...config, ...newConfig };
 }
 
 /**
- * Get current logger configuration
+ * Get current logger configuration (read-only copy).
+ *
+ * @returns Current LoggerConfig
  */
 export function getLoggerConfig(): LoggerConfig {
   return { ...config };
@@ -153,7 +157,11 @@ function createEntry(level: LogLevel, message: string, data?: unknown, context?:
 }
 
 /**
- * Log a debug message
+ * Log a debug message (only if minLevel allows).
+ *
+ * @param message - Log message
+ * @param data - Optional structured data
+ * @param context - Optional context overrides
  */
 export function logDebug(message: string, data?: unknown, context?: LogContext): void {
   if (!shouldLog('debug')) return;
@@ -162,7 +170,11 @@ export function logDebug(message: string, data?: unknown, context?: LogContext):
 }
 
 /**
- * Log an info message
+ * Log an info message.
+ *
+ * @param message - Log message
+ * @param data - Optional structured data
+ * @param context - Optional context overrides
  */
 export function logInfo(message: string, data?: unknown, context?: LogContext): void {
   if (!shouldLog('info')) return;
@@ -180,7 +192,11 @@ export function logWarn(message: string, data?: unknown, context?: LogContext): 
 }
 
 /**
- * Log an error message
+ * Log an error message.
+ *
+ * @param message - Log message
+ * @param data - Optional structured data
+ * @param context - Optional context overrides
  */
 export function logError(message: string, data?: unknown, context?: LogContext): void {
   if (!shouldLog('error')) return;
@@ -198,7 +214,10 @@ export function logEvent(event: string, data?: Record<string, unknown>, context?
 }
 
 /**
- * Create a child logger with additional context
+ * Create a child logger that includes additional context on every log.
+ *
+ * @param additionalContext - Context merged into every log entry
+ * @returns ChildLogger with same methods as global logger
  */
 export function createChildLogger(additionalContext: LogContext): ChildLogger {
   return {
@@ -222,7 +241,9 @@ export interface ChildLogger {
 }
 
 /**
- * Timer utility for measuring operation duration
+ * Create a timer for measuring operation duration (elapsed ms/s, log on completion).
+ *
+ * @returns Timer with elapsed(), elapsedSeconds(), and log(operation, level?)
  */
 export function createTimer(): Timer {
   const startTime = Date.now();

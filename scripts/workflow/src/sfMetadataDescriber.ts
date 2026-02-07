@@ -6,7 +6,7 @@
 import { createSfConnection, type SfConnectionConfig } from './sfClient.js';
 import { executeToolingQuery } from './sfQueryExecutor.js';
 import { retryWithBackoff, RETRY_PRESETS } from './lib/retryWithBackoff.js';
-import { logInfo, logDebug, createTimer } from './lib/loggerStructured.js';
+import { logInfo, createTimer } from './lib/loggerStructured.js';
 import type {
   DescribeSObjectResult,
   DescribeFieldResult,

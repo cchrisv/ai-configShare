@@ -136,8 +136,8 @@ export async function listSfOrgs(): Promise<SfOrgInfo[]> {
  */
 export async function getSfOrgInfo(alias?: string): Promise<SfOrgDetails> {
   const connection = await getSfConnection(alias);
-  const org = await Org.create({ connection });
-  
+  await Org.create({ connection });
+
   const identity = await connection.identity();
   
   return {
@@ -175,14 +175,17 @@ export interface SfOrgDetails {
 }
 
 /**
- * Clear the connection cache
+ * Clear the connection cache.
+ * Use after switching orgs or when connections may be stale.
  */
 export function clearConnectionCache(): void {
   connectionCache.clear();
 }
 
 /**
- * Remove a specific connection from cache
+ * Remove a specific connection from cache.
+ *
+ * @param alias - Org alias or username to remove from cache
  */
 export function removeFromCache(alias: string): void {
   connectionCache.delete(alias);

@@ -6,6 +6,7 @@
 import { createWriteStream, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { createAdoConnection, type AdoConnection } from './adoClient.js';
+import { loadSharedConfig } from './lib/configLoader.js';
 import { logInfo, logDebug, logWarn } from './lib/loggerStructured.js';
 import type {
   ActivityTarget,
@@ -16,12 +17,20 @@ import type {
   WorkItemUpdate,
 } from './types/adoActivityTypes.js';
 
-// Wiki repository ID for Digital Platforms Wiki
-const WIKI_REPO_ID = 'c7b64b09-35f3-4d8a-889c-5650655281ee';
+/** ADO defaults from config (organization name and wiki repo ID for activity report). */
+interface AdoDefaultsConfig {
+  organization_name?: string;
+  wiki_repo_id?: string;
+}
 
-// Azure DevOps Search API for finding mentions
-const ADO_ORG = 'UMGC';
-const ADO_SEARCH_URL = `https://almsearch.dev.azure.com/${ADO_ORG}/_apis/search/workitemsearchresults?api-version=7.1`;
+function getAdoReportConfig(): { adoOrg: string; wikiRepoId: string } {
+  const config = loadSharedConfig() as { ado_defaults?: AdoDefaultsConfig };
+  const ado = config.ado_defaults;
+  return {
+    adoOrg: ado?.organization_name ?? 'UMGC',
+    wikiRepoId: ado?.wiki_repo_id ?? 'c7b64b09-35f3-4d8a-889c-5650655281ee',
+  };
+}
 
 /**
  * Clean HTML tags from text
@@ -102,16 +111,18 @@ async function queryWorkItemIds(
  * This is MUCH faster than scanning all work items
  * Uses pagination to get all results
  */
-async function searchWorkItemsMentioning(
+export async function searchWorkItemsMentioning(
   conn: AdoConnection,
   target: ActivityTarget,
-  days: number
+  _days: number
 ): Promise<number[]> {
   const { getAzureBearerToken } = await import('./lib/authAzureCli.js');
   const token = getAzureBearerToken();
   
   const searchResults: number[] = [];
-  
+  const { adoOrg } = getAdoReportConfig();
+  const searchUrl = `https://almsearch.dev.azure.com/${adoOrg}/_apis/search/workitemsearchresults?api-version=7.1`;
+
   // Search for mentions of the person's name (use full name as primary search)
   const searchTerms = [`"${target.name}"`];
   
@@ -122,7 +133,7 @@ async function searchWorkItemsMentioning(
     
     while (hasMore) {
       try {
-        const response = await fetch(ADO_SEARCH_URL, {
+        const response = await fetch(searchUrl, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -180,10 +191,10 @@ async function searchWorkItemsMentioning(
  * Stream work item revisions using the Reporting API
  * This is a fast way to get all revisions and filter for mentions
  */
-async function streamRevisionsForMentions(
+export async function streamRevisionsForMentions(
   conn: AdoConnection,
   targets: ActivityTarget[],
-  days: number
+  _days: number
 ): Promise<number[]> {
   const { getAzureBearerToken } = await import('./lib/authAzureCli.js');
   const token = getAzureBearerToken();
@@ -201,10 +212,11 @@ async function streamRevisionsForMentions(
   const targetPatterns = targets.map(t => t.name.toLowerCase());
   
   logInfo(`Streaming revisions since ${startDateStr.split('T')[0]} to find all activity...`);
-  
+  const { adoOrg } = getAdoReportConfig();
+
   do {
     try {
-      let url = `https://dev.azure.com/${ADO_ORG}/${encodeURIComponent(conn.project)}/_apis/wit/reporting/workitemrevisions?startDateTime=${encodeURIComponent(startDateStr)}&api-version=7.1`;
+      let url = `https://dev.azure.com/${adoOrg}/${encodeURIComponent(conn.project)}/_apis/wit/reporting/workitemrevisions?startDateTime=${encodeURIComponent(startDateStr)}&api-version=7.1`;
       if (continuationToken) {
         url += `&continuationToken=${encodeURIComponent(continuationToken)}`;
       }
@@ -306,9 +318,9 @@ async function streamRevisionsForMentions(
  * For 100% accuracy, scans all recently changed work items
  * Optimized for speed with aggressive parallelization
  */
-async function fetchHybridWorkItems(
+export async function fetchHybridWorkItems(
   conn: AdoConnection,
-  targets: ActivityTarget[],
+  _targets: ActivityTarget[],
   days: number
 ): Promise<Array<{ id: number; fields: Record<string, unknown> }>> {
   const witApi = await conn.getWorkItemTrackingApi();
@@ -721,37 +733,20 @@ async function writeCsvReport(
   outputDir: string,
   timestamp: string
 ): Promise<string> {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:writeCsvReport:entry',message:'writeCsvReport called',data:{activitiesCount:activities.length,targetName,outputDir,timestamp},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2-H3'})}).catch(()=>{});
-  // #endregion
-  
   // Ensure output directory exists
   if (!existsSync(outputDir)) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:writeCsvReport:mkdir',message:'Creating output directory',data:{outputDir},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3'})}).catch(()=>{});
-    // #endregion
     mkdirSync(outputDir, { recursive: true });
   }
   
   const safeName = targetName.toLowerCase().replace(/\s+/g, '-');
   const filename = `${safeName}-activity-${timestamp}.csv`;
   const filepath = join(outputDir, filename);
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:writeCsvReport:filepath',message:'Resolved filepath',data:{filepath,cwd:process.cwd()},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3'})}).catch(()=>{});
-  // #endregion
-  
+
   // Sort by date descending
   activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   
   const stream = createWriteStream(filepath, { encoding: 'utf-8' });
-  
-  // #region agent log
-  stream.on('error', (err) => {
-    fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:writeCsvReport:streamError',message:'Stream error occurred',data:{error:String(err),filepath},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H5'})}).catch(()=>{});
-  });
-  // #endregion
-  
+
   // Write header
   const headers = [
     'Date', 'WorkItemId', 'PRNumber', 'WorkItemType', 'State',
@@ -778,12 +773,7 @@ async function writeCsvReport(
   
   // Wait for stream to finish before returning (H1 - stream flush issue)
   return new Promise((resolve, reject) => {
-    stream.on('finish', () => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:writeCsvReport:finish',message:'Stream finished successfully',data:{filepath,activitiesWritten:activities.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
-      resolve(filepath);
-    });
+    stream.on('finish', () => resolve(filepath));
     stream.on('error', reject);
     stream.end();
   });
@@ -845,13 +835,13 @@ async function processWorkItemsBatch(
     // Progress reporting every 10 seconds
     const now = Date.now();
     if (processed === total || now - lastReportTime > 10000) {
-      const elapsed = (now - startTime) / 1000;
+      const elapsedSec = (now - startTime) / 1000;
       const avgRate = rateHistory.reduce((a, b) => a + b, 0) / rateHistory.length;
       const remaining = (total - processed) / avgRate;
       const pct = ((processed / total) * 100).toFixed(1);
       const eta = new Date(Date.now() + remaining * 1000).toLocaleTimeString();
       
-      logInfo(`Progress: ${processed}/${total} (${pct}%) | Rate: ${avgRate.toFixed(0)}/sec | ETA: ${eta} | Activities: ${allActivities.length} | Errors: ${errors}`);
+      logInfo(`Progress: ${processed}/${total} (${pct}%) | ${elapsedSec.toFixed(0)}s elapsed | Rate: ${avgRate.toFixed(0)}/sec | ETA: ${eta} | Activities: ${allActivities.length} | Errors: ${errors}`);
       lastReportTime = now;
     }
   }
@@ -902,10 +892,11 @@ async function fetchWikiActivities(
   
   try {
     const gitApi = await conn.getGitApi();
-    
+    const { wikiRepoId } = getAdoReportConfig();
+
     // Search by name
     const commits = await gitApi.getCommits(
-      WIKI_REPO_ID,
+      wikiRepoId,
       {
         author: target.name,
         fromDate: startDate,
@@ -1102,19 +1093,12 @@ export async function generateActivityReport(
     days, 
     outputDir = 'reports',
     fast = false,
-    full = false,
+    full: _full = false,
     includeWiki = true,
     includePullRequests = true,
   } = options;
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:generateActivityReport:entry',message:'generateActivityReport called',data:{peopleCount:people.length,people:people.map(p=>p.name),days,outputDir,fast,full,includeWiki,includePullRequests,cwd:process.cwd()},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2-H4'})}).catch(()=>{});
-  // #endregion
-  
+
   if (people.length === 0) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:generateActivityReport:noPeople',message:'No people specified - early return',data:{},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
-    // #endregion
     return {
       success: false,
       message: 'No people specified for report',
@@ -1164,11 +1148,7 @@ export async function generateActivityReport(
     // Full mode: scan ALL work items for 100% accuracy
     workItems = await fetchRecentWorkItems(conn, days);
   }
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:generateActivityReport:afterFetchWorkItems',message:'Work items fetched',data:{workItemsCount:workItems.length,mode,sampleIds:workItems.slice(0,5).map(w=>w.id)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H4'})}).catch(()=>{});
-  // #endregion
-  
+
   // Initialize activities by target
   const activitiesByTarget: Record<string, ActivityRecord[]> = {};
   for (const p of people) {
@@ -1201,11 +1181,7 @@ export async function generateActivityReport(
     wikiPromise,
     prPromise,
   ]);
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:generateActivityReport:afterPromiseAll',message:'All activity fetches completed',data:{workItemActivitiesCount:workItemActivities.length,wikiResultsCounts:wikiResults.map(r=>r.length),prResultsCounts:prResults.map(r=>r.length)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2-H4'})}).catch(()=>{});
-  // #endregion
-  
+
   // Group work item activities by target
   for (const activity of workItemActivities) {
     if (!activitiesByTarget[activity.target]) {
@@ -1229,16 +1205,8 @@ export async function generateActivityReport(
   const files: string[] = [];
   const activityCounts: Record<string, number> = {};
   let totalActivities = 0;
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:generateActivityReport:beforeWriteCsv',message:'About to write CSV files',data:{activitiesByTargetKeys:Object.keys(activitiesByTarget),activitiesByTargetCounts:Object.fromEntries(Object.entries(activitiesByTarget).map(([k,v])=>[k,v.length])),outputDir},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
-  // #endregion
-  
+
   for (const [targetName, activities] of Object.entries(activitiesByTarget)) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:generateActivityReport:loopIteration',message:'Processing target for CSV',data:{targetName,activitiesLength:activities.length,willWrite:activities.length>0},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2'})}).catch(()=>{});
-    // #endregion
-    
     if (activities.length > 0) {
       const filepath = await writeCsvReport(activities, targetName, outputDir, timestamp);
       files.push(filepath);
@@ -1246,11 +1214,7 @@ export async function generateActivityReport(
       totalActivities += activities.length;
     }
   }
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/2c547237-6ce5-425f-96fd-6cbcdeebd57b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'adoActivityReport.ts:generateActivityReport:afterWriteCsv',message:'Finished writing CSV files',data:{filesWritten:files,totalActivities},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1-H2'})}).catch(()=>{});
-  // #endregion
-  
+
   // Calculate activity type breakdown
   const activityTypeBreakdown: Record<string, number> = {};
   for (const activities of Object.values(activitiesByTarget)) {
@@ -1315,7 +1279,7 @@ export async function generateActivityReport(
 export function parsePerson(input: string): ActivityTarget {
   if (input.includes('|')) {
     const [name, email] = input.split('|');
-    return { name: name.trim(), email: email.trim() };
+    return { name: (name ?? '').trim(), email: (email ?? '').trim() };
   }
   // If no email provided, use input as name
   return { name: input.trim(), email: '' };

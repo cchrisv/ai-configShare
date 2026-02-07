@@ -11,7 +11,7 @@
 | Task | Prompt |
 |------|--------|
 | Full workflow | `#file:.github/prompts/phase-01-prepare-ticket.prompt.md` |
-| Full workflow (parallel) | `#file:.github/prompts/phase-01-prepare-ticket-parallel.prompt.md` |
+| Full workflow (parallel) | `#file:.github/prompts/phase-01-prepare-ticket.prompt.md` (use with phase-03-research-parallel for parallel research) |
 | Re-run phase | `#file:.github/prompts/re-phase.prompt.md` |
 | Help | `#file:.github/prompts/util-help.prompt.md` |
 | Setup | `#file:.github/prompts/util-setup.prompt.md` |

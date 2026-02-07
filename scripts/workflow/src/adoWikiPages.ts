@@ -57,13 +57,11 @@ function buildWikiPageUrl(
   path: string,
   queryParams?: Record<string, string | number | boolean | undefined>
 ): string {
-  const encodedPath = encodeURIComponent(path);
   const baseUrl = `${orgUrl}/${encodeURIComponent(project)}/_apis/wiki/wikis/${encodeURIComponent(wikiIdentifier)}/pages`;
-  
   const params = new URLSearchParams();
   params.set('path', path);
   params.set('api-version', '7.1');
-  
+
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
@@ -71,7 +69,7 @@ function buildWikiPageUrl(
       }
     }
   }
-  
+
   return `${baseUrl}?${params.toString()}`;
 }
 
