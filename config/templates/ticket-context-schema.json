@@ -623,6 +623,60 @@
           }
         }
       }
+    },
+    "dev_updates": {
+      "type": "object",
+      "description": "Incremental development-time updates (phase 08)",
+      "properties": {
+        "updates": {
+          "type": "array",
+          "description": "Ordered list of dev-update artifacts",
+          "items": {
+            "type": "object",
+            "properties": {
+              "update_number": { "type": "integer" },
+              "timestamp": { "type": "string", "format": "date-time" },
+              "areas_updated": { "type": "array", "items": { "type": "string", "enum": ["grooming", "solutioning"] } },
+              "developer_input": {
+                "type": "object",
+                "properties": {
+                  "scope_changes": { "type": "array" },
+                  "ac_changes": { "type": "array" },
+                  "solution_changes": { "type": "array" },
+                  "new_risks": { "type": "array" }
+                }
+              },
+              "fields_changed": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    "closeout": {
+      "type": "object",
+      "description": "Development closeout reconciliation (phase 09)",
+      "properties": {
+        "questionnaire": {
+          "type": "object",
+          "description": "Developer answers to closeout questionnaire"
+        },
+        "delta": {
+          "type": "object",
+          "description": "Planned vs. actual comparison",
+          "properties": {
+            "components": { "type": "array" },
+            "acceptance_criteria": { "type": "array" },
+            "scope_changes": { "type": "object" },
+            "testing_actual": { "type": "object" },
+            "effort_final": { "type": "object" },
+            "lessons_learned": { "type": "array" },
+            "follow_up_work_items": { "type": "array" },
+            "assumptions_resolved": { "type": "array" }
+          }
+        },
+        "fields_applied": { "type": "object", "description": "Final ADO field payload applied" },
+        "summary_generated_at": { "type": "string", "format": "date-time" }
+      }
     }
   }
 }

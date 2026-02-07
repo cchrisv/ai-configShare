@@ -97,7 +97,8 @@
     "circular_dependencies": "Circular-Dependencies-Detected",
     "reporting_impact": "Reporting-Impact",
     "multi_trigger": "Multi-Trigger-Object",
-    "logical_fallacy": "Logical-Fallacy-Challenged"
+    "logical_fallacy": "Logical-Fallacy-Challenged",
+    "dev_complete": "Dev-Complete"
   },
   "template_files": {
     "user_story": "user-story-templates.md",
@@ -162,6 +163,15 @@
     "finalization": {
       "completion_summary": "completion-summary.md",
       "final_templates": "final-templates.json"
+    },
+    "dev_updates": {
+      "log_prefix": "dev-update"
+    },
+    "closeout": {
+      "questionnaire": "closeout-questionnaire.json",
+      "delta": "closeout-delta.json",
+      "fields": "closeout-fields.json",
+      "summary": "closeout-summary.md"
     }
   },
   "retry_settings": {

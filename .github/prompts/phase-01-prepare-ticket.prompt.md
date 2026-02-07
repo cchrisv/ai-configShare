@@ -17,7 +17,7 @@ Input: `{{work_item_id}}`
 
 ## Execution
 
-Phases 1-6 map to prompt files phase-02 through phase-07.
+Phases 1-6 map to prompt files phase-02 through phase-07. Phases 8-9 are used after a developer picks up the ticket (see Development phases below).
 
 ### Phase 1: Initialize [CLI] (phase-02)
 Command: `{{cli.workflow_prepare}} -w {{work_item_id}} --json`
@@ -51,6 +51,13 @@ Execute: `#file:.github/prompts/phase-07-finalization.prompt.md`
 Command: `{{cli.workflow_status}} -w {{work_item_id}} --json`
 Verify: All phases complete, no errors
 
+### Development phases (post-handoff)
+
+After a human developer picks up the ticket they may:
+
+- **Phase 8: Development Update (iterative)** – Run whenever grooming or solutioning changes during development. Captures deltas via questionnaire and updates ADO fields and local artifacts. Re-runnable. Execute: `#file:.github/prompts/phase-08-dev-update.prompt.md`
+- **Phase 9: Development Closeout** – Run once when development is complete. Reconciles planned vs. actual, updates grooming/solutioning artifacts, wiki (as-built, lessons learned, status), and ADO with final fields and Dev-Complete tag. Execute: `#file:.github/prompts/phase-09-dev-closeout.prompt.md`
+
 ## Output
 ```
 {{paths.artifacts_root}}/{{work_item_id}}/
@@ -59,7 +66,9 @@ Verify: All phases complete, no errors
 ├── grooming/
 ├── solutioning/
 ├── wiki/
-└── finalization/
+├── finalization/
+├── dev-updates/          (phase 08, optional)
+└── closeout/             (phase 09, optional)
 ```
 
 ## Error Handling
