@@ -5,7 +5,7 @@
  */
 
 import { Command } from 'commander';
-import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'fs';
 import { resolve } from 'path';
 import { configureLogger } from '../src/lib/loggerStructured.js';
 import { getWorkItem } from '../src/adoWorkItems.js';
@@ -39,21 +39,16 @@ program
       const projectRoot = getProjectRoot();
       const artifactsRoot = config.paths.artifacts_root;
       
-      // Define paths (relative to project root, not cwd)
+      // Context7: single directory + single context file
       const root = resolve(projectRoot, artifactsRoot, String(workItemId));
-      const researchDir = resolve(root, 'research');
-      const groomingDir = resolve(root, 'grooming');
-      const solutioningDir = resolve(root, 'solutioning');
-      const wikiDir = resolve(root, 'wiki');
-      const finalizationDir = resolve(root, 'finalization');
-      const runStatePath = resolve(root, 'run-state.json');
+      const contextPath = resolve(root, 'ticket-context.json');
       
       // Check if already initialized
-      if (existsSync(runStatePath) && !options.force) {
+      if (existsSync(contextPath) && !options.force) {
         const result = {
           success: false,
           message: `Workflow already initialized for ${workItemId}. Use --force to reinitialize.`,
-          runStatePath,
+          contextPath,
         };
         console.log(options.json ? JSON.stringify(result, null, 2) : result.message);
         process.exit(0);
@@ -62,52 +57,49 @@ program
       // Fetch work item to validate it exists
       const workItem = await getWorkItem(workItemId, { expand: 'All' });
       
-      // Create directories
-      const dirsCreated: string[] = [];
-      for (const dir of [root, researchDir, groomingDir, solutioningDir, wikiDir, finalizationDir]) {
-        if (!existsSync(dir)) {
-          mkdirSync(dir, { recursive: true });
-          dirsCreated.push(dir);
-        }
+      // Create root directory only (Context7: no subdirectories)
+      if (!existsSync(root)) {
+        mkdirSync(root, { recursive: true });
       }
       
-      // Create run state
+      // Create unified ticket-context.json (Context7)
       const now = new Date().toISOString();
-      const runState = {
-        workItemId: String(workItemId),
-        version: 1,
-        currentPhase: 'research',
-        phaseOrder: ['research', 'grooming', 'solutioning', 'wiki', 'finalization'],
-        completedSteps: [],
-        errors: [],
-        metrics: {
-          phases: {},
-          startedAt: now,
+      const ticketContext = {
+        metadata: {
+          work_item_id: String(workItemId),
+          created_at: now,
+          last_updated: now,
+          current_phase: 'research',
+          phases_completed: [] as string[],
+          version: '1.0',
         },
-        lastUpdated: now,
+        run_state: {
+          completed_steps: [] as string[],
+          generation_history: [] as object[],
+          errors: [] as object[],
+          metrics: {
+            research: {},
+            grooming: {},
+            solutioning: {},
+          },
+        },
+        research: {},
+        grooming: {},
+        solutioning: {},
+        wiki: {},
+        finalization: {},
+        dev_updates: { updates: [] as object[] },
+        closeout: {},
       };
-      writeFileSync(runStatePath, JSON.stringify(runState, null, 2), 'utf-8');
-      
-      // Save work item snapshot
-      const workItemPath = resolve(researchDir, config.artifact_files.research.ado_workitem);
-      writeFileSync(workItemPath, JSON.stringify(workItem, null, 2), 'utf-8');
+      writeFileSync(contextPath, JSON.stringify(ticketContext, null, 2), 'utf-8');
       
       const result = {
         success: true,
         workItemId,
         workItemType: workItem.fields['System.WorkItemType'],
         title: workItem.fields['System.Title'],
-        directories: {
-          root,
-          research: researchDir,
-          grooming: groomingDir,
-          solutioning: solutioningDir,
-          wiki: wikiDir,
-        },
-        files: {
-          runState: runStatePath,
-          workItemSnapshot: workItemPath,
-        },
+        root,
+        contextPath,
         message: `Workflow initialized for ${workItemId}. Next: Run research phase.`,
       };
       
@@ -116,7 +108,7 @@ program
       } else {
         console.log(`✓ Initialized workflow for ${workItem.fields['System.WorkItemType']} #${workItemId}`);
         console.log(`  Title: ${workItem.fields['System.Title']}`);
-        console.log(`  Run state: ${runStatePath}`);
+        console.log(`  Context: ${contextPath}`);
         console.log(`  Next step: Run research phase`);
       }
     } catch (error) {
@@ -143,9 +135,9 @@ program
       const projectRoot = getProjectRoot();
       const artifactsRoot = config.paths.artifacts_root;
       const root = resolve(projectRoot, artifactsRoot, String(workItemId));
-      const runStatePath = resolve(root, 'run-state.json');
+      const contextPath = resolve(root, 'ticket-context.json');
       
-      if (!existsSync(runStatePath)) {
+      if (!existsSync(contextPath)) {
         const result = {
           success: false,
           workItemId,
@@ -155,40 +147,51 @@ program
         process.exit(1);
       }
       
-      const runState = JSON.parse(readFileSync(runStatePath, 'utf-8'));
+      const context = JSON.parse(readFileSync(contextPath, 'utf-8'));
+      const metadata = context.metadata || {};
+      const runState = context.run_state || {};
       
-      // Count artifacts in each phase directory
-      const countFiles = (dir: string): number => {
-        if (!existsSync(dir)) return 0;
-        return readdirSync(dir).length;
+      // Check which sections have data (Context7: sections instead of directories)
+      const hasData = (section: unknown): boolean => {
+        if (!section || typeof section !== 'object') return false;
+        return Object.keys(section as object).length > 0;
       };
       
       const result = {
         success: true,
         workItemId,
-        currentPhase: runState.currentPhase,
-        completedSteps: runState.completedSteps.length,
-        errors: runState.errors.length,
-        artifacts: {
-          research: countFiles(resolve(root, 'research')),
-          grooming: countFiles(resolve(root, 'grooming')),
-          solutioning: countFiles(resolve(root, 'solutioning')),
-          wiki: countFiles(resolve(root, 'wiki')),
+        currentPhase: metadata.current_phase,
+        phasesCompleted: metadata.phases_completed || [],
+        completedSteps: (runState.completed_steps || []).length,
+        errors: (runState.errors || []).length,
+        sections: {
+          research: hasData(context.research),
+          grooming: hasData(context.grooming),
+          solutioning: hasData(context.solutioning),
+          wiki: hasData(context.wiki),
+          finalization: hasData(context.finalization),
+          dev_updates: (context.dev_updates?.updates || []).length > 0,
+          closeout: hasData(context.closeout),
         },
-        startedAt: runState.metrics?.startedAt,
-        lastUpdated: runState.lastUpdated,
+        createdAt: metadata.created_at,
+        lastUpdated: metadata.last_updated,
+        contextPath,
       };
       
       if (options.json) {
         console.log(JSON.stringify(result, null, 2));
       } else {
         console.log(`Workflow Status for #${workItemId}`);
-        console.log(`  Current Phase: ${runState.currentPhase}`);
-        console.log(`  Completed Steps: ${runState.completedSteps.length}`);
-        console.log(`  Errors: ${runState.errors.length}`);
-        console.log(`  Artifacts: research=${result.artifacts.research}, grooming=${result.artifacts.grooming}, solutioning=${result.artifacts.solutioning}, wiki=${result.artifacts.wiki}`);
-        console.log(`  Started: ${runState.metrics?.startedAt || 'N/A'}`);
-        console.log(`  Last Updated: ${runState.lastUpdated}`);
+        console.log(`  Current Phase: ${metadata.current_phase}`);
+        console.log(`  Phases Completed: ${(metadata.phases_completed || []).join(', ') || 'none'}`);
+        console.log(`  Completed Steps: ${(runState.completed_steps || []).length}`);
+        console.log(`  Errors: ${(runState.errors || []).length}`);
+        const populated = Object.entries(result.sections)
+          .filter(([, v]) => v)
+          .map(([k]) => k);
+        console.log(`  Populated Sections: ${populated.join(', ') || 'none'}`);
+        console.log(`  Created: ${metadata.created_at || 'N/A'}`);
+        console.log(`  Last Updated: ${metadata.last_updated}`);
       }
     } catch (error) {
       console.error('Error:', error instanceof Error ? error.message : error);
@@ -201,7 +204,7 @@ program
   .command('reset')
   .description('Reset workflow state (all phases or specific phase)')
   .requiredOption('-w, --work-item <id>', 'Work item ID', parseInt)
-  .option('-p, --phase <phase>', 'Specific phase to reset (research, grooming, solutioning, wiki)')
+  .option('-p, --phase <phase>', 'Specific section to reset (research, grooming, solutioning, wiki, finalization, dev_updates, closeout)')
   .option('--force', 'Skip confirmation')
   .option('--json', 'Output as JSON')
   .option('-v, --verbose', 'Verbose output')
@@ -212,18 +215,19 @@ program
       }
 
       if (!options.force) {
-        const scope = options.phase ? `${options.phase} phase` : 'all artifacts';
-        console.error(`Error: Use --force to confirm reset. This will delete ${scope}.`);
+        const scope = options.phase ? `${options.phase} section` : 'entire workflow';
+        console.error(`Error: Use --force to confirm reset. This will clear ${scope}.`);
         process.exit(1);
       }
 
       const workItemId = options.workItem;
       const phase = options.phase;
-      const validPhases = ['research', 'grooming', 'solutioning', 'wiki'];
+      const validSections = ['research', 'grooming', 'solutioning', 'wiki', 'finalization', 'dev_updates', 'closeout'];
+      const phaseOrder = ['research', 'grooming', 'solutioning', 'wiki', 'finalization'];
       
-      // Validate phase if provided
-      if (phase && !validPhases.includes(phase)) {
-        console.error(`Error: Invalid phase '${phase}'. Valid phases: ${validPhases.join(', ')}`);
+      // Validate section if provided
+      if (phase && !validSections.includes(phase)) {
+        console.error(`Error: Invalid section '${phase}'. Valid sections: ${validSections.join(', ')}`);
         process.exit(1);
       }
 
@@ -231,8 +235,9 @@ program
       const projectRoot = getProjectRoot();
       const artifactsRoot = config.paths.artifacts_root;
       const root = resolve(projectRoot, artifactsRoot, String(workItemId));
+      const contextPath = resolve(root, 'ticket-context.json');
       
-      if (!existsSync(root)) {
+      if (!existsSync(contextPath)) {
         const result = {
           success: false,
           workItemId,
@@ -243,65 +248,68 @@ program
       }
 
       if (phase) {
-        // Reset specific phase
-        const phaseDir = resolve(root, phase);
-        const deletedFiles: string[] = [];
+        // Reset specific section in ticket-context.json
+        const context = JSON.parse(readFileSync(contextPath, 'utf-8'));
+        const previousData = context[phase];
+        const hadData = previousData && typeof previousData === 'object' && Object.keys(previousData).length > 0;
         
-        if (existsSync(phaseDir)) {
-          // Count files before deletion
-          const files = readdirSync(phaseDir);
-          deletedFiles.push(...files);
-          rmSync(phaseDir, { recursive: true, force: true });
-          // Recreate empty directory
-          mkdirSync(phaseDir, { recursive: true });
+        // Clear the section
+        if (phase === 'dev_updates') {
+          context[phase] = { updates: [] };
+        } else {
+          context[phase] = {};
         }
         
-        // Update run state to reflect phase reset
-        const runStatePath = resolve(root, 'run-state.json');
-        if (existsSync(runStatePath)) {
-          const runState = JSON.parse(readFileSync(runStatePath, 'utf-8'));
-          // Remove completed steps for this phase
-          runState.completedSteps = runState.completedSteps.filter(
-            (step: string) => !step.toLowerCase().includes(phase)
-          );
-          // If resetting a phase before current, reset currentPhase
-          const phaseIndex = runState.phaseOrder.indexOf(phase);
-          const currentIndex = runState.phaseOrder.indexOf(runState.currentPhase);
-          if (phaseIndex <= currentIndex) {
-            runState.currentPhase = phase;
-          }
-          // Clear phase metrics
-          if (runState.metrics?.phases?.[phase]) {
-            delete runState.metrics.phases[phase];
-          }
-          runState.lastUpdated = new Date().toISOString();
-          writeFileSync(runStatePath, JSON.stringify(runState, null, 2), 'utf-8');
+        // Update metadata: remove from phases_completed, rewind current_phase
+        const phaseIndex = phaseOrder.indexOf(phase);
+        if (phaseIndex >= 0) {
+          context.metadata.phases_completed = (context.metadata.phases_completed || [])
+            .filter((p: string) => phaseOrder.indexOf(p) < phaseIndex);
+          context.metadata.current_phase = phase === 'research' ? 'research' : phaseOrder[Math.max(0, phaseIndex)];
         }
+        
+        // Clear related completed_steps (handles both string and object entries)
+        context.run_state.completed_steps = (context.run_state.completed_steps || [])
+          .filter((step: unknown) => {
+            if (typeof step === 'string') return !step.toLowerCase().includes(phase);
+            if (typeof step === 'object' && step !== null && 'phase' in step) return (step as Record<string, string>)['phase'] !== phase;
+            return true;
+          });
+        
+        // Clear phase metrics if applicable
+        if (context.run_state.metrics?.[phase]) {
+          context.run_state.metrics[phase] = {};
+        }
+        
+        context.metadata.last_updated = new Date().toISOString();
+        writeFileSync(contextPath, JSON.stringify(context, null, 2), 'utf-8');
         
         const result = {
           success: true,
           workItemId,
-          phase,
-          deletedFiles: deletedFiles.length,
-          message: `Phase '${phase}' reset for ${workItemId}. ${deletedFiles.length} files deleted.`,
-          deletedPath: phaseDir,
+          section: phase,
+          hadData,
+          currentPhase: context.metadata.current_phase,
+          phasesCompleted: context.metadata.phases_completed,
+          message: `Section '${phase}' reset for ${workItemId}.`,
         };
         
         if (options.json) {
           console.log(JSON.stringify(result, null, 2));
         } else {
-          console.log(`✓ Phase '${phase}' reset for #${workItemId}`);
-          console.log(`  Deleted: ${deletedFiles.length} files from ${phaseDir}`);
-          console.log(`  Run state updated`);
+          console.log(`✓ Section '${phase}' reset for #${workItemId}`);
+          console.log(`  Had data: ${hadData}`);
+          console.log(`  Current phase: ${context.metadata.current_phase}`);
+          console.log(`  Phases completed: ${context.metadata.phases_completed.join(', ') || 'none'}`);
         }
       } else {
-        // Reset all (original behavior)
+        // Reset all — delete entire directory
         rmSync(root, { recursive: true, force: true });
         
         const result = {
           success: true,
           workItemId,
-          phase: 'all',
+          section: 'all',
           message: `Workflow reset for ${workItemId}. All artifacts deleted.`,
           deletedPath: root,
         };

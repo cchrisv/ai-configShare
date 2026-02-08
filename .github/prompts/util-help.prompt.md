@@ -1,81 +1,58 @@
-# Help - Autonomous Ticket Workflow
-
+# Util – Help (Context7)
 Role: Help Assistant
 Mission: Explain available prompts and system architecture.
 
 ## Quick Start
+New users → `/util-setup`. Full workflow → `/phase-01-initialize` with work item ID, then phases sequentially.
 
-New users: Run `/util-setup` first.
+## Docs
+`#file:README.md` (catalog + CLI) · `#file:config/shared.json` (config) · `#file:.github/prompts/util-base.prompt.md` (Context7 defs)
 
-Full workflow: `/phase-01-prepare-ticket` with work item ID.
+## Prompts
 
-## Documentation
+**Workflow:** `phase-01-initialize` — creates ticket-context.json
 
-| Resource | File |
-|----------|------|
-| Prompt catalog & CLI | `#file:README.md` |
-| Configuration | `#file:config/shared.json` |
-| Shared definitions | `#file:.github/prompts/util-base.prompt.md` |
+**Grooming (02):**
+- `phase-02a-grooming-research` — business research → context.research
+- `phase-02b-grooming` — refine requirements → context.grooming
+- `phase-02c-grooming-update` — iterative updates → context.dev_updates
 
-## Available Prompts
+**Solutioning (03):**
+- `phase-03a-solutioning-research` — technical research → context.research
+- `phase-03b-solutioning` — design solution → context.solutioning
+- `phase-03c-solutioning-update` — iterative updates → context.dev_updates
 
-### Workflow
+**Completion (04–06):**
+- `phase-04-wiki` — wiki documentation → context.wiki
+- `phase-05-finalization` — WSJF scoring → context.finalization
+- `phase-06-dev-closeout` — planned vs actual → context.closeout
 
-- `phase-01-prepare-ticket` - Full workflow (phases 02-07, all in sequence)
-- `phase-02-initialize` - Initialize artifact folder only
+**Feature/Epic:** `util-feature-solution-design` — aggregate children → context.solution_design
 
-### Research (03a-03z)
+**Utilities:**
+`util-help` · `util-setup` · `util-activity-report` (CSV) · `util-apply-template` (HTML reformat) · `util-sequence-tickets` (dependencies) · `util-repeat-phase` (re-run phase)
 
-- `phase-03-research` - All research sub-prompts (sequential)
-- `phase-03-research-parallel` - All research sub-prompts (parallel for speed)
-- Individual: organization-dictionary, ado, wiki, business-context, salesforce, similar-workitems, code, web, synthesis
-- Parallel SF variant: `phase-03e-research-salesforce-parallel`
-
-### Ticket Preparation Phases
-
-- `phase-04-grooming` - Refine requirements (what & why)
-- `phase-05-solutioning` - Design solution (how)
-- `phase-06-wiki` - Create wiki documentation
-- `phase-07-finalization` - Final validation and ADO update
-
-### Development Phases (post-handoff, standalone)
-
-These phases do not require local artifacts from prior phases — they fetch current state directly from ADO and wiki.
-
-- `phase-08a-dev-update-grooming` - Iterative requirements/scope updates (what & why)
-- `phase-08b-dev-update-solutioning` - Iterative solution design updates (how)
-- `phase-09-dev-closeout` - Full closeout: planned vs actual, release notes, assumptions resolution, ADO + wiki update, Dev-Complete tag
-
-### Feature / Epic-Level Phases
-
-- `phase-10-feature-solution-design` - Aggregate child work items into a solution design document and wiki page. Supports Feature (1-level) and Epic (2-level) hierarchies.
-
-### Utilities
-
-- `util-help` - This help
-- `util-setup` - First-time setup
-- `util-activity-report` - Generate CSV activity reports
-- `util-reformat-ticket` - Re-apply rich HTML templates to a work item or wiki page (formatting only, no content changes). Supports User Story, Bug, and Feature types, plus wiki pages.
-- `util-sequence-tickets` - Analyze dependencies among child work items under a Feature or Epic, recommend execution order, and create predecessor/successor links in ADO
-- `re-phase` - Re-run any individual phase (03-07)
+## Context7 Pattern
+Single `ticket-context.json` per work item:
+```json
+{
+  "metadata": {"work_item_id": "", "current_phase": "", "phases_completed": []},
+  "research": {}, "grooming": {}, "solutioning": {},
+  "wiki": {}, "finalization": {}, "dev_updates": {}, "closeout": {}
+}
+```
+Replaces ALL separate artifact files.
 
 ## CLI Tools
-
-| Tool | Purpose |
-|------|---------|
-| workflow-tools | prepare, status, reset |
-| ado-tools | get, update, create, search, link, unlink, relations |
-| sf-tools | query, describe, discover, apex-classes, apex-triggers, flows, validation-rules |
-| wiki-tools | get, get (by page-id), update, update (by page-id), create, list, search, delete |
-| report-tools | activity (CSV reports for specified users) |
+**workflow-tools**: prepare, status, reset
+**ado-tools**: get, update, create, search, link, relations
+**sf-tools**: query, describe, discover, apex, triggers, flows, validation
+**wiki-tools**: get, update, create, list, search, delete
+**report-tools**: activity
 
 ## Templates
-
-All templates live in `config/templates/`. Key categories:
-
-| Category | Templates |
-|----------|-----------|
-| Work item field HTML | `field-user-story-*.html`, `field-bug-*.html`, `field-feature-*.html`, `field-solution-design.html`, `field-release-notes.html`, `field-blockers.html`, `field-planned-work.html`, `field-progress.html` |
-| Wiki page HTML | `wiki-page-template.html` (work item), `feature-solution-design-wiki.html` (Feature/Epic), `wiki-general-template.html` (general/fallback) |
-| Guides | `wiki-page-format.md`, `field-mappings.md`, `user-story-templates.md`, `bug-templates.md`, `feature-templates.md`, `solution-design-template.md`, `feature-solution-design-document-template.md` |
-| Other | `validation-checklist.md`, `wsjf-scoring-anchors.md`, `test-case-template.md`, `audit-task-template.md`, `comment-formats.md`, `research-iteration-tracking.md`, `ticket-context-schema.json` |
+All in `config/templates/`:
+- **Field HTML**: field-*.html files
+- **Wiki HTML**: wiki-*.html files
+- **Guides**: *.md files including field-mappings, templates
+- **Schema**: ticket-context-schema.json (Context7 structure)

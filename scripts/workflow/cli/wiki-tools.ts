@@ -34,7 +34,9 @@ program
   .option('-v, --verbose', 'Verbose output')
   .action(async (options) => {
     try {
-      if (options.verbose) {
+      if (options.json) {
+        configureLogger({ silent: true });
+      } else if (options.verbose) {
         configureLogger({ minLevel: 'debug' });
       }
 
@@ -183,7 +185,7 @@ program
 // Search command
 program
   .command('search <text>')
-  .description('Search wiki pages by keyword')
+  .description('Search wiki pages by keyword (searches content + titles, returns ALL results)')
   .option('--wiki <id>', 'Wiki ID or name')
   .option('--json', 'Output as JSON (default)')
   .option('-v, --verbose', 'Verbose output')
@@ -195,18 +197,22 @@ program
         configureLogger({ minLevel: 'debug' });
       }
 
-      const pages = await searchWikiPages(text, options.wiki);
+      const response = await searchWikiPages(text, options.wiki);
       
       if (options.json) {
         console.log(JSON.stringify({ 
           searchText: text,
-          count: pages.length,
-          pages 
+          totalCount: response.totalCount,
+          returnedCount: response.results.length,
+          results: response.results 
         }, null, 2));
       } else {
-        console.log(`Found ${pages.length} wiki pages matching "${text}":`);
-        for (const page of pages) {
-          console.log(`  ${page.path}`);
+        console.log(`Found ${response.totalCount} wiki pages matching "${text}" (${response.results.length} unique):`);
+        for (const result of response.results) {
+          console.log(`  ${result.path}`);
+          if (result.highlights?.length > 0) {
+            console.log(`    ${result.highlights[0]?.substring(0, 200)}...`);
+          }
         }
       }
     } catch (error) {

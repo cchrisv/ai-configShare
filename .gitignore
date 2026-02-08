@@ -8,6 +8,9 @@
 .localdevserver/
 deploy-options.json
 
+# Salesforce source
+force-app/
+
 # LWC VSCode autocomplete
 **/lwc/jsconfig.json
 

@@ -112,71 +112,23 @@
     "Regalia": "Academic dress for graduation ceremonies"
   },
   "departments": {
-    "Digital Platforms": {
-      "acronym": "DP",
-      "description": "Digital Platforms team responsible for Salesforce and CRM systems"
-    },
-    "DREAM": {
-      "acronym": "DREAM",
-      "description": "Salesforce, Marketing Cloud, and Five9 Development team",
-      "focus_areas": ["Salesforce", "Marketing Cloud", "Five9"]
-    },
-    "FastTrack": {
-      "acronym": "FastTrack",
-      "description": "Core Salesforce development team",
-      "focus_areas": ["Core Salesforce platform"]
-    },
-    "Corporate Learning Solutions": {
-      "acronym": "CLS",
-      "description": "Promotes interest through corporate and business partnerships"
-    },
-    "Degree Audit": {
-      "description": "Team responsible for preliminary and official transcript evaluations"
-    },
-    "Residency Classification": {
-      "description": "Department responsible for reviewing and determining student residency status"
-    },
-    "Tuition Planning": {
-      "description": "Supports students in formulating funding plans (Financial Aid, TA, VA, etc.)"
-    },
-    "Financial Aid": {
-      "description": "Manages federal, state, and institutional aid funds"
-    },
-    "Student Accounts": {
-      "description": "Manages payments, billing, and financial aid disbursements"
-    },
-    "Accessibility Services": {
-      "description": "Provides academic accommodations for students with disabilities"
-    },
-    "Academic Integrity": {
-      "description": "Handles student and faculty referrals regarding student conduct"
-    },
-    "Student Resolution": {
-      "description": "Investigates student inquiries related to conduct, ethics, and behaviors"
-    },
-    "Career Services": {
-      "description": "Provides lifetime career support to students and alumni"
-    },
-    "Graduation Services": {
-      "description": "Manages graduation applications, degree conferral, and diploma distribution"
-    },
-    "Commencement Services": {
-      "description": "Plans and executes commencement ceremonies and events"
-    },
-    "Institutional Advancement": {
-      "description": "Manages alumni relations, fundraising, and donor engagement"
-    },
-    "Alumni Relations": {
-      "description": "Sub-team within Institutional Advancement focused on alumni engagement"
-    },
-    "Advancement Services": {
-      "description": "Sub-team within Institutional Advancement managing donor data and gift processing"
-    }
-  },
-  "context_notes": {
-    "usage": "This dictionary provides context for understanding organizational terminology throughout the workflow",
-    "update_frequency": "As needed when new terms are introduced",
-    "update_process": "AI agent detects new terms during research, requests user approval, then updates dictionary if approved"
+    "Digital Platforms": { "acronym": "DP", "description": "Salesforce and CRM systems" },
+    "DREAM": { "acronym": "DREAM", "description": "Salesforce, Marketing Cloud, Five9 dev team" },
+    "FastTrack": { "description": "Core Salesforce development team" },
+    "Corporate Learning Solutions": { "acronym": "CLS", "description": "Corporate and business partnerships" },
+    "Degree Audit": { "description": "Transcript evaluations" },
+    "Residency Classification": { "description": "Student residency status determination" },
+    "Tuition Planning": { "description": "Funding plans (Financial Aid, TA, VA)" },
+    "Financial Aid": { "description": "Federal, state, and institutional aid" },
+    "Student Accounts": { "description": "Payments, billing, aid disbursements" },
+    "Accessibility Services": { "description": "Academic accommodations" },
+    "Academic Integrity": { "description": "Student conduct referrals" },
+    "Student Resolution": { "description": "Conduct, ethics, and behavior inquiries" },
+    "Career Services": { "description": "Lifetime career support" },
+    "Graduation Services": { "description": "Degree conferral and diplomas" },
+    "Commencement Services": { "description": "Ceremony planning and execution" },
+    "Institutional Advancement": { "description": "Alumni relations, fundraising, donor engagement" },
+    "Alumni Relations": { "description": "Alumni engagement (sub-team of Institutional Advancement)" },
+    "Advancement Services": { "description": "Donor data and gift processing (sub-team of Institutional Advancement)" }
   }
 }
-

@@ -398,6 +398,18 @@
             }
           }
         },
+        "solutioning_hints": {
+          "type": "array",
+          "description": "Implementation hints extracted from requirements during solution-neutrality pass. Fed into phase-03 solutioning.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "original_text": { "type": "string", "description": "The 'How' statement found in requirements" },
+              "extracted_from": { "type": "string", "description": "Which field it was found in (description, AC, etc.)" },
+              "hint": { "type": "string", "description": "Reframed as a solutioning consideration" }
+            }
+          }
+        },
         "triage_summary_narrative": {
           "type": "string",
           "description": "Markdown narrative summary of grooming results"

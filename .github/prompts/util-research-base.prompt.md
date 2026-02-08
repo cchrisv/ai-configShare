@@ -1,92 +1,48 @@
-# Research Phase Base Reference
+# Util – Research Base (Context7)
+Shared patterns for research prompts. Uses unified ticket-context.json.
 
-Shared patterns for all research sub-prompts (phase-03a through phase-03z).
-
-**Extends:** `#file:.github/prompts/util-base.prompt.md`
+## Phases
+| Phase | Purpose | Prompt |
+|-------|---------|--------|
+| 02a | Business research → grooming | `phase-02a-grooming-research.prompt.md` |
+| 03a | Technical research → solutioning | `phase-03a-solutioning-research.prompt.md` |
 
 ## Prerequisites
+1. [IO] Verify {{context_file}} exists; load metadata.run_state
+2. [LOGIC] Check prerequisite phases in metadata.phases_completed
 
-Before any research sub-phase:
-1. [IO] Verify `{{research}}` directory exists
-2. [IO] Load `{{run_state}}` - confirm `currentPhase` = "research"
-3. [LOGIC] Check prerequisite artifacts exist (varies by sub-phase)
+## Context7 Research Pattern
+All research outputs go to {{context_file}}.research.*:
+- 02a: organization_dictionary, ado_workitem, similar_workitems, wiki_search, business_context, synthesis
+- 03a: salesforce_metadata, web_research (extends synthesis)
 
-## Standard Artifact Schema
+## Rolling Synthesis
+After each stream:
+1. Update .research.synthesis.unified_truth
+2. Update .research.assumptions[] (ID, category, confidence, source)
+3. Continue to next stream with cumulative context
 
-All research artifacts must include:
-```json
-{
-  "workItemId": "{{work_item_id}}",
-  "generatedAt": "{{iso_timestamp}}",
-  "research_complete": true|false,
-  "feedback_loops": []
-}
-```
+## Feedback Loop
+Triggers (max 3 iterations/stream):
+- New Topic/Component → revisit
+- Evidence Gap → fill
+- Contradiction → resolve
+- High-Impact → validate
+- Missing Context → investigate
 
-## Feedback Loop Protocol
+Log to .research.synthesis.conflict_log[]
 
-After completing each research step, evaluate findings against 5 triggers:
+## Run State Update
+After each stream, add to run_state.completed_steps[]:
+`{"phase":"research","step":"<stream_name>","completedAt":"<timestamp>","artifact":"{{context_file}}"}`
 
-| Trigger | Definition | Action |
-|---------|------------|--------|
-| New Topic | Found tech/term/component not previously identified | Revisit relevant step |
-| Evidence Gap | Claim lacks supporting evidence | Revisit to fill gap |
-| Contradiction | New info conflicts with earlier findings | Revisit to resolve |
-| High-Value | Discovery significantly impacts solution | Revisit to validate |
-| Missing Context | Info needs more context to be actionable | Revisit to contextualize |
-
-**Execution:**
-1. Evaluate all findings against triggers
-2. Execute high-priority revisits immediately
-3. Log low-priority for synthesis phase
-4. Max 3 iterations per step
-
-**Document each loop:**
-```json
-{
-  "finding": "description",
-  "trigger": "trigger_type",
-  "target_step": "step_to_revisit",
-  "priority": "high|medium|low"
-}
-```
-
-## Run State Update Pattern
-
-After completing a research sub-phase:
-```json
-{
-  "phase": "research",
-  "step": "{{step_id}}",
-  "completedAt": "{{iso_timestamp}}",
-  "artifact": "{{research}}/{{artifact_file}}"
-}
-```
-
-Add to `completedSteps[]`, increment `metrics.phases.research.stepsCompleted`.
-
-## Research Sub-Phase Order
-
-| Order | ID | Artifact |
-|-------|-----|----------|
-| 1 | 03a | 00-organization-dictionary.json |
-| 2 | 03b | 01-ado-workitem.json |
-| 3 | 03c | 02-wiki-research.json |
-| 4 | 03d | 05-business-context.json |
-| 5 | 03e | 03a-dependency-discovery.json |
-| 6 | 03f | 04-similar-workitems.json |
-| 7 | 03g | 06-code-analysis.json |
-| 8 | 03h | 07-web-research.json |
-| 9 | 03z | research-summary.json, assumptions.json |
-
-## Common CLI Commands
-
-| Action | Command |
-|--------|---------|
-| Get work item | `{{cli.ado_get}} {{work_item_id}} --expand All --json` |
-| Get comments | `{{cli.ado_get}} {{work_item_id}} --comments --json` |
-| Search wiki | `{{cli.wiki_search}} "{{keywords}}" --json` |
-| Get wiki page | `{{cli.wiki_get}} --path "{{path}}" --json` |
-| SF describe | `{{cli.sf_describe}} {{object}} --json` |
-| SF discover | `{{cli.sf_discover}} --type {{type}} --name {{name}} --depth 3 --json` |
-| Search ADO | `{{cli.ado_search}} --text "{{text}}" --top 20 --json` |
+## CLI Quick Reference (Batch Optimized)
+| Action | Command | Batch |
+|--------|---------|-------|
+| Get work item | `{{cli.ado_get}} {{work_item_id}} --expand All --json` | — |
+| Get comments | `{{cli.ado_get}} {{work_item_id}} --comments --json` | — |
+| Search wiki | `{{cli.wiki_search}} "{{keywords}}" --json` | — |
+| SF describe | `{{cli.sf_describe}} {{obj}} --json` | `--batch` |
+| SF discover | `{{cli.sf_discover}} --type {{type}} --name {{name}} --depth 3 --json` | — |
+| Search ADO | `{{cli.ado_search}} --text "{{text}}" --top 20 --json` | — |
+| SF query | `{{cli.sf_query}} "{{soql}}" --json` | — |

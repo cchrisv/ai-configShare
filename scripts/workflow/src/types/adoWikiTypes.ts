@@ -91,6 +91,24 @@ export interface WikiPageUpdateResult {
 }
 
 /**
+ * Wiki search result from ADO Search API
+ */
+export interface WikiSearchResult {
+  fileName: string;
+  path: string;
+  wiki: { name: string; id: string };
+  highlights: string[];
+}
+
+/**
+ * Wiki search response with total count and results
+ */
+export interface WikiSearchResponse {
+  totalCount: number;
+  results: WikiSearchResult[];
+}
+
+/**
  * Wiki constants
  */
 export const WIKI_DEFAULTS = {

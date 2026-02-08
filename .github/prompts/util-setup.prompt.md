@@ -1,68 +1,30 @@
-# First-Time Setup
+# Util – Setup (Context7)
+Mission: First-time environment setup and auth validation.
+Config: `#file:config/shared.json` · `#file:README.md`
 
-Role: Setup Assistant
-Mission: Guide through environment setup, validate authentication.
+## Step 1 [CLI] – Prerequisites
+Verify: `node --version` (v18+) · `npm --version` · `az --version` · `sf --version`
+If missing → install from official sources.
 
-## Config
-Load: `#file:config/shared.json`
-Reference: `#file:README.md` (Authentication section)
+## Step 2 [CLI] – Install Dependencies
+Run in `{{paths.scripts}}`: `npm install` → `npm run build`
+Verify `dist/` contains compiled .js files.
 
-## Steps
+## Step 3 [CLI] – Authenticate ADO
+`az login` → `az account show` → `{{cli.ado_get}} <test-id> --json`
+**Errors:** `AADSTS` → re-auth · `TF401019` → check permissions
 
-### 1: Check Prerequisites [CLI]
-```bash
-node --version    # v18+
-npm --version
-az --version
-sf --version
-```
-If missing: Install from official sources.
+## Step 4 [CLI] – Authenticate Salesforce
+`sf org login web -a production` → `sf org list` → `{{cli.sf_query}} "SELECT Id FROM Account LIMIT 1" --json`
+**Errors:** `No authorization found` → re-run login
 
-### 2: Install Dependencies [CLI]
-```bash
-cd {{paths.scripts}}
-npm install
-npm run build
-```
-Verify: `dist/` contains compiled `.js` files.
-
-### 3: Authenticate Azure DevOps [CLI]
-```bash
-az login
-az account show
-{{cli.ado_get}} <test-work-item-id> --json
-```
-Common issues:
-- `AADSTS` → Re-authenticate
-- `TF401019` → Check permissions
-- Project not found → Verify shared.json settings
-
-### 4: Authenticate Salesforce [CLI]
-```bash
-sf org login web -a production
-sf org list
-{{cli.sf_query}} "SELECT Id FROM Account LIMIT 1" --json
-```
-Common issues:
-- `No authorization found` → Re-run login
-- `INVALID_SESSION_ID` → Session expired
-
-### 5: Validate Wiki Access [CLI]
-```bash
-{{cli.wiki_list}} --json
-```
-
-### 6: Test Workflow Tools [CLI]
-```bash
-{{cli.workflow_prepare}} -w <test-work-item-id> --json
-```
-Verify: `success: true` and artifact structure created.
-
-### 7: Clean Up [CLI]
-```bash
-{{cli.workflow_reset}} -w <test-work-item-id> --force --json
-```
+## Step 5 [CLI] – Validate Wiki + Workflow
+`{{cli.wiki_list}} --json`
+`{{cli.workflow_prepare}} -w <test-id> --json` → verify success
+`{{cli.workflow_reset}} -w <test-id> --force --json` (cleanup)
 
 ## Complete
+Next → `/phase-01-initialize` with work item ID, then `/phase-02a-grooming-research`.
 
-Next step: Run `/phase-01-prepare-ticket` with a work item ID.
+## Context7 Note
+All phases use unified ticket-context.json instead of separate artifacts.

@@ -40,11 +40,13 @@ export interface CliCommandsConfig {
  * Paths configuration
  */
 export interface PathsConfig {
+  artifacts_root: string;
+  reports: string;
+  scripts: string;
   prompts: string;
+  config: string;
   templates: string;
   standards: string;
-  artifacts: string;
-  output: string;
 }
 
 /**

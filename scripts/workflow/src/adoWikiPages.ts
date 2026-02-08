@@ -20,6 +20,8 @@ import type { AdoConnectionConfig } from './adoClient.js';
 import type {
   WikiPage,
   WikiPageWithContent,
+  WikiSearchResult,
+  WikiSearchResponse,
   GetWikiPageOptions,
   UpdateWikiPageOptions,
   CreateWikiPageOptions,
@@ -558,41 +560,125 @@ export async function deleteWikiPage(
 }
 
 /**
- * Search wiki pages by keyword
+ * Search wiki pages using ADO Search API (content + title search)
+ * Paginates through ALL results — the LLM consumer determines relevance.
  * 
- * @param searchText - Text to search for in page paths and titles
- * @param wikiId - Wiki identifier (optional)
+ * @param searchText - Text to search for in page content and titles
+ * @param wikiId - Wiki identifier (optional, defaults to project wiki)
  * @param config - Connection config
- * @returns Array of matching wiki pages
+ * @returns WikiSearchResponse with totalCount and all deduplicated results
  */
 export async function searchWikiPages(
   searchText: string,
   wikiId?: string,
-  config?: AdoConnectionConfig
-): Promise<WikiPage[]> {
+  config?: AdoConnectionConfig,
+): Promise<WikiSearchResponse> {
   const timer = createTimer();
+  const MAX_HIGHLIGHT_LENGTH = 300;
+  const MAX_HIGHLIGHTS_PER_RESULT = 3;
+  const PAGE_SIZE = 200; // ADO Search API max per request
   
   logInfo(`Searching wiki for: ${searchText}`);
 
   try {
-    // Get all pages recursively
-    const allPages = await getAllWikiPagesRecursive('/', wikiId, config);
-    
-    // Filter pages by search text (case-insensitive)
-    const searchLower = searchText.toLowerCase();
-    const matchingPages = allPages.filter(page => {
-      const pathLower = page.path.toLowerCase();
-      return pathLower.includes(searchLower);
-    });
+    const orgUrl = config?.orgUrl ?? DEFAULT_ADO_ORG;
+    const project = config?.project ?? DEFAULT_ADO_PROJECT;
 
-    logDebug(`Found ${matchingPages.length} wiki pages matching "${searchText}"`);
+    // ADO Search API uses almsearch.dev.azure.com
+    const searchOrgUrl = orgUrl.replace('dev.azure.com', 'almsearch.dev.azure.com');
+    const url = `${searchOrgUrl}/${encodeURIComponent(project)}/_apis/search/wikisearchresults?api-version=7.1-preview.1`;
+
+    // Default to project wiki if no wikiId specified
+    const effectiveWikiId = wikiId ?? WIKI_DEFAULTS.WIKI_NAME;
+
+    const seenPaths = new Set<string>();
+    const results: WikiSearchResult[] = [];
+    let totalCount = 0;
+    let skip = 0;
+
+    // Paginate through all results
+    while (true) {
+      const headers = getAuthHeaders();
+      headers['Content-Type'] = 'application/json';
+
+      const body: Record<string, unknown> = {
+        searchText,
+        $top: PAGE_SIZE,
+        $skip: skip,
+      };
+      body['filters'] = { Wiki: [effectiveWikiId] };
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Wiki Search API error (${response.status}): ${errorText}`);
+      }
+
+      const data = await response.json() as {
+        count: number;
+        results: Array<{
+          fileName: string;
+          path: string;
+          wiki: { name: string; id: string };
+          hits: Array<{
+            fieldReferenceName: string;
+            highlights: string[];
+          }>;
+        }>;
+      };
+
+      totalCount = data.count;
+      const pageResults = data.results ?? [];
+      if (pageResults.length === 0) break;
+
+      for (const r of pageResults) {
+        // Normalize git path → wiki page path:
+        // In ADO wiki git: literal "-" = space in page name, "%2D" = actual hyphen
+        const wikiPath = decodeURIComponent(r.path.replace(/-/g, ' ')).replace(/\.md$/i, '');
+        if (seenPaths.has(wikiPath)) continue;
+        seenPaths.add(wikiPath);
+
+        // Collect content highlights, strip HTML tags, truncate
+        const highlights: string[] = [];
+        for (const hit of r.hits ?? []) {
+          if (hit.fieldReferenceName === 'content' || hit.fieldReferenceName === 'content.pattern') {
+            for (const h of hit.highlights) {
+              if (highlights.length >= MAX_HIGHLIGHTS_PER_RESULT) break;
+              const clean = h.replace(/<\/?highlighthit>/g, '');
+              highlights.push(clean.length > MAX_HIGHLIGHT_LENGTH
+                ? clean.substring(0, MAX_HIGHLIGHT_LENGTH) + '...'
+                : clean);
+            }
+          }
+          if (highlights.length >= MAX_HIGHLIGHTS_PER_RESULT) break;
+        }
+
+        results.push({
+          fileName: r.fileName,
+          path: wikiPath,
+          wiki: r.wiki,
+          highlights,
+        });
+      }
+
+      skip += pageResults.length;
+      if (skip >= totalCount) break;
+
+      logDebug(`Fetched ${skip}/${totalCount} search results...`);
+    }
+
+    logDebug(`Found ${totalCount} total, ${results.length} unique wiki pages matching "${searchText}"`);
     timer.log(`searchWikiPages(${searchText})`);
     
-    return matchingPages;
+    return { totalCount, results };
   } catch (error) {
     logError(`Wiki search failed: ${error instanceof Error ? error.message : error}`);
-    // Return empty array on error to allow workflow to continue
-    return [];
+    return { totalCount: 0, results: [] };
   }
 }
 

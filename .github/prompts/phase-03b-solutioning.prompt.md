@@ -1,0 +1,169 @@
+# Phase 03b – Solutioning
+Role: Solution Architect
+Mission: Design technical solutions meeting requirements and standards.
+Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md`
+Input: `{{work_item_id}}`
+
+## Constraints
+- **Extend over new** – prefer existing components; avoid net-new when platform supports it
+- **Standards-driven** – reference `{{paths.standards}}/` for compliance
+- **Single ADO update** – one `ado_update` call at the end
+- **CLI-only** – per util-base guardrails
+- **Outputs to** {{context_file}}.solutioning.*
+
+## Prerequisites [IO]
+A1 [IO]: Load `#file:config/shared.json` → extract `paths.*`, `cli_commands.*`, `field_paths.*`, `tags.*`, `template_files.*`
+A2 [IO]: Load {{context_file}} → verify:
+  - `.research.synthesis` exists with `research_phase_complete = true`
+  - `.research.salesforce_metadata` exists (schema, logic, dependencies)
+  - `.research.dependency_discovery` exists (high_risk_components, regression_candidates)
+  - `.research.web_research` exists (industry_standards, identified_risks)
+  - `.grooming` exists (classification, templates_applied, solutioning_hints)
+  - `.metadata.phases_completed` includes `"research"` AND `"grooming"`
+A3: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
+
+## Templates
+Load from `{{paths.templates}}/` (use `{{template_files.*}}` keys):
+- `{{template_files.field_solution_design}}` — ADO Development Summary HTML field
+- `{{template_files.solution_design}}` — solution design structure (markdown)
+- `{{template_files.solution_design_document}}` — feature solution design document
+- `{{template_files.field_mappings}}` — field mapping reference
+- `{{template_files.test_case}}` — test case structure
+
+---
+
+## Step 1 [IO] – Load Context
+B1 [IO]: Read `.research.synthesis.unified_truth` — consolidated understanding
+B2 [IO]: Read `.research.salesforce_metadata` — schema, triggers, flows, platform events
+B3 [IO]: Read `.research.dependency_discovery` — high_risk_components, regression_candidates
+B4 [IO]: Read `.research.web_research` — industry_standards, identified_risks
+B5 [IO]: Read `.grooming.classification` — work_class, effort, risk, quality_gates
+B6 [IO]: Read `.grooming.solutioning_hints[]` — extracted implementation clues from grooming
+B7 [IO]: Read `.grooming.templates_applied.applied_content.acceptance_criteria` — what we must trace to
+
+## Step 2 [GEN/CLI] – Option Analysis
+C1 [GEN]: Enumerate solution options — score each on **Trusted** / **Easy** / **Adaptable** (1–5):
+  - **OOTB**: Out-of-the-box platform capability (declarative)
+  - **Extension**: Extend existing components (modify trigger action, update CMT, adjust flow)
+  - **Custom**: Net-new development (new Apex, new objects, new integrations)
+C2 [GEN]: For each option, assess: effort, risk, standards compliance, regression surface
+C3 [CLI]: If additional metadata needed: `{{cli.sf_describe}} {{object_name}} --json`
+C4 [GEN]: Recommend best option with decision rationale; document eliminated options with reasons
+
+## Step 3 [GEN] – Solution Design
+D1 [GEN]: **Component design** — for recommended option, define components:
+  - component_id, name, type, complexity_estimate, responsibility
+  - Map each component to the AC it satisfies
+D2 [GEN]: **Architecture decisions** — document key decisions with rationale
+D3 [GEN]: **Integration points** — identify system boundaries, API contracts, event flows
+D4 [GEN]: **Standards compliance** — load relevant standards from `{{paths.standards}}/`:
+  - `apex-well-architected.md` — if Apex changes
+  - `trigger-actions-framework-standards.md` — if trigger actions modified
+  - `flow-well-architected.md` — if flows modified
+  - `event-driven-architecture-standards.md` — if platform events involved
+  - `metadata-naming-conventions.md` — always
+D5 [GEN]: **Quality bar** — define code review, test coverage, performance thresholds
+
+## Step 4 [GEN] – Traceability & Testing
+E1 [GEN]: **AC traceability** — map every acceptance criterion → component_ids that implement it
+E2 [GEN]: **Gap analysis** — identify ACs not covered by any component; flag as gaps
+E3 [GEN]: **Orphan detection** — identify components not traced to any AC
+E4 [GEN]: **Test cases** — generate for each AC:
+  - id, title, path_type (happy_path | negative | edge_case | security)
+  - covers_ac[], priority (P1 | P2 | P3), preconditions, steps, verification_checklist
+E5 [GEN]: **AC coverage matrix** — compute total_ac, fully_covered, partially_covered, not_covered
+
+## Step 5 [GEN] – Quality Gates
+Run ALL gates before saving:
+
+| Gate | Check | On Fail |
+|------|-------|---------|
+| **AC coverage** | Every AC maps to ≥1 component AND ≥1 test case | Flag gaps, attempt to fill |
+| **Standards compliance** | All components comply with loaded standards | Adjust design or document exception |
+| **Risk alignment** | Solution risk ≤ grooming risk classification | Escalate if solution is riskier |
+| **No orphans** | Every component traces to ≥1 AC | Remove or justify orphan components |
+| **Test completeness** | Every AC has happy + unhappy path tests | Generate missing tests |
+
+**Max 3 iterations** — proceed with best effort and log warnings if gates still fail.
+
+## Step 6 [IO] – Save Artifact
+**GATE: write to disk before CLI call.**
+
+Save → {{context_file}}.solutioning:
+```json
+{
+  "option_analysis": {
+    "options": [
+      { "id": "", "name": "", "type": "OOTB|Extension|Custom",
+        "description": "", "scores": { "trusted": 0, "easy": 0, "adaptable": 0 } }
+    ],
+    "recommended_option": { "option_id": "", "rationale": "" },
+    "decision_summary": "",
+    "eliminated_options": [{ "option_id": "", "reason": "" }]
+  },
+  "solution_design": {
+    "components": [
+      { "component_id": "", "name": "", "type": "", "complexity_estimate": "", "responsibility": "" }
+    ],
+    "architecture_decisions": [{ "id": "", "decision": "", "rationale": "", "alternatives_considered": [] }],
+    "integration_points": [{ "source": "", "target": "", "mechanism": "", "contract": "" }],
+    "quality_bar": { "code_review": true, "test_coverage_min": 80, "performance_threshold": "" },
+    "applied_standards": [""]
+  },
+  "traceability": {
+    "acceptance_criteria": [{ "ac_id": "", "description": "", "component_ids": [] }],
+    "telemetry": [],
+    "gaps": [],
+    "orphans": []
+  },
+  "testing": {
+    "test_data_matrix": { "rows": [], "columns": [] },
+    "test_cases": [
+      { "id": "", "title": "", "path_type": "happy_path|negative|edge_case|security",
+        "covers_ac": [], "priority": "P1|P2|P3", "objective": "",
+        "preconditions": [], "steps": [], "verification_checklist": [] }
+    ],
+    "ac_coverage_matrix": {
+      "coverage_summary": { "total_ac": 0, "fully_covered": 0, "partially_covered": 0, "not_covered": 0 },
+      "acceptance_criteria": [
+        { "ac_id": "", "description": "", "happy_path_tests": [], "unhappy_path_tests": [],
+          "coverage_status": "full|partial|none", "coverage_notes": "" }
+      ]
+    }
+  },
+  "applied_content": {
+    "development_summary": "<full generated HTML from field_solution_design template>",
+    "technical_notes": "<component list + architecture decisions summary>",
+    "sf_components": "<comma-separated SF component names>",
+    "story_points": null,
+    "tags": ["existing", "tags", "{{tags.solutioned}}"]
+  }
+}
+```
+
+Save technical spec → {{context_file}}.solutioning.technical_spec (markdown from `{{template_files.solution_design}}`)
+
+Update `run_state`:
+- Append `{"phase":"solutioning","step":"solution_design","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `completed_steps[]`
+- Save to disk
+
+**Save {{context_file}} to disk — GATE: do not proceed until confirmed written.**
+
+## Step 7 [CLI] – Update ADO
+The CLI reads `applied_content` from the solutioning section and maps fields automatically:
+
+`{{cli.ado_update}} {{work_item_id}} --from-context "{{context_file}}" --phase solutioning --json`
+
+Maps: `development_summary` → `{{field_paths.development_summary}}`, `story_points` → `{{field_paths.story_points}}`, `tags` → `{{field_paths.tags}}` (joined with "; ", includes `{{tags.solutioned}}`).
+
+On error: log to `run_state.errors[]`; save to disk; retry once; **STOP** on second failure.
+
+## Completion [IO/GEN]
+Update {{context_file}}:
+- `metadata.phases_completed` append `"solutioning"`
+- `metadata.current_phase` = `"wiki"`
+- `metadata.last_updated` = current ISO timestamp
+- Append `{"phase":"solutioning","step":"ado_update","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
+- Save to disk
+
+Tell user: **"Solutioning complete. Use /phase-04-wiki."**

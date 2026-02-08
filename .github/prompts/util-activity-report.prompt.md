@@ -1,49 +1,24 @@
-# Activity Report Generation
-
+# Util – Activity Report (Context7)
 Role: Reporting Analyst
-Mission: Generate activity reports from Azure DevOps.
-Output: CSV files with user activity data (Edits, Comments, Assignments, Mentions).
+Mission: Generate ADO activity reports (Edits, Comments, Assignments, Mentions).
+Config: `#file:config/shared.json`
+Input: `{{people}}` — "Name|email" list (required) · `{{days}}` — lookback (default: 30)
 
-## Config
-Load: `#file:config/shared.json`
-Input:
-- `{{people}}`: List of users as "Name|email@domain.com" (required)
-- `{{days}}`: Days to look back (default: 30)
-
-## Prerequisites
-Azure CLI authenticated (`az login`).
+## Constraints
+- **CLI-only** – per util-base guardrails
+- **Azure CLI auth required** – **STOP** with "Run `az login` first"
+- **People required** – ASK for name/email if not provided
 
 ## Execution
 
-### A: Validation
-A1 [LOGIC]: Verify Azure CLI auth
-A2 [LOGIC]: Validate people input format
-A3 [LOGIC]: Set defaults if not provided
+### Step 1 [LOGIC] – Validate
+A1: Verify Azure CLI auth → **STOP** if unauthenticated
+A2: Validate `{{people}}` format ("Name|email"); ASK if missing
+A3: Set defaults (`{{days}}` = 30)
 
-### B: Generate Report [CLI]
-```bash
-{{cli.report_activity}} --people "{{person_1}}" "{{person_2}}" --days {{days}} --json
-```
+### Step 2 [CLI] – Generate
+`{{cli.report_activity}} -p "{{person_1}}" -p "{{person_2}}" -d {{days}} -o {{paths.reports}} --json`
 
-Options:
-- `--people`: One or more "Name|email" entries (required)
-- `--days`: Lookback period (default: 30)
-- `--output`: Output directory (default: {{paths.reports}})
-- `--json`: JSON output
-
-### C: Present Results [GEN]
-Display:
-- Generated file paths
-- Date range
-- Users included
-- Activity counts
-
-## Output
-CSV files in `{{paths.reports}}/` directory with timestamps.
-
-## Errors
-| Condition | Action |
-|-----------|--------|
-| Not authenticated | STOP: "Run `az login` first" |
-| No people specified | ASK for name and email |
-| No activities found | Report success with zero count |
+### Step 3 [GEN] – Present Results
+Display: file paths, date range, users, activity counts.
+Zero activities = success (not error).

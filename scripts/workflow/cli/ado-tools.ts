@@ -101,6 +101,9 @@ program
   .option('--value-file <file>', 'Read value from file for arbitrary field update')
   // Bulk update from JSON
   .option('--fields-file <file>', 'Read fields from JSON file (expects { "fields": { ... } } or grooming-result.json format)')
+  // Context-driven update (reads phase output from ticket-context.json)
+  .option('--from-context <file>', 'Read applied_content from ticket-context.json and map to ADO fields')
+  .option('--phase <phase>', 'Phase section to read from context (grooming|solutioning). Default: grooming')
   // Comment
   .option('--comment <comment>', 'Add a comment/history entry')
   // Output
@@ -175,6 +178,53 @@ program
           if (value !== undefined && value !== null) {
             fields[key] = value;
           }
+        }
+      }
+
+      // Context-driven update: read phase output from ticket-context.json
+      if (options.fromContext) {
+        const ctxContent = readFileSync(options.fromContext, 'utf-8');
+        const ctx = JSON.parse(ctxContent);
+        const phase = options.phase || 'grooming';
+
+        if (phase === 'grooming') {
+          const applied = ctx?.grooming?.templates_applied?.applied_content;
+          if (!applied) {
+            console.error('Error: --from-context file missing grooming.templates_applied.applied_content');
+            process.exit(1);
+          }
+          // Map friendly names → ADO field paths
+          if (applied.description) fields['System.Description'] = applied.description;
+          if (applied.acceptance_criteria) fields['Microsoft.VSTS.Common.AcceptanceCriteria'] = applied.acceptance_criteria;
+          if (applied.title) fields['System.Title'] = applied.title;
+          if (Array.isArray(applied.tags) && applied.tags.length > 0) {
+            fields['System.Tags'] = applied.tags.join('; ');
+          }
+          if (applied.work_class_type) fields['Custom.WorkClassType'] = applied.work_class_type;
+          if (applied.qa_requirement?.requires_qa) fields['Custom.RequiresQA'] = applied.qa_requirement.requires_qa;
+          // Bug-specific
+          if (applied.repro_steps) fields['Microsoft.VSTS.TCM.ReproSteps'] = applied.repro_steps;
+          if (applied.system_info) fields['Microsoft.VSTS.TCM.SystemInfo'] = applied.system_info;
+          // Feature-specific
+          if (applied.business_value) fields['Custom.BusinessProblemandValueStatement'] = applied.business_value;
+          if (applied.objectives) fields['Custom.BusinessObjectivesandImpact'] = applied.objectives;
+
+        } else if (phase === 'solutioning') {
+          const applied = ctx?.solutioning?.applied_content;
+          if (!applied) {
+            console.error('Error: --from-context file missing solutioning.applied_content');
+            process.exit(1);
+          }
+          // Solutioning updates development summary + tags + story points
+          if (applied.development_summary) fields['Custom.DevelopmentSummary'] = applied.development_summary;
+          if (applied.story_points !== undefined) fields['Microsoft.VSTS.Scheduling.StoryPoints'] = applied.story_points;
+          if (Array.isArray(applied.tags) && applied.tags.length > 0) {
+            fields['System.Tags'] = applied.tags.join('; ');
+          }
+
+        } else {
+          console.error(`Error: unsupported --phase "${phase}". Use "grooming" or "solutioning".`);
+          process.exit(1);
         }
       }
 

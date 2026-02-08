@@ -1,5 +1,4 @@
 {
-  "$schema": "./schemas/shared.schema.json",
   "version": "2.0.0",
   "project": {
     "name": "Salesforce Automation",
@@ -14,8 +13,8 @@
     "wiki_repo_id": "c7b64b09-35f3-4d8a-889c-5650655281ee"
   },
   "sf_defaults": {
-    "default_org": "q2dev",
-    "api_version": "62.0"
+    "default_org": "q3dev",
+    "api_version": "64.0"
   },
   "paths": {
     "artifacts_root": ".ai-artifacts",
@@ -24,8 +23,7 @@
     "prompts": ".github/prompts",
     "config": "config",
     "templates": "config/templates",
-    "standards": "config/standards",
-    "state": ".github/state"
+    "standards": "config/standards"
   },
   "cli_commands": {
     "ado_get": "npx --prefix scripts/workflow ado-tools get",
@@ -172,7 +170,8 @@
     },
     "finalization": {
       "completion_summary": "completion-summary.md",
-      "final_templates": "final-templates.json"
+      "final_templates": "final-templates.json",
+      "wsjf_evidence": "wsjf-evidence.json"
     },
     "dev_updates": {
       "log_prefix": "dev-update"
@@ -186,15 +185,11 @@
     "solution_design": {
       "collected_data": "collected-data.json",
       "solution_design_doc": "solution-design.md",
-      "wiki_content": "wiki-content.md",
-      "wiki_metadata": "wiki-metadata.json"
+      "wiki_content": "wiki-content.md"
     },
     "sequencing": {
       "collected_tickets": "collected-tickets.json",
-      "existing_links": "existing-links.json",
       "sequence_plan": "sequence-plan.json",
-      "sequence_plan_approved": "sequence-plan-approved.json",
-      "link_results": "link-results.json",
       "report": "sequencing-report.md"
     }
   },

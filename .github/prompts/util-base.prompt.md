@@ -1,63 +1,56 @@
-# Prompt Base Reference
+# Util – Base Reference (Context7)
+Shared definitions for all workflow prompts. Uses unified ticket-context.json.
 
-Shared definitions for all workflow prompts. Reference this file instead of repeating common patterns.
+## Config
+Load `#file:config/shared.json`. Extract: `paths.*` · `cli_commands.*` (use as `{{cli.*}}`) · `artifact_files.*` · `field_paths.*` · `tags.*` · `template_files.*`
 
-## Configuration
+## Guardrails
+1. **No comments** – never post to work items unless explicitly requested
+2. **CLI-only** – use CLI commands; NEVER raw shell (curl, az, git, npm)
+3. **No hardcoded paths** – use template variables; NEVER absolute paths
+4. **Config read-only** – NEVER modify shared.json or CLI scripts unless asked
+5. **Load config first** – always load shared.json before execution
+6. **Context7 only** – ALWAYS use {{root}}/ticket-context.json; NO separate artifacts
 
-Load `#file:config/shared.json` first. Extract:
-- `paths.*` - Directory paths
-- `cli_commands.*` - CLI commands  
-- `artifact_files.*` - Output filenames
-- `field_paths.*` - ADO field paths
-- `tags.*` - Tag names
+## Step Types
+`[IO]` file read/write · `[CLI]` tool execution · `[API]` remote API · `[LOGIC]` conditional · `[GEN]` AI reasoning
 
-## Standard Paths
+## Context7 Paths
+`{{root}}` = `{{paths.artifacts_root}}/{{work_item_id}}`
+`{{context_file}}` = `{{root}}/ticket-context.json`  (SINGLE SOURCE OF TRUTH)
 
-| Variable | Value |
-|----------|-------|
-| `{{root}}` | `{{paths.artifacts_root}}/{{work_item_id}}` |
-| `{{research}}` | `{{root}}/research` |
-| `{{grooming}}` | `{{root}}/grooming` |
-| `{{solutioning}}` | `{{root}}/solutioning` |
-| `{{wiki}}` | `{{root}}/wiki` |
-| `{{finalization}}` | `{{root}}/finalization` |
-| `{{run_state}}` | `{{root}}/run-state.json` |
+| Phase | Context Section |
+|-------|----------------|
+| Research | `.research` |
+| Grooming | `.grooming` |
+| Solutioning | `.solutioning` |
+| Wiki | `.wiki` |
+| Finalization | `.finalization` |
+| Dev Updates | `.dev_updates` |
+| Closeout | `.closeout` |
 
-## Standard Guardrails
-
-1. **NO COMMENTS** - Never post comments to work items unless explicitly requested
-2. **CLI-ONLY** - Use CLI commands from `shared.json`, never raw shell commands (curl, az, git, npm)
-3. **NO HARDCODED PATHS** - Use template variables from shared.json
-4. **CONFIG READ-ONLY** - Do not modify shared.json or CLI scripts unless explicitly asked
-5. **LOAD CONFIG FIRST** - Always load shared.json before execution
-
-## Step Type Annotations
-
-| Type | Description |
-|------|-------------|
-| `[IO]` | File read/write |
-| `[CLI]` | Tool execution |
-| `[API]` | Remote API calls |
-| `[LOGIC]` | Conditional branching |
-| `[GEN]` | AI reasoning |
-
-## Run State Schema
-
+## Context7 Structure
 ```json
 {
-  "workItemId": "{{work_item_id}}",
-  "version": 1,
-  "currentPhase": "research|grooming|solutioning|wiki|finalization|complete",
-  "phaseOrder": ["research", "grooming", "solutioning", "wiki", "finalization"],
-  "completedSteps": [],
-  "errors": [],
-  "metrics": { "phases": {} },
-  "lastUpdated": "{{iso_timestamp}}"
+  "metadata": {
+    "work_item_id": "", "created_at": "", "last_updated": "",
+    "current_phase": "research|grooming|solutioning|wiki|finalization|complete",
+    "phases_completed": [], "version": "1.0"
+  },
+  "run_state": {
+    "completed_steps": [], "generation_history": [], "errors": [],
+    "metrics": { "research": {}, "grooming": {}, "solutioning": {} }
+  },
+  "research": {}, "grooming": {}, "solutioning": {},
+  "wiki": {}, "finalization": {}, "dev_updates": {},
+  "closeout": {}
 }
 ```
+**Valid `current_phase` values:** `research` · `grooming` · `solutioning` · `wiki` · `finalization` · `complete`
+**Valid `phases_completed` values:** `research` · `grooming` · `solutioning` · `wiki` · `finalization`
+Full schema: `#file:config/templates/ticket-context-schema.json`
 
 ## CLI Quick Reference
-
 | Action | Command |
 |--------|---------|
 | Init workflow | `{{cli.workflow_prepare}} -w {{work_item_id}} --json` |
@@ -65,3 +58,9 @@ Load `#file:config/shared.json` first. Extract:
 | Reset phase | `{{cli.workflow_reset}} -w {{work_item_id}} --phase {{phase}} --force --json` |
 | Get work item | `{{cli.ado_get}} {{work_item_id}} --expand All --json` |
 | Update work item | `{{cli.ado_update}} {{work_item_id}} --fields-file "{{file}}" --json` |
+
+## Context7 Operations
+- Load: `[IO]` read {{context_file}}
+- Update: `[IO]` modify section → write {{context_file}}
+- Phase complete: update `metadata.current_phase` + `metadata.phases_completed`
+- Always validate schema after writes

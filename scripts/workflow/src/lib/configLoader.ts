@@ -142,7 +142,7 @@ export function mergeVariables(
 /**
  * Get the path to a prompt file in .github/prompts.
  *
- * @param promptName - Name of the prompt without extension (e.g. "phase-01-prepare-ticket")
+ * @param promptName - Name of the prompt without extension (e.g. "phase-01-initialize")
  * @returns Absolute path to the .prompt.md file
  */
 export function getPromptPath(promptName: string): string {
