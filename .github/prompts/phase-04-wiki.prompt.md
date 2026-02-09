@@ -1,15 +1,22 @@
-# Phase 04 – Wiki Documentation
+# Phase 04 – Wiki Documentation (Multi-Pass)
 Role: Technical Writer
-Mission: Create wiki documentation from workflow artifacts.
+Mission: Create wiki documentation from workflow artifacts using incremental generation passes.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md`
 Input: `{{work_item_id}}`, `{{wiki_path}}` (optional)
 
 ## Constraints
+- **Multi-pass generation** – generate wiki in 5 discrete passes; each pass loads only the context it needs
+- **Selective context loading** – NEVER load all context sections at once; each pass specifies exactly what to read
+- **Resumable** – track each pass completion in `run_state.completed_steps[]`; on re-entry, skip completed passes
 - **Artifact-only content** – all content from verified research + grooming + solutioning artifacts
 - **Idempotent** – update existing pages, never duplicate
 - **CLI-only** – per util-base guardrails
-- **Formatting** – follow `{{template_files.wiki_format}}` + `{{template_files.wiki_page_template}}`
-- **Outputs to** {{context_file}}.wiki.*
+- **Outputs to** `{{context_file}}.wiki.*` and `.ai-artifacts/{{work_item_id}}/wiki-content.md`
+
+## Design Conventions
+Per `{{template_files.wiki_format}}` — load the relevant section of this file for each pass to get color codes, card styles, callout patterns, Mermaid rules, and narrative tone guidelines. Do NOT load the entire format file at once.
+
+---
 
 ## Prerequisites [IO]
 A1 [IO]: Load `#file:config/shared.json` → extract `paths.*`, `cli_commands.*`, `template_files.*`, `ado_defaults.*`
@@ -20,178 +27,165 @@ A2 [IO]: Load {{context_file}} → verify:
   - `.metadata.phases_completed` includes `"solutioning"`
 A3: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
 
-## Design Conventions (from `{{template_files.wiki_format}}`)
-- **Header**: `# Autonomous Ticket Preparation - #{{work_item_id}}` only
-- **`##`**: markdown heading + 6px gradient accent bar (color-coded by section semantic)
-- **`###`**: markdown heading + 4px lighter gradient bar
-- **Content**: white bordered cards (`background: #fff; border: 1px solid #dee2e6; border-radius: 8px;`)
-- **Callouts**: colored left-border accent cards
-- **Tables**: HTML styled (NOT markdown tables)
-- **NO `<details>/<summary>`** – all content fully visible
-- **Diagrams**: Mermaid `graph TD` only (no `classDef`, no `%%{init}%%`)
-- **`[[_TOC_]]`**: own line, outside any HTML block
-- **Narrative tone**: knowledgeable colleague sharing insights (see `{{template_files.wiki_format}}` for full guidance)
+### Resume Check
+A4 [LOGIC]: Scan `run_state.completed_steps[]` for wiki pass markers:
+  - `pass_1_structure_summary`
+  - `pass_2_research_investigation`
+  - `pass_3_solution_decisions`
+  - `pass_4_quality_testing`
+  - `pass_5_assembly_publish`
 
----
+If markers found, **skip to the first incomplete pass**. The wiki-content.md file on disk contains all previously generated content. Do NOT re-generate completed passes.
 
-## Step 1 [IO] – Load Context
-B1 [IO]: Read `.research.synthesis.unified_truth` — consolidated understanding
-B2 [IO]: Read `.research.salesforce_metadata` — schema, triggers, dependencies
-B3 [IO]: Read `.research.dependency_discovery` — high_risk_components
-B4 [IO]: Read `.research.web_research` — industry_standards, identified_risks
-B5 [IO]: Read `.grooming.classification` — effort, risk, tags
-B6 [IO]: Read `.grooming.templates_applied.applied_content` — description, AC
-B7 [IO]: Read `.solutioning.option_analysis` — options evaluated, recommended
-B8 [IO]: Read `.solutioning.solution_design` — components, architecture, integration
-B9 [IO]: Read `.solutioning.traceability` — AC mapping, gaps
-B10 [IO]: Read `.solutioning.testing` — test cases, coverage matrix
-B11 [IO]: Read `.solutioning.technical_spec` — markdown technical spec
-B12 [IO]: Read `.research.team_impact` — impacted roles, coordination contacts, stakeholder summary
-B13 [IO]: Read `.research.dependency_discovery.role_impact_analysis` — role-to-component mapping
+A5 [LOGIC]: **Determine wiki template** — use `wiki_page_template` for work items, `solution_design_wiki` for Features.
 
-## Step 2 [IO] – Load Templates
-C1 [IO]: Load `{{paths.templates}}/{{template_files.wiki_format}}` — formatting standards + narrative guidelines
-C2 [IO]: Load `{{paths.templates}}/{{template_files.wiki_page_template}}` — page structure template
-C3 [IO]: Load `{{paths.templates}}/{{template_files.solution_design_wiki}}` — if Feature type, use this instead
-
-## Step 3 [GEN] – Content Generation
-D1 [GEN]: **Determine wiki template** — use `wiki_page_template` for work items, `solution_design_wiki` for Features
-D2 [LOGIC]: **Derive wiki path** if not provided:
+A6 [LOGIC]: **Derive wiki path** if not provided:
   - Primary object from `.research.salesforce_metadata.schema.objects[0].name`
   - Path: `/CRM-Home/{{primary_object_area}}/{{work_item_id}} {{sanitized_title}}`
   - Sanitize: replace special characters, limit length
-D3 [GEN]: **Transform artifacts → wiki markdown** following template structure:
-  - **Executive Summary** — from synthesis + grooming classification
-  - **Understanding the Request** — from grooming applied_content (description, AC)
-  - **Discovery & Research** — from research (wiki_search, salesforce_metadata, web_research)
-  - **Investigation Trail** — from research.salesforce_metadata.investigation_trail + assumptions
-  - **Stakeholders & Impact** — from research.team_impact (impacted_roles, coordination_contacts, stakeholder_summary) + dependency_discovery.role_impact_analysis
-    - Impacted roles/profiles table (role, profile, impact type, affected components)
-    - Coordination contacts table (name, title, reason for coordination)
-    - Testing implications by role
-  - **Solution Design** — from solutioning (option_analysis, components, architecture)
-  - **Decision Rationale** — from solutioning.option_analysis (options, scores, eliminated)
-  - **Quality & Validation** — comprehensive testing section (see D3-QV sub-steps below)
-
-### D3-QV: Quality & Validation — Robust Step-by-Step Testing
-
-**Input:** `.solutioning.testing` (test_data_matrix, test_cases, ac_coverage_matrix), `.grooming.templates_applied.applied_content.acceptance_criteria`, `.solutioning.traceability`
-
-**Goal:** Create a comprehensive, visually-organized testing section with step-by-step executable test cases that serve both developers and QA.
-
-**D3-QV1 [GEN]: Testing Philosophy Narrative**
-- Write 2-3 paragraphs explaining the testing approach for this work item:
-  - What testing approach was taken and why?
-  - What categories of tests are most critical for this feature?
-  - What risks are we specifically testing against?
-- This sets the stage for the detailed test content that follows.
-
-**D3-QV2 [GEN]: AC-Centric Test Coverage Matrix**
-- Lead with narrative explaining how each AC is validated through both happy and unhappy paths.
-- Generate summary table: `| AC ID | Acceptance Criteria | Happy Path Tests | Unhappy Path Tests | Coverage Status |`
-- Use visual indicators: ✅ Full (has both happy + unhappy), ⚠️ Partial (missing one path type), ❌ Gap (no tests)
-- Include **Path Type Legend:**
-  - **Happy Path (✓):** Validates AC works as expected under normal conditions
-  - **Negative (✗):** Validates error handling, invalid inputs, permission failures
-  - **Edge Case (⚡):** Validates boundary conditions, bulk operations, timing
-  - **Security (🔒):** Validates access controls, data isolation, FLS/CRUD
-
-**D3-QV3 [GEN]: Test Data Matrix**
-- Lead with narrative explaining the personas and scenarios covered.
-- Generate summary table: `| Row ID | Persona | Profile/Permissions | Record Context | Key Conditions | Notes |`
-- Group by scenario category (Happy Path, Edge Cases, Negative Tests).
-- For each data row, document:
-  - User setup details (username, profile, permission sets, role)
-  - Required test records with specific field values
-  - Feature flag configuration
-  - Why this scenario matters
-
-**D3-QV4 [GEN]: Test Cases by Priority with Step-by-Step Execution**
-For each priority tier, generate a summary table followed by detailed test cases:
-
-- **🔴 P1 (Critical Path):** Prominent section — these are release blockers.
-- **🟡 P2 (Important):** Standard section — key alternate flows and negatives.
-- **🟢 P3 (Nice to Have):** Lower-priority edge cases and cosmetic checks.
-
-Summary table per tier: `| ID | Test Scenario | Path Type | Covers AC | Steps Summary | Expected Outcome | Data Row |`
-
-**Detailed per-test-case format** (each test case MUST include all of the following):
-
-1. **Objective / Oracle** — What observable outcome proves success? Be specific: exact field values, record counts, events emitted.
-2. **Path Type** — Happy Path / Negative / Edge Case / Security
-3. **AC Coverage** — Which acceptance criteria this validates
-4. **Pre-conditions & Setup Checklist:**
-   - User persona and permissions required
-   - Required test records with specific attributes
-   - Feature flags / settings enabled
-   - Environment configuration prerequisites
-5. **Step-by-Step Execution Table:**
-
-   | Step | Action | Input/Data | Expected Result | ✓ |
-   |:----:|--------|------------|-----------------|:-:|
-   | 1 | [Navigate to specific page/record] | [URL or path] | [Page loads, correct data] | ☐ |
-   | 2 | [Perform specific action] | [Exact values] | [Immediate feedback] | ☐ |
-   | 3 | [Verify outcome] | [What to check] | [Expected state] | ☐ |
-
-   Each step must be atomic and independently verifiable.
-
-6. **Verification Checklist:**
-   - **UI Verification:** specific elements, toasts, navigation
-   - **Data Verification:** record field values, record counts, formula calculations
-   - **Related Records:** child/related records created or updated
-   - **Notifications:** emails, platform events, log entries
-7. **Telemetry & Logs to Verify:**
-
-   | Log Type | What to Look For | Where to Find It |
-   |----------|------------------|------------------|
-   | Debug Log | [Specific log pattern] | Developer Console |
-   | Platform Event | [Event name] | Event Monitoring |
-
-8. **Cleanup Steps:** Delete test records, reset settings, restore original state.
-9. **Developer Validation:**
-   - Unit test method pattern: `@IsTest static void test_[scenario]() { ... }`
-   - Assertions to implement: `System.assertEquals([expected], [actual], '[message]')`
-   - Mocks required for external dependencies
-   - Integration points to verify programmatically
-10. **QA Validation:**
-    - Step-by-step navigation: App Launcher → [App] → [Object] → [Action]
-    - Data verification query: `SELECT ... FROM ... WHERE ...`
-    - Visual verification checkpoints: [UI elements to confirm]
-    - Environment prerequisites: [Feature flags, permissions, test data rows]
-
-**D3-QV5 [GEN]: Traceability Matrix**
-- Create cross-reference table linking tests to requirements.
-- Format: `| Acceptance Criteria | Description | Happy Path Tests | Unhappy Path Tests | Coverage Status |`
-- Use visual indicators: ✅ Fully Covered, ⚠️ Partially Covered, ❌ Not Covered
-- Add narrative explaining any gaps or deliberate omissions.
-
-**D3-QV6 [GEN]: Test Data Setup Guide**
-- Generate an actionable checklist for test environment setup:
-  - Required configuration (feature flags, custom settings, CMT records)
-  - Test records to create with specific attributes
-  - Environment prerequisites (sandbox type, permission sets to assign)
-  - Dependencies between test data items
-- Format as a step-by-step setup procedure a tester can follow.
-
-### Testing Content Constraints
-- Every test case MUST have a step-by-step execution table with Action, Input/Data, and Expected Result columns.
-- Every test case MUST include both Developer Validation and QA Validation subsections.
-- Every AC must have at least one Happy Path AND one Unhappy Path test for full coverage.
-- Test cases must be self-contained in the wiki — no external file references or local paths.
-- All test case references use IDs (TC-XXX), not file paths.
-- Do NOT include timeline estimates, sprint assignments, or duration estimates in any testing content.
 
 ---
 
-D4 [GEN]: Apply formatting conventions from `wiki_format`:
-  - Color-coded section headers (Green=Summary, Blue=Architecture, Purple=Analysis, etc.)
-  - HTML styled tables (NOT markdown)
-  - Mermaid `graph TD` diagrams for architecture and data flow
-  - Narrative tone throughout
+## Pass 1 [IO/GEN] – Page Structure, Executive Summary, Understanding the Request
 
-## Step 4 [IO] – Save Wiki Content
-E1 [IO]: Save generated markdown → `.ai-artifacts/{{work_item_id}}/wiki-content.md`
-E2 [IO]: Update {{context_file}}.wiki:
+### Context to Load
+P1-A [IO]: Read `.research.synthesis.unified_truth`
+P1-B [IO]: Read `.grooming.classification`
+P1-C [IO]: Read `.grooming.templates_applied.applied_content`
+
+### Template to Reference
+P1-D [IO]: Load page header and Executive Summary section structure from `{{template_files.wiki_page_template}}`
+P1-E [IO]: Load Executive Summary and Understanding the Request formatting guidance from `{{template_files.wiki_format}}` (Green + Blue color sections only)
+
+### Generate
+P1-F [GEN]: Transform artifacts into wiki markdown for these sections:
+  - **Page Header** — gradient bar with `#{{work_item_id}} — {{title}}`, `[[_TOC_]]`
+  - **Executive Summary** — from synthesis + classification: challenge, discoveries, recommended approach, path forward
+  - **Understanding the Request** — from applied_content: business context, stakeholders, current situation, success criteria, functional requirements, quality attributes
+
+### Save
+P1-G [IO]: Write generated content to `.ai-artifacts/{{work_item_id}}/wiki-content.md` (create/overwrite)
+P1-H [IO]: Append `{"phase":"wiki","step":"pass_1_structure_summary","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
+
+**Save {{context_file}} to disk — GATE: do not proceed until confirmed written.**
+
+---
+
+## Pass 2 [IO/GEN] – Research, Investigation Trail, Stakeholders & Impact
+
+### Context to Load
+P2-A [IO]: Read `.research.salesforce_metadata`
+P2-B [IO]: Read `.research.dependency_discovery`
+P2-C [IO]: Read `.research.web_research`
+P2-D [IO]: Read `.research.team_impact`
+P2-E [IO]: Read `.research.dependency_discovery.role_impact_analysis`
+
+### Template to Reference
+P2-F [IO]: Load Discovery & Research, Investigation Trail, and Stakeholders section structure from `{{template_files.wiki_page_template}}`
+P2-G [IO]: Load Purple (Research) and Orange (Investigation) formatting guidance from `{{template_files.wiki_format}}`
+
+### Generate
+P2-H [GEN]: Transform artifacts into wiki markdown for these sections:
+  - **Discovery & Research** — from wiki_search, salesforce_metadata, web_research: existing knowledge, technical environment, metadata dependencies, codebase components, related work items, potential duplicates
+  - **Investigation & Discovery Trail** — from salesforce_metadata.investigation_trail + assumptions: journey narrative, hypothesis testing, rethinks, conflicting info resolution, confidence assessment
+  - **Stakeholders & Impact** — from team_impact + role_impact_analysis: impacted roles/profiles table, coordination contacts table, testing implications by role
+
+### Save
+P2-I [IO]: **Append** generated content to `.ai-artifacts/{{work_item_id}}/wiki-content.md`
+P2-J [IO]: Append `{"phase":"wiki","step":"pass_2_research_investigation","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
+
+**Save {{context_file}} to disk — GATE: do not proceed until confirmed written.**
+
+---
+
+## Pass 3 [IO/GEN] – Solution Design, Decision Rationale
+
+### Context to Load
+P3-A [IO]: Read `.solutioning.option_analysis`
+P3-B [IO]: Read `.solutioning.solution_design`
+P3-C [IO]: Read `.solutioning.technical_spec`
+
+### Template to Reference
+P3-D [IO]: Load Solution Design and Decision Rationale section structure from `{{template_files.wiki_page_template}}`
+P3-E [IO]: Load Indigo (Solution) and Brown (Decision) formatting guidance from `{{template_files.wiki_format}}`
+
+### Generate
+P3-F [GEN]: Transform artifacts into wiki markdown for these sections:
+  - **Solution Design** — from solution_design + technical_spec: overview narrative, architectural approach, component table, data flow, integration points, security considerations. Include Mermaid `graph TD` diagram for architecture.
+  - **Decision Rationale** — from option_analysis: options evaluated with Trusted/Easy/Adaptable scoring, recommended option, eliminated options with reasoning, standards influence, trade-offs, roads not taken
+
+### Save
+P3-G [IO]: **Append** generated content to `.ai-artifacts/{{work_item_id}}/wiki-content.md`
+P3-H [IO]: Append `{"phase":"wiki","step":"pass_3_solution_decisions","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
+
+**Save {{context_file}} to disk — GATE: do not proceed until confirmed written.**
+
+---
+
+## Pass 4 [IO/GEN] – Quality & Validation (Testing)
+
+### Context to Load
+P4-A [IO]: Read `.solutioning.testing` (test_data_matrix, test_cases, ac_coverage_matrix)
+P4-B [IO]: Read `.solutioning.traceability`
+P4-C [IO]: Read `.grooming.templates_applied.applied_content.acceptance_criteria`
+
+### Template to Reference
+P4-D [IO]: Load Quality & Validation section structure from `{{template_files.wiki_page_template}}` (lines 403+)
+P4-E [IO]: Load Teal (Quality/Testing) formatting guidance and full test case template from `{{template_files.wiki_format}}` (Quality & Validation section onward)
+
+### Generate
+P4-F [GEN]: Generate the complete Quality & Validation section following the testing structure defined in the loaded templates. This is the largest section — follow the template precisely for each subsection:
+
+  1. **How We'll Know We're Successful** — user-facing + system requirements from AC
+  2. **Testing Strategy & Coverage** — 2-3 paragraph testing philosophy narrative
+  3. **AC-Centric Test Coverage Matrix** — every AC mapped to happy/unhappy path tests with coverage status (Full/Partial/Gap) and path type legend
+  4. **Test Data Matrix** — personas, profiles, permissions, record contexts, feature flags. Detailed per-persona breakdowns with setup instructions
+  5. **P1 Critical Path Tests** — summary table + detailed per-test-case format: objective, path type, AC coverage, pre-conditions, step-by-step execution table, verification checklist, telemetry/logs, cleanup, Developer Validation (unit test pattern + assertions + mocks), QA Validation (navigation + data query + visual checkpoints + environment)
+  6. **P2 Important Tests** — same detailed format as P1
+  7. **P3 Additional Coverage** — same detailed format as P1
+  8. **Test Data Setup Guide** — actionable setup procedure for testers
+  9. **Requirements Traceability Matrix** — AC-to-test cross-reference
+  10. **Assumptions Resolution Log** — from all phases with status tracking
+  11. **Quality Corrections Applied** — solution bias removed, template fidelity, logical fallacies
+  12. **Open Unknowns** — items requiring human input
+
+**Key requirements for every test case:**
+- Step-by-step execution table with Action, Input/Data, Expected Result columns
+- Both Developer Validation AND QA Validation subsections
+- Every AC has at least one happy path AND one unhappy path test for full coverage
+- Test cases are self-contained — no external file references
+- All test case references use IDs (TC-XXX), not file paths
+- No timeline estimates, sprint assignments, or duration estimates in testing content
+
+### Save
+P4-G [IO]: **Append** generated content to `.ai-artifacts/{{work_item_id}}/wiki-content.md`
+P4-H [IO]: Append `{"phase":"wiki","step":"pass_4_quality_testing","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
+
+**Save {{context_file}} to disk — GATE: do not proceed until confirmed written.**
+
+---
+
+## Pass 5 [IO/CLI] – Assembly, Footer, Publish
+
+### Context to Load
+P5-A [IO]: Read `.wiki.creation_audit` (if exists, for path/metadata)
+P5-B [IO]: Read the completed `.ai-artifacts/{{work_item_id}}/wiki-content.md`
+
+### Validate & Finalize
+P5-C [LOGIC]: Verify structural integrity of wiki-content.md:
+  - `[[_TOC_]]` present on its own line outside any HTML block
+  - All major sections present: Executive Summary, Understanding, Discovery, Investigation, Solution Design, Decision Rationale, Quality & Validation
+  - Section headers use markdown `##`/`###` (for TOC detection)
+  - No local file paths, no artifact references, no timeline estimates
+  - HTML tables used (not markdown tables)
+  - Mermaid diagrams use `graph TD` only
+
+P5-D [GEN]: Append footer to wiki-content.md:
+  - Related Work Items section (from ADO relations if available)
+  - Timestamp and attribution footer
+
+### Save Wiki Audit
+P5-E [IO]: Update {{context_file}}.wiki:
 ```json
 {
   "creation_audit": {
@@ -217,22 +211,25 @@ E2 [IO]: Update {{context_file}}.wiki:
   "content_generated_at": "<ISO>"
 }
 ```
-E3 [IO]: Append `{"phase":"wiki","step":"content_generated","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
 
-**Save {{context_file}} to disk — GATE: do not proceed until confirmed written.**
-
-## Step 5 [CLI] – Publish to Wiki
-F1 [CLI]: Check if page exists: `{{cli.wiki_get}} --path "{{wiki_path}}" --no-content --json`
-F2 [CLI]: **If new** → `{{cli.wiki_create}} --path "{{wiki_path}}" --content ".ai-artifacts/{{work_item_id}}/wiki-content.md" --json`
+### Publish to Wiki
+P5-F [CLI]: Check if page exists: `{{cli.wiki_get}} --path "{{wiki_path}}" --no-content --json`
+P5-G [CLI]: **If new** → `{{cli.wiki_create}} --path "{{wiki_path}}" --content ".ai-artifacts/{{work_item_id}}/wiki-content.md" --json`
    **If exists** → `{{cli.wiki_update}} --path "{{wiki_path}}" --content ".ai-artifacts/{{work_item_id}}/wiki-content.md" --json`
-F3 [IO]: Capture response → update `wiki.creation_audit.page_id` and `wiki.creation_audit.url`
+P5-H [IO]: Capture response → update `wiki.creation_audit.page_id` and `wiki.creation_audit.url`
 
 On error: log to `run_state.errors[]`; save to disk; retry once; **STOP** on second failure.
 
-## Step 6 [CLI] – Verify Publication
-G1 [CLI]: `{{cli.wiki_get}} --path "{{wiki_path}}" --no-content --json` — confirm page exists and has content
-G2 [LOGIC]: Verify `page_id` matches, `content` length > 0
-G3 [IO]: Save verification result to `run_state.completed_steps[]`
+### Verify Publication
+P5-I [CLI]: `{{cli.wiki_get}} --path "{{wiki_path}}" --no-content --json` — confirm page exists and has content
+P5-J [LOGIC]: Verify `page_id` matches, `content` length > 0
+
+### Save
+P5-K [IO]: Append `{"phase":"wiki","step":"pass_5_assembly_publish","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
+
+**Save {{context_file}} to disk — GATE: do not proceed until confirmed written.**
+
+---
 
 ## Completion [IO/GEN]
 Update {{context_file}}:
