@@ -6,6 +6,7 @@ Input: `{{work_item_id}}`
 
 ## Constraints
 - **How only** – solutioning fields: DevelopmentSummary (HTML), SFComponents
+- **No timelines** – do not produce sprint estimates, delivery dates, or schedule commitments
 - **Single ADO update** – one call; only changed fields
 - **CLI-only** – per util-base guardrails
 - **Re-runnable** – each run appends to {{context_file}}.dev_updates.updates[]

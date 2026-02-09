@@ -424,9 +424,64 @@
 <div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
 
 <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
-  <p style="margin: 0; line-height: 1.7;">
+  <p style="margin: 0 0 16px 0; line-height: 1.7;">
     {{testing_philosophy}}
   </p>
+  <div style="font-weight: 600; color: #00796b; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">📊 AC Coverage Summary</div>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">AC ID</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Acceptance Criteria</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Happy Path Tests</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Unhappy Path Tests</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Coverage</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">AC-1</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{ac_description_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">TC-001</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">TC-002</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;"><span style="background: #4caf50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px;">✅ Full</span></td>
+    </tr>
+    <!-- Add more AC coverage rows as needed. Coverage: ✅ Full (#4caf50), ⚠️ Partial (#ffc107 with #333 text), ❌ Gap (#dc3545) -->
+  </table>
+  <div style="background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 0 8px 8px 0; padding: 14px;">
+    <div style="font-weight: 600; color: #2e7d32; margin-bottom: 6px;">📖 Path Type Legend</div>
+    <div style="line-height: 1.6;">
+      <strong>✓ Happy Path:</strong> Validates AC works as expected under normal conditions &nbsp;|&nbsp;
+      <strong>✗ Negative:</strong> Validates error handling, invalid inputs, permission failures &nbsp;|&nbsp;
+      <strong>⚡ Edge Case:</strong> Validates boundary conditions, bulk operations, timing &nbsp;|&nbsp;
+      <strong>🔒 Security:</strong> Validates access controls, data isolation, FLS/CRUD
+    </div>
+  </div>
+</div>
+
+### 📊 Test Data Matrix
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    {{test_data_narrative}}
+  </p>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Row ID</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Persona</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Profile / Permissions</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Record Context</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Key Conditions</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Notes</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">D1</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{persona_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{profile_permissions_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{record_context_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{key_conditions_1}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{data_notes_1}}</td>
+    </tr>
+    <!-- Add more data rows as needed. Group by: 👤 Happy Path, 📊 Data Variations, ⚠️ Negative Scenarios -->
+  </table>
 </div>
 
 ### 🔴 P1 Critical Path Tests
@@ -473,25 +528,111 @@
     </tr>
     <!-- Add more step rows as needed -->
   </table>
+  <p style="margin: 16px 0 8px 0;"><strong>Verification Checklist:</strong></p>
+  <ul style="margin: 0 0 16px 0; padding-left: 20px; line-height: 1.8;">
+    <li><strong>UI:</strong> {{ui_verification_1}}</li>
+    <li><strong>Data:</strong> {{data_verification_1}}</li>
+    <li><strong>Related Records:</strong> {{related_records_verification_1}}</li>
+  </ul>
+  <div style="background: #e3f2fd; border-left: 4px solid #1565c0; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">🧑‍💻 Developer Validation</div>
+    <div style="line-height: 1.6;">
+      <p style="margin: 0 0 8px 0;"><strong>Unit Test Pattern:</strong> <code>{{unit_test_pattern_1}}</code></p>
+      <p style="margin: 0 0 8px 0;"><strong>Assertions:</strong></p>
+      <ul style="margin: 0 0 8px 0; padding-left: 20px;">
+        <li>{{assertion_1}}</li>
+        <li>{{assertion_2}}</li>
+      </ul>
+      <p style="margin: 0 0 8px 0;"><strong>Mocks Required:</strong> {{mocks_required_1}}</p>
+      <p style="margin: 0;"><strong>Integration Checks:</strong> {{integration_checks_1}}</p>
+    </div>
+  </div>
+  <div style="background: #f3e5f5; border-left: 4px solid #7b1fa2; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 12px;">
+    <div style="font-weight: 600; color: #7b1fa2; margin-bottom: 6px;">🧪 QA Validation</div>
+    <div style="line-height: 1.6;">
+      <p style="margin: 0 0 8px 0;"><strong>Navigation:</strong> {{qa_navigation_1}}</p>
+      <p style="margin: 0 0 8px 0;"><strong>Data Verification Query:</strong></p>
+      <div style="background: #f5f5f5; border: 1px solid #dee2e6; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 12px; margin-bottom: 8px;">{{data_query_1}}</div>
+      <p style="margin: 0 0 8px 0;"><strong>Visual Checkpoints:</strong></p>
+      <ul style="margin: 0 0 8px 0; padding-left: 20px;">
+        <li>{{visual_check_1}}</li>
+        <li>{{visual_check_2}}</li>
+      </ul>
+      <p style="margin: 0;"><strong>Environment Prerequisites:</strong> {{env_prerequisites_1}}</p>
+    </div>
+  </div>
+  <p style="margin: 0 0 8px 0;"><strong>Cleanup:</strong> {{cleanup_steps_1}}</p>
 </div>
 
 ### 🟡 P2 Important Tests
 <div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
 
 <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
-  <table style="width: 100%; border-collapse: collapse;">
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
     <tr style="background: #f8f9fa;">
       <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">ID</td>
       <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Test Scenario</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Path Type</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Covers AC</td>
       <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Expected Outcome</td>
     </tr>
     <tr>
-      <td style="padding: 10px; border: 1px solid #dee2e6;">TC-002</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{p2_test_id}}</td>
       <td style="padding: 10px; border: 1px solid #dee2e6;">{{p2_test_scenario}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{p2_path_type}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{p2_covers_ac}}</td>
       <td style="padding: 10px; border: 1px solid #dee2e6;">{{p2_test_outcome}}</td>
     </tr>
     <!-- Add more P2 test rows as needed -->
   </table>
+  <!-- Repeat the detailed per-test-case format (Objective, Pre-conditions, Step-by-Step table, Verification, Developer Validation, QA Validation, Cleanup) for each P2 test case -->
+</div>
+
+### 🟢 P3 Edge Case & Low-Priority Tests
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <p style="margin: 0 0 16px 0; line-height: 1.6;">
+    These tests cover long-tail edge cases, cosmetic checks, and scenarios already partially covered elsewhere. They are not release blockers but improve overall quality confidence.
+  </p>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">ID</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Test Scenario</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Path Type</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Covers AC</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Expected Outcome</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{p3_test_id}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{p3_test_scenario}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{p3_path_type}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{p3_covers_ac}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{p3_test_outcome}}</td>
+    </tr>
+    <!-- Add more P3 test rows as needed -->
+  </table>
+</div>
+
+### 📋 Test Data Setup Guide
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="font-weight: 600; color: #00796b; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">⚙️ Environment Configuration</div>
+  <ul style="margin: 0 0 16px 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{env_config_1}}</li>
+    <li>{{env_config_2}}</li>
+  </ul>
+  <div style="font-weight: 600; color: #00796b; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">📝 Test Records to Create</div>
+  <ul style="margin: 0 0 16px 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{test_record_1}}</li>
+    <li>{{test_record_2}}</li>
+  </ul>
+  <div style="font-weight: 600; color: #00796b; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">👤 User Setup</div>
+  <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+    <li>{{user_setup_1}}</li>
+    <li>{{user_setup_2}}</li>
+  </ul>
 </div>
 
 ### 🔗 Requirements Traceability Matrix

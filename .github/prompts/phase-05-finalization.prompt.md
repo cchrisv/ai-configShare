@@ -40,6 +40,7 @@ B6 [IO]: Read `.solutioning.solution_design` — components, architecture, quali
 B7 [IO]: Read `.solutioning.traceability` — AC coverage, gaps, orphans
 B8 [IO]: Read `.solutioning.testing` — test cases, ac_coverage_matrix
 B9 [IO]: Read `.wiki.creation_audit` — wiki page path, page_id, url
+B10 [IO]: Read `.solutioning.level_of_effort` — overall_complexity, component_count, risk_surface, uncertainty_flags
 
 ## Step 2 [IO/LOGIC] – Evidence Gathering
 C1 [LOGIC]: **Extract link candidates** from `.research.ado_workitem`:
@@ -52,7 +53,7 @@ C3 [LOGIC]: **Extract WSJF input signals**:
   - **BV**: grooming.classification (effort, risk, priority) + applied_content (user impact, scope)
   - **TC**: research.ado_workitem (deadlines, sprint goals, iteration_path, tags)
   - **RR/OE**: solutioning.option_analysis (pillar scores) + traceability (gaps) + solution_design (quality_bar)
-  - **JD**: grooming.classification (complexity, unknowns) + solutioning.solution_design (components count) + traceability (gaps count)
+  - **JD**: solutioning.level_of_effort (overall_complexity, risk_surface, uncertainty_flags, component_count) + traceability (gaps count)
 
 ## Step 3 [LOGIC] – WSJF Scoring (MANDATORY)
 D1: **Business Value** (Fibonacci 1-20) — cite grooming evidence (user impact, scope, severity)
@@ -61,9 +62,9 @@ D2: **Time Criticality** (Fibonacci 1-20) — cite ADO evidence (deadlines, spri
 D3: **Risk Reduction / Opportunity Enablement** (Fibonacci 1-13) — cite solutioning evidence
   **Guardrail**: RR/OE >= 8 → verify named risk type (Security/Compliance/Data Integrity/Incident Recurrence); if none → add warning
 D4: **Job Duration** (Fibonacci 1-13) — also used as **Story Points**:
-  - Complexity (1-3): from grooming.classification.complexity (Low=1, Medium=2, High=3)
-  - Risk (0-3): +1 per pillar score ≤2 from solutioning; +1 if "High-Risk" tag
-  - Uncertainty (0-3): +1 if unknowns > 0; +1 if traceability.gaps.length > 0
+  - Complexity (1-3): from `solutioning.level_of_effort.overall_complexity` (Simple=1, Medium=2, Complex=3); cross-reference with `grooming.classification.complexity`
+  - Risk (0-3): from `solutioning.level_of_effort.risk_surface` (Low=0, Medium=+1, High=+2); +1 per pillar score ≤2 from solutioning option scores; +1 if "High-Risk" tag
+  - Uncertainty (0-3): from `solutioning.level_of_effort.uncertainty_flags` (+1 per flag, max 3); +1 if traceability.gaps.length > 0
   - Sum → Fibonacci mapping (see `{{template_files.wsjf_scoring}}`)
 D5: **Calculate WSJF** = `(BV + TC + RR/OE) / JD`
 D6: **Derive ADO fields** from WSJF score (see scoring anchors):

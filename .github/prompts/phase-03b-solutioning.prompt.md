@@ -7,6 +7,7 @@ Input: `{{work_item_id}}`
 ## Constraints
 - **Extend over new** – prefer existing components; avoid net-new when platform supports it
 - **Standards-driven** – reference `{{paths.standards}}/` for compliance
+- **No timelines** – do not produce sprint estimates, delivery dates, schedule commitments, or task-level duration estimates. Capture high-level LOE only (component `complexity_estimate` as Simple/Medium/Complex) for Phase 5 WSJF scoring. Story points are derived exclusively in Phase 5 finalization.
 - **Single ADO update** – one `ado_update` call at the end
 - **CLI-only** – per util-base guardrails
 - **Outputs to** {{context_file}}.solutioning.*
@@ -68,10 +69,15 @@ D5 [GEN]: **Quality bar** — define code review, test coverage, performance thr
 E1 [GEN]: **AC traceability** — map every acceptance criterion → component_ids that implement it
 E2 [GEN]: **Gap analysis** — identify ACs not covered by any component; flag as gaps
 E3 [GEN]: **Orphan detection** — identify components not traced to any AC
-E4 [GEN]: **Test cases** — generate for each AC:
+E4 [GEN]: **Test cases** — generate for each AC (test cases define *what* to test, not *when* or *how long*):
   - id, title, path_type (happy_path | negative | edge_case | security)
-  - covers_ac[], priority (P1 | P2 | P3), preconditions, steps, verification_checklist
+  - covers_ac[], priority (P1 | P2 | P3), objective, preconditions, steps, verification_checklist
+  - Do NOT include estimated durations or timeline information in test cases
 E5 [GEN]: **AC coverage matrix** — compute total_ac, fully_covered, partially_covered, not_covered
+E6 [GEN]: **Level of effort summary** — capture high-level LOE signals for Phase 5 WSJF scoring:
+  - overall_complexity (Simple | Medium | Complex) — derived from component count and architecture decisions
+  - risk_surface (Low | Medium | High) — derived from integration points, dependency depth, standards deviations
+  - uncertainty_flags[] — list any unresolved assumptions, traceability gaps, or untested patterns
 
 ## Step 5 [GEN] – Quality Gates
 Run ALL gates before saving:
@@ -131,11 +137,18 @@ Save → {{context_file}}.solutioning:
       ]
     }
   },
+  "level_of_effort": {
+    "overall_complexity": "Simple|Medium|Complex",
+    "component_count": 0,
+    "risk_surface": "Low|Medium|High",
+    "uncertainty_flags": [],
+    "loe_notes": ""
+  },
   "applied_content": {
     "development_summary": "<full generated HTML from field_solution_design template>",
     "technical_notes": "<component list + architecture decisions summary>",
     "sf_components": "<comma-separated SF component names>",
-    "story_points": null,
+    "story_points": null, // ALWAYS null — derived in Phase 5 WSJF scoring from level_of_effort
     "tags": ["existing", "tags", "{{tags.solutioned}}"]
   }
 }
