@@ -30,6 +30,7 @@ All outputs to {{context_file}}.research:
 - similar_workitems (similar_items_found, duplicate_assessment, pattern_analysis)
 - wiki_search (search_results, metadata_references, detective_correlation)
 - business_context (organizational_context, business_rules, detective_cues)
+- team_impact (team_members_file, impacted_roles[], coordination_contacts[], stakeholder_summary)
 - assumptions[] (id, assumption, category, confidence, source, phase_identified)
 - synthesis (unified_truth, conflict_log, swot_analysis, reusable_assets)
 
@@ -101,6 +102,29 @@ A1 [CLI]: `{{cli.sf_query}} "{{soql_query}}" --json` (business)
 A2 [CLI]: `{{cli.sf_query}} "{{tooling_query}}" --tooling --json` (metadata)
 B1 [GEN]: Analyze results; extract business patterns
 B2 [GEN]: Combine with prior streams; generate context summary
+
+---
+
+## Stream 5 [CLI/GEN] – Team & Stakeholder Discovery
+**Goal:** Identify impacted people, roles, and coordination contacts → {{context_file}}.research.team_impact
+
+A1 [CLI]: `{{cli.team_discover}} --salesforce --json`
+A2 [IO]: Parse result → extract members[], summary, SF profiles/roles
+
+**Cross-reference sources** (from prior streams — all must be written to disk first):
+B1 [IO]: Load `.research.organization_dictionary` — department names, role terminology, acronyms
+B2 [IO]: Load `.research.ado_workitem.scrubbed_data` — `business_problem_and_value`, `business_objectives_and_impact`, `sf_components`
+B3 [IO]: Load `.research.ado_workitem.comments` — original submitted request (typically lists impacted departments per requester)
+B4 [IO]: Load `.research.business_context` — organizational context, business rules from SF data
+
+**Analysis:**
+C1 [GEN]: Extract impacted departments/groups from comments (original request) + business_problem_and_value + business_objectives_and_impact
+C2 [GEN]: Match extracted departments/roles against team members using org dictionary terms, SF profiles, and department fields
+C3 [GEN]: Classify impacted_roles[]:
+  - `{ role, profile, impact_type (direct_user | admin | downstream), members[] }`
+C4 [GEN]: Identify coordination_contacts[]:
+  - `{ name, email, title, reason, coordination_type (approver | domain_expert | downstream_owner | tester) }`
+C5 [GEN]: Generate stakeholder_summary — narrative of who is affected and why, sourced from the original request and business context
 
 ---
 

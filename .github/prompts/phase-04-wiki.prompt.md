@@ -46,6 +46,8 @@ B8 [IO]: Read `.solutioning.solution_design` — components, architecture, integ
 B9 [IO]: Read `.solutioning.traceability` — AC mapping, gaps
 B10 [IO]: Read `.solutioning.testing` — test cases, coverage matrix
 B11 [IO]: Read `.solutioning.technical_spec` — markdown technical spec
+B12 [IO]: Read `.research.team_impact` — impacted roles, coordination contacts, stakeholder summary
+B13 [IO]: Read `.research.dependency_discovery.role_impact_analysis` — role-to-component mapping
 
 ## Step 2 [IO] – Load Templates
 C1 [IO]: Load `{{paths.templates}}/{{template_files.wiki_format}}` — formatting standards + narrative guidelines
@@ -63,6 +65,10 @@ D3 [GEN]: **Transform artifacts → wiki markdown** following template structure
   - **Understanding the Request** — from grooming applied_content (description, AC)
   - **Discovery & Research** — from research (wiki_search, salesforce_metadata, web_research)
   - **Investigation Trail** — from research.salesforce_metadata.investigation_trail + assumptions
+  - **Stakeholders & Impact** — from research.team_impact (impacted_roles, coordination_contacts, stakeholder_summary) + dependency_discovery.role_impact_analysis
+    - Impacted roles/profiles table (role, profile, impact type, affected components)
+    - Coordination contacts table (name, title, reason for coordination)
+    - Testing implications by role
   - **Solution Design** — from solutioning (option_analysis, components, architecture)
   - **Decision Rationale** — from solutioning.option_analysis (options, scores, eliminated)
   - **Quality & Validation** — from solutioning.testing (test cases, coverage matrix, test data)
@@ -91,6 +97,7 @@ E2 [IO]: Update {{context_file}}.wiki:
       "understanding_request": true,
       "discovery_research": true,
       "investigation_trail": true,
+      "stakeholders_impact": true,
       "solution_design": true,
       "decision_rationale": true,
       "quality_validation": true

@@ -153,6 +153,7 @@
       "business_context_summary": "05-business-context-summary.md",
       "code_analysis": "06-code-analysis.json",
       "web_research": "07-web-research.json",
+      "team_impact": "08-team-impact.json",
       "research_summary": "research-summary.json",
       "assumptions": "assumptions.json",
       "iteration_state": "research-iteration-state.json"

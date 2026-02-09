@@ -26,6 +26,7 @@ A2 [IO]: Verify {{context_file}}:
   - `.research.ado_workitem` exists (keywords, technical_context)
   - `.research.wiki_search` exists (search results, page content)
   - `.research.synthesis` exists (unified_truth from grooming research)
+  - `.research.team_impact` exists (impacted_roles, coordination_contacts)
   - `.grooming` exists (solutioning_hints from phase-02b)
   - `.metadata.phases_completed` includes `"grooming"`
 A3 [CLI]: Verify SF auth: `{{cli.sf_query}} "SELECT Id FROM Organization LIMIT 1" --json`
@@ -34,7 +35,7 @@ A4: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
 ## Research Schema Extension
 Add to {{context_file}}.research:
 - `salesforce_metadata` — schema (objects, fields, record_types), graph, logic, integration, investigation_trail, pii_stats
-- `dependency_discovery` — usage_tree, dependency_tree, stats, object_describe, high_risk_components, regression_candidates
+- `dependency_discovery` — usage_tree, dependency_tree, stats, object_describe, high_risk_components, regression_candidates, role_impact_analysis
 - `web_research` — search_queries, industry_standards, modernization_opportunities, identified_risks, unknowns
 - Extend existing `synthesis` + `assumptions`
 
@@ -65,6 +66,12 @@ D1 [GEN]: **Impact assessment** — count downstream dependencies per component:
 D2 [GEN]: Categorize components by type (triggers, flows, validation, Apex, platform events)
 D3 [GEN]: Identify circular dependencies, high-risk regression candidates
 D4 [GEN]: Assess cumulative impact — if multiple components change, compound risk
+D5 [GEN]: **Role-based impact mapping** — load `.research.team_impact.impacted_roles[]`:
+  - For each SF profile/role, determine which discovered components they interact with
+  - Flag profiles that need specific regression testing (e.g., a profile that uses a modified flow)
+  - Identify permission/sharing implications if object access patterns change
+  - Output to `dependency_discovery.role_impact_analysis[]`:
+    `{ role, profile, affected_components[], test_coverage_needed, permission_implications }`
 
 ### Standards Comparison
 E1 [IO]: Load relevant standards from `{{paths.standards}}/`:
