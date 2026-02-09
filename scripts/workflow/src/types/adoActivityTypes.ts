@@ -76,10 +76,6 @@ export interface ActivityReportOptions {
   includePullRequests?: boolean;
   /** Output directory for reports */
   outputDir?: string;
-  /** Use fast mode - only scan targeted work items (may miss mentions from others) */
-  fast?: boolean;
-  /** Use full mode - scan all work items for 100% accuracy (slower) */
-  full?: boolean;
 }
 
 /**

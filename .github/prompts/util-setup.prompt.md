@@ -1,30 +1,75 @@
-# Util – Setup (Context7)
-Mission: First-time environment setup and auth validation.
-Config: `#file:config/shared.json` · `#file:README.md`
+# Util – Setup
+Mission: First-time environment setup, authentication, and end-to-end validation.
+Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md` · `#file:README.md`
 
 ## Step 1 [CLI] – Prerequisites
-Verify: `node --version` (v18+) · `npm --version` · `az --version` · `sf --version`
-If missing → install from official sources.
+Verify all required tools are installed:
+- `node --version` → must be v18+
+- `npm --version` → must be present
+- `az --version` → Azure CLI required for ADO auth
+- `sf --version` → Salesforce CLI required for SF auth
+
+If any are missing → install from official sources. **STOP** if Node < 18.
 
 ## Step 2 [CLI] – Install Dependencies
-Run in `{{paths.scripts}}`: `npm install` → `npm run build`
-Verify `dist/` contains compiled .js files.
+A1: Run in `{{paths.scripts}}/`: `npm install`
+A2: Run in `{{paths.scripts}}/`: `npm run build`
+A3: Verify `{{paths.scripts}}/dist/` contains compiled `.js` files
 
-## Step 3 [CLI] – Authenticate ADO
-`az login` → `az account show` → `{{cli.ado_get}} <test-id> --json`
-**Errors:** `AADSTS` → re-auth · `TF401019` → check permissions
+**Errors:** `npm ERR!` → check Node version, delete `node_modules` and retry.
 
-## Step 4 [CLI] – Authenticate Salesforce
-`sf org login web -a production` → `sf org list` → `{{cli.sf_query}} "SELECT Id FROM Account LIMIT 1" --json`
-**Errors:** `No authorization found` → re-run login
+## Step 3 [CLI] – Authenticate & Validate ADO
+B1: `az login` → `az account show` → confirm correct tenant
+B2: **Search** — `{{cli.ado_search}} --text "Journey Pipeline" --type "User Story" --top 5 --json`
+  - Verify results returned (confirms ADO connection + project access)
+B3: **Get** — pick first result ID → `{{cli.ado_get}} <id> --expand Relations --json`
+  - Verify work item fields, relations, and tags are readable
 
-## Step 5 [CLI] – Validate Wiki + Workflow
-`{{cli.wiki_list}} --json`
-`{{cli.workflow_prepare}} -w <test-id> --json` → verify success
-`{{cli.workflow_reset}} -w <test-id> --force --json` (cleanup)
+**Errors:**
+- `AADSTS` → re-run `az login`
+- `TF401019` → check project permissions in ADO
+- `TF401027` → PAT expired, re-authenticate
+- Empty search results → verify `{{ado_defaults.project}}` is correct
+
+## Step 4 [CLI] – Authenticate & Validate Salesforce
+C1: `sf org login web -a {{sf_defaults.default_org}}` → `sf org list` → confirm org alias appears
+C2: **Describe** — `{{cli.sf_describe}} Journey_Pipeline__c --fields-only --json`
+  - Verify object metadata is returned (confirms SF connection + object access)
+C3: **Query** — `{{cli.sf_query}} "SELECT Id, Name, Stage_Primary__c FROM Journey_Pipeline__c LIMIT 5" --json`
+  - Verify records returned (confirms data access)
+
+**Errors:**
+- `No authorization found` → re-run `sf org login web`
+- `INVALID_TYPE` → check object API name and org permissions
+- `INVALID_FIELD` → check field-level security for the connected user
+
+## Step 5 [CLI] – Validate Wiki Access
+D1: **Search** — `{{cli.wiki_search}} "Journey Pipeline" --json`
+  - Verify wiki search returns results (confirms wiki connection)
+D2: **Read** — pick first result path → `{{cli.wiki_get}} --path "<page_path>" --json`
+  - Verify page content is returned (confirms read access)
+D3: **List** — `{{cli.wiki_list}} --path "/" --json`
+  - Verify top-level wiki structure is readable
+
+**Errors:**
+- `404 WikiPageNotFoundException` → verify `{{ado_defaults.wiki}}` name is correct
+- `403` → check wiki permissions for the authenticated user
+
+## Step 6 [CLI] – Validate Workflow Tools
+E1: `{{cli.workflow_status}} -w 217045 --json` → verify status output (uses existing test work item)
+
+**Errors:**
+- `Cannot find module` → re-run `npm run build` in `{{paths.scripts}}/`
+- `ENOENT` → verify `{{paths.artifacts_root}}/` directory exists
 
 ## Complete
-Next → `/phase-01-initialize` with work item ID, then `/phase-02a-grooming-research`.
+All tools authenticated and validated. Report results:
 
-## Context7 Note
-All phases use unified ticket-context.json instead of separate artifacts.
+| Tool | Status | Evidence |
+|------|--------|----------|
+| ADO | ✅/❌ | Search returned N results, work item #ID readable |
+| Salesforce | ✅/❌ | Journey_Pipeline__c described, N records returned |
+| Wiki | ✅/❌ | Search returned N results, page readable |
+| Workflow | ✅/❌ | Status check succeeded |
+
+Next → `/phase-01-initialize` with a work item ID, then `/phase-02a-grooming-research`.

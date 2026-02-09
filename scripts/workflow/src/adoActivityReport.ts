@@ -382,77 +382,6 @@ export async function fetchHybridWorkItems(
 }
 
 /**
- * Fetch work items related to specific people (FAST approach - targeted only)
- * Uses targeted WIQL queries instead of scanning all work items
- * Does NOT include mentions from others
- */
-async function fetchTargetedWorkItems(
-  conn: AdoConnection,
-  targets: ActivityTarget[],
-  days: number
-): Promise<Array<{ id: number; fields: Record<string, unknown> }>> {
-  const witApi = await conn.getWorkItemTrackingApi();
-  
-  logInfo(`Fetching work items for ${targets.length} people in last ${days} days...`);
-  
-  const allIds = new Set<number>();
-  
-  for (const target of targets) {
-    // Query 1: Work items CHANGED BY the person
-    const changedByQuery = `SELECT [System.Id] FROM WorkItems WHERE [System.ChangedBy] = '${target.name}' AND [System.ChangedDate] >= @Today - ${days}`;
-    const changedByIds = await queryWorkItemIds(conn, changedByQuery);
-    logInfo(`  ${target.name}: ${changedByIds.length} items changed by`);
-    changedByIds.forEach(id => allIds.add(id));
-    
-    // Query 2: Work items ASSIGNED TO the person
-    const assignedToQuery = `SELECT [System.Id] FROM WorkItems WHERE [System.AssignedTo] = '${target.name}' AND [System.ChangedDate] >= @Today - ${days}`;
-    const assignedToIds = await queryWorkItemIds(conn, assignedToQuery);
-    logInfo(`  ${target.name}: ${assignedToIds.length} items assigned to`);
-    assignedToIds.forEach(id => allIds.add(id));
-    
-    // Query 3: Work items CREATED BY the person
-    const createdByQuery = `SELECT [System.Id] FROM WorkItems WHERE [System.CreatedBy] = '${target.name}' AND [System.CreatedDate] >= @Today - ${days}`;
-    const createdByIds = await queryWorkItemIds(conn, createdByQuery);
-    logInfo(`  ${target.name}: ${createdByIds.length} items created by`);
-    createdByIds.forEach(id => allIds.add(id));
-  }
-  
-  const uniqueIds = Array.from(allIds);
-  logInfo(`Total unique work items to process: ${uniqueIds.length}`);
-  
-  if (uniqueIds.length === 0) {
-    return [];
-  }
-  
-  // Fetch full details in batches of 200
-  const allItems: Array<{ id: number; fields: Record<string, unknown> }> = [];
-  const batchSize = 200;
-  
-  for (let i = 0; i < uniqueIds.length; i += batchSize) {
-    const batchIds = uniqueIds.slice(i, i + batchSize);
-    const items = await witApi.getWorkItems(
-      batchIds,
-      ['System.Id', 'System.Title', 'System.WorkItemType', 'System.State', 'System.AreaPath'],
-      undefined,
-      undefined,
-      undefined,
-      conn.project
-    );
-    
-    if (items) {
-      allItems.push(...items.map(item => ({
-        id: item.id!,
-        fields: item.fields as Record<string, unknown>
-      })));
-    }
-    
-    logDebug(`Fetched ${allItems.length}/${uniqueIds.length} work items...`);
-  }
-  
-  return allItems;
-}
-
-/**
  * Fetch work items updated in the last N days (complete scan)
  * Uses aggressive parallel batch fetching for speed
  */
@@ -1082,8 +1011,7 @@ async function fetchPRActivities(
 /**
  * Generate activity report for specified users
  * 
- * By default, scans ALL work items to catch all mentions (like Python).
- * Use fast=true to only scan targeted work items (faster but may miss mentions from others).
+ * Scans ALL work items to catch all mentions for 100% accuracy.
  */
 export async function generateActivityReport(
   options: ActivityReportOptions
@@ -1092,8 +1020,6 @@ export async function generateActivityReport(
     people, 
     days, 
     outputDir = 'reports',
-    fast = false,
-    full: _full = false,
     includeWiki = true,
     includePullRequests = true,
   } = options;
@@ -1111,20 +1037,7 @@ export async function generateActivityReport(
   const startTime = Date.now();
   logInfo(`Generating activity report for ${people.length} people, last ${days} days`);
   
-  // Determine mode - FULL is default for 100% accuracy
-  let mode: 'fast' | 'hybrid' | 'full';
-  if (fast) {
-    mode = 'fast';
-  } else {
-    mode = 'full'; // Default: 100% accuracy
-  }
-  
-  const modeDescriptions = {
-    fast: 'FAST (targeted only, ~20s, ~45% coverage)',
-    hybrid: 'HYBRID (targeted + search, ~50s, ~90% coverage)',
-    full: 'FULL (comprehensive scan, ~5min, 100% coverage)',
-  };
-  logInfo(`Mode: ${modeDescriptions[mode]}`);
+  logInfo(`Mode: FULL (comprehensive scan, 100% coverage)`);
   
   for (const p of people) {
     logInfo(`  - ${p.name} (${p.email})`);
@@ -1141,13 +1054,7 @@ export async function generateActivityReport(
   // Fetch work items based on mode
   let workItems: Array<{ id: number; fields: Record<string, unknown> }>;
   
-  if (mode === 'fast') {
-    // Fast mode: only scan work items the person directly touched (no mentions from others)
-    workItems = await fetchTargetedWorkItems(conn, people, days);
-  } else {
-    // Full mode: scan ALL work items for 100% accuracy
-    workItems = await fetchRecentWorkItems(conn, days);
-  }
+  workItems = await fetchRecentWorkItems(conn, days);
 
   // Initialize activities by target
   const activitiesByTarget: Record<string, ActivityRecord[]> = {};
@@ -1157,7 +1064,7 @@ export async function generateActivityReport(
   
   // Run work item processing, wiki, and PR fetching in PARALLEL for maximum speed
   // Use very high concurrency - accept some rate limit errors for speed
-  const concurrency = mode === 'fast' ? 100 : 150;
+  const concurrency = 150;
   
   // Create promises for all three types of activities
   const workItemPromise = workItems.length > 0 
@@ -1236,7 +1143,7 @@ export async function generateActivityReport(
   logInfo('         ACTIVITY REPORT SUMMARY        ');
   logInfo('========================================');
   logInfo(`Date Range: ${cutoffDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`);
-  logInfo(`Mode: ${modeDescriptions[mode]}`);
+  logInfo(`Mode: FULL (comprehensive scan, 100% coverage)`);
   logInfo('');
   logInfo('--- Sources ---');
   logInfo(`  Work Items: ${workItemCount} activities`);

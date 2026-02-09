@@ -51,7 +51,8 @@
     "workflow_prepare": "npx --prefix scripts/workflow workflow-tools prepare",
     "workflow_status": "npx --prefix scripts/workflow workflow-tools status",
     "workflow_reset": "npx --prefix scripts/workflow workflow-tools reset",
-    "report_activity": "npx --prefix scripts/workflow report-tools activity"
+    "report_activity": "npx --prefix scripts/workflow report-tools activity",
+    "team_discover": "npx --prefix scripts/workflow team-tools discover"
   },
   "work_item_types": {
     "user_story": "User Story",

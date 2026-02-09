@@ -30,7 +30,6 @@ program
   .option('-o, --output <dir>', 'Output directory for reports', '.ai-artifacts/reports')
   .option('--no-wiki', 'Exclude wiki activities')
   .option('--no-prs', 'Exclude pull request activities')
-  .option('--fast', 'Fast mode (~20s) - only direct activity, may miss mentions from others')
   .option('--json', 'Output result as JSON (suppresses progress output)')
   .option('-q, --quiet', 'Quiet mode - minimal output')
   .option('-v, --verbose', 'Verbose output with debug information')
@@ -71,7 +70,6 @@ program
         outputDir: options.output,
         includeWiki: options.wiki !== false,
         includePullRequests: options.prs !== false,
-        fast: options.fast,
       });
 
       if (options.json) {
@@ -130,12 +128,7 @@ program.addHelpText('after', `
 Examples:
   $ report-tools activity --people "John Doe|john.doe@company.com" --days 30
   $ report-tools activity --people "John Doe|john@co.com" "Jane Doe|jane@co.com" --days 7
-  $ report-tools activity --people "John Doe|john@co.com" --fast
   $ report-tools activity --people "John Doe|john@co.com" --json > report.json
-
-Modes:
-  Default (no flag)  Full scan, ~5min, 100% accuracy - scans all work items
-  --fast             Fast mode, ~20s, ~45% accuracy - only direct activity
 
 Output:
   CSV file with columns: Date, WorkItemId, PRNumber, WorkItemType, State,

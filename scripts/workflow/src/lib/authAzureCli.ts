@@ -123,8 +123,65 @@ export interface AzureAccountInfo {
 }
 
 /**
+ * Cache for Microsoft Graph bearer tokens
+ */
+let graphTokenCache: TokenCache | null = null;
+
+const GRAPH_RESOURCE_ID = 'https://graph.microsoft.com';
+
+/**
+ * Get a bearer token for Microsoft Graph using Azure CLI
+ * 
+ * @returns Bearer token string
+ * @throws Error if Azure CLI is not authenticated
+ */
+export function getGraphBearerToken(): string {
+  // Check cache first
+  if (graphTokenCache && Date.now() < graphTokenCache.expiresAt - TOKEN_EXPIRY_BUFFER_MS) {
+    return graphTokenCache.token;
+  }
+
+  try {
+    const result = execSync(
+      `az account get-access-token --resource ${GRAPH_RESOURCE_ID} --query "{token:accessToken,expiresOn:expiresOn}" -o json`,
+      { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }
+    );
+
+    const parsed = JSON.parse(result) as { token: string; expiresOn: string };
+    const expiresAt = new Date(parsed.expiresOn).getTime();
+
+    graphTokenCache = {
+      token: parsed.token,
+      expiresAt,
+    };
+
+    return parsed.token;
+  } catch (error) {
+    graphTokenCache = null;
+
+    if (error instanceof Error) {
+      if (error.message.includes('az: command not found') || 
+          error.message.includes('is not recognized')) {
+        throw new Error(
+          'Azure CLI is not installed. Please install it from: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli'
+        );
+      }
+      if (error.message.includes('AADSTS') || 
+          error.message.includes('Please run')) {
+        throw new Error(
+          'Azure CLI is not authenticated. Please run: az login'
+        );
+      }
+      throw new Error(`Failed to get Microsoft Graph bearer token: ${error.message}`);
+    }
+    throw error;
+  }
+}
+
+/**
  * Clear the token cache (useful for testing or forced refresh)
  */
 export function clearTokenCache(): void {
   tokenCache = null;
+  graphTokenCache = null;
 }

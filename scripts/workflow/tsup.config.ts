@@ -22,6 +22,7 @@ export default defineConfig([
       'cli/wiki-tools': 'cli/wiki-tools.ts',
       'cli/workflow-tools': 'cli/workflow-tools.ts',
       'cli/report-tools': 'cli/report-tools.ts',
+      'cli/team-tools': 'cli/team-tools.ts',
     },
     format: ['esm'],
     sourcemap: true,
