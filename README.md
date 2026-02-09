@@ -48,33 +48,21 @@ Supporting/shared: `util-base.prompt.md`, `util-research-base.prompt.md`
 
 ### Phase Prompts
 
-| # | Phase | Prompt | Purpose |
-|---|-------|--------|----------|
-| 01 | Initialize | `phase-01-initialize.prompt.md` | Create artifact folder structure |
-| 02a | Grooming Research | `phase-02a-grooming-research.prompt.md` | Business research (org dictionary, ADO, wiki, business context) |
-| 02b | Grooming | `phase-02b-grooming.prompt.md` | Requirements refinement (what & why) |
-| 02c | Grooming Update | `phase-02c-grooming-update.prompt.md` | Iterative requirements/scope updates (standalone) |
-| 03a | Solutioning Research | `phase-03a-solutioning-research.prompt.md` | Technical research (Salesforce metadata, web best practices) |
-| 03b | Solutioning | `phase-03b-solutioning.prompt.md` | Solution design (how) |
-| 03c | Solutioning Update | `phase-03c-solutioning-update.prompt.md` | Iterative solution design updates (standalone) |
-| 04 | Wiki | `phase-04-wiki.prompt.md` | Wiki documentation creation |
-| 05 | Finalization | `phase-05-finalization.prompt.md` | Final validation and ADO update |
-| 06 | Dev Closeout | `phase-06-dev-closeout.prompt.md` | Full closeout: planned vs actual, release notes, ADO + wiki |
-| -- | Feature Solution Design | `util-feature-solution-design.prompt.md` | Aggregate child work items into solution design document and wiki page |
+- `phase-01-initialize.prompt.md` - Create artifact folder structure and initialize workflow
+- `phase-02a-grooming-research.prompt.md` - Business research (org dictionary, ADO, wiki, business context)
+- `phase-02b-grooming.prompt.md` - Requirements refinement (what & why)
+- `phase-02c-grooming-update.prompt.md` - Iterative requirements/scope updates (standalone)
+- `phase-03a-solutioning-research.prompt.md` - Technical research (Salesforce metadata, web best practices)
+- `phase-03b-solutioning.prompt.md` - Solution design (how)
+- `phase-03c-solutioning-update.prompt.md` - Iterative solution design updates (standalone)
+- `phase-04-wiki.prompt.md` - Wiki documentation creation
+- `phase-05-finalization.prompt.md` - Final validation and ADO update
+- `phase-06-dev-closeout.prompt.md` - Full closeout: planned vs actual, release notes, ADO + wiki
+- `util-feature-solution-design.prompt.md` - Aggregate child work items into solution design document and wiki page (Feature or Epic level)
 
 Use `util-repeat-phase.prompt.md` to re-run any individual phase.
 
-#### Update Phases (02c, 03c)
-
-Phases 02c and 03c are designed to run **standalone** — they do not require local artifact files from prior phases. They fetch the current ticket and wiki directly from ADO and gather evidence from pull requests, Salesforce audit trail, and metadata.
-
-- **Phase 02c (What & Why):** Updates Description, Acceptance Criteria, Tags, and classification. Enforces requirements-only content.
-- **Phase 03c (How):** Updates DevelopmentSummary and SFComponents. Enforces solution-only content.
-- **Phase 06 (Closeout):** Reconciles planned vs. actual, resolves all assumptions/unknowns, generates release notes, updates wiki, tags with `Dev-Complete`.
-
-#### Feature / Epic-Level
-
-- **Feature Solution Design** (`util-feature-solution-design`): Run at the Feature or Epic level. Supports Feature (1-level) and Epic (2-level) hierarchies. Aggregates child work item data into a solution design document and wiki page.
+**Standalone phases:** 02c, 03c, and 06 run independently -- they fetch the current ticket and wiki directly from ADO and do not require local artifacts from prior phases. Phase 02c updates requirements (what & why), 03c updates solution design (how), and 06 reconciles planned vs actual with release notes.
 
 ## CLI Tools
 
