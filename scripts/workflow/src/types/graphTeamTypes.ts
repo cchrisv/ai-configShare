@@ -82,6 +82,19 @@ export interface TeamMember {
     profile?: string;
     role?: string;
     umgcDepartment?: string;
+    lastLoginDate?: string;
+    createdDate?: string;
+    alias?: string;
+    departmentLicense?: string;
+    sfDepartment?: string;
+    /** Success Team memberships from Success_Team_Member__c */
+    teams?: {
+      teamName: string;
+      departmentName: string;
+      type: string;
+      title: string;
+      totalHours: number;
+    }[];
   };
 }
 

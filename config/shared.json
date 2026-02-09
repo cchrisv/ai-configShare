@@ -92,7 +92,27 @@
     "root_cause_detail": "Custom.RootCauseDetail",
     "business_problem_and_value": "Custom.BusinessProblemandValueStatement",
     "business_objectives_and_impact": "Custom.BusinessObjectivesandImpact",
-    "release_notes": "Custom.ReleaseNotes"
+    "release_notes": "Custom.ReleaseNotes",
+    "progress": "Custom.Progress",
+    "planned_work": "Custom.PlannedWork",
+    "blockers": "Custom.Blockers"
+  },
+  "flow_health": {
+    "description": "Accelerated flow health thresholds (50% faster than traditional timelines)",
+    "warning_days": 3,
+    "critical_days": 7,
+    "escalation_days": 10,
+    "churn_reassignments": 2,
+    "churn_window_days": 5,
+    "silent_days": 5,
+    "cascade_complete_percent": 70,
+    "severity_indicators": {
+      "warning": "⚠️",
+      "critical": "🔴",
+      "escalation": "🚨",
+      "attention": "🟡",
+      "cleared": "✅"
+    }
   },
   "tags": {
     "refined": "AI-Refined",

@@ -42,6 +42,7 @@ Runtime artifacts are stored in `.ai-artifacts/<work_item_id>/` (research, groom
 - `util-apply-template.prompt.md` - Re-apply rich HTML templates to an ADO work item or wiki page (formatting only, no content changes). Supports User Story, Bug, and Feature types, plus three wiki page types (work item, feature solution design, general).
 - `util-sequence-tickets.prompt.md` - Analyze dependencies among child work items under a Feature or Epic, recommend execution order, and create predecessor/successor links in ADO
 - `util-team-members.prompt.md` - Discover team members from Microsoft Graph (Azure AD / Entra ID) org hierarchy
+- `util-update-feature-progress.prompt.md` - Analyze a Feature's descendant work items and update its Progress, Planned Work, and Blockers fields with evidence-based HTML using flow health detection (stalled work, assignment churn, silent work, cascade risks)
 
 Supporting/shared: `util-base.prompt.md`, `util-research-base.prompt.md`
 

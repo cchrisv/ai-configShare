@@ -34,6 +34,7 @@ Schema: `#file:config/templates/ticket-context-schema.json`
 | Sequence tickets | `#file:.github/prompts/util-sequence-tickets.prompt.md` |
 | Activity report | `#file:.github/prompts/util-activity-report.prompt.md` |
 | Team members | `#file:.github/prompts/util-team-members.prompt.md` |
+| Update feature progress | `#file:.github/prompts/util-update-feature-progress.prompt.md` |
 | Re-run phase | `#file:.github/prompts/util-repeat-phase.prompt.md` |
 | Help | `#file:.github/prompts/util-help.prompt.md` |
 | Setup | `#file:.github/prompts/util-setup.prompt.md` |
@@ -43,7 +44,7 @@ Schema: `#file:config/templates/ticket-context-schema.json`
 **Solutioning (03):** 03a research → 03b solutioning → 03c update (iterative)
 **Completion:** 04 wiki → 05 finalization → 06 dev closeout
 **Feature/Epic:** `util-feature-solution-design` — aggregate children into solution design
-**Utilities:** `util-apply-template` · `util-sequence-tickets` · `util-activity-report` · `util-team-members` · `util-repeat-phase` · `util-help` · `util-setup`
+**Utilities:** `util-apply-template` · `util-sequence-tickets` · `util-activity-report` · `util-team-members` · `util-update-feature-progress` · `util-repeat-phase` · `util-help` · `util-setup`
 
 ## Folder Structure
 `.github/prompts/` — prompt definitions · `config/shared.json` — master config · `config/templates/` — ADO field + wiki HTML templates · `config/standards/` — dev standards · `scripts/workflow/` — TypeScript CLI tools
@@ -112,8 +113,9 @@ Reset sections: `research`, `grooming`, `solutioning`, `wiki`, `finalization`, `
 Options: `-d` days (default 30) · `-o` output dir · `--no-wiki` · `--no-prs` · `--fast` · `-q` quiet · `-v` verbose
 
 ### team-tools
-`{{cli.team_discover}} [--leader <email>] [--department] [--csv] [--markdown] [-o <dir>] --json`
-Options: `-l, --leader <email>` root tree at leader (team-centric, deterministic) · `-d, --department` include department · `--csv` export CSV · `--markdown` export Markdown with Mermaid org chart · `-o` output dir · `-q` quiet · `-v` verbose
+`{{cli.team_discover}} [--leader <email>] [--department] [--salesforce] [--markdown] [-o <dir>] --json`
+Options: `-l, --leader <email>` root tree at leader (team-centric, deterministic) · `-d, --department` include department · `-s, --salesforce` enrich with SF User data (Profile, Role, Username, FederationId, UMUC_Department__c) · `--markdown` export Markdown with Mermaid org chart · `-o` output dir · `-q` quiet · `-v` verbose
+Output: CSV + JSON always generated to `{{paths.reports}}`. Service accounts and disabled users filtered automatically.
 
 ## Extending
 **New CLI command:** add to `scripts/workflow/cli/{tool}-tools.ts` → register in `shared.json` `cli_commands` → `npm run build`

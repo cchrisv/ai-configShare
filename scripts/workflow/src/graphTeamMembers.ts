@@ -130,26 +130,48 @@ interface SfUserRecord {
   FederationIdentifier: string | null;
   Profile: { Name: string } | null;
   UserRole: { Name: string } | null;
-  umgc_department__c: string | null;
+  UMUC_Department__c: string | null;
   IsActive: boolean;
+  LastLoginDate: string | null;
+  CreatedDate: string | null;
+  Alias: string | null;
+  Department_License__c: string | null;
+  Department: string | null;
+}
+
+/**
+ * Success_Team_Member__c record shape — team membership junction
+ */
+interface SfTeamMemberRecord {
+  User__r: { Email: string } | null;
+  Success_Team__r: {
+    Name: string;
+    Department__r: { Name: string } | null;
+    Type__c: string | null;
+  } | null;
+  Title__c: string | null;
+  Active__c: boolean;
+  Total_Hours__c: number | null;
 }
 
 /**
  * Enrich team members with Salesforce user data.
- * Queries SF User by email in batches (SOQL IN clause max ~200 per query).
+ * Runs two query sets in batches:
+ *   1. User object — profile, role, login, license, etc.
+ *   2. Success_Team_Member__c — team assignments with department/title/hours
  */
 async function enrichWithSalesforce(members: TeamMember[]): Promise<void> {
   const BATCH_SIZE = 150; // stay under SOQL limits
   const emails = members.map((m) => m.email.toLowerCase()).filter(Boolean);
   if (emails.length === 0) return;
 
-  // Build lookup map: lowercase email → SF user record
+  // ── Query 1: User records ──
   const sfMap = new Map<string, SfUserRecord>();
 
   for (let i = 0; i < emails.length; i += BATCH_SIZE) {
     const batch = emails.slice(i, i + BATCH_SIZE);
     const inClause = batch.map((e) => `'${e.replace(/'/g, "\\'")}'`).join(',');
-    const soql = `SELECT Email, Username, FederationIdentifier, Profile.Name, UserRole.Name, umgc_department__c, IsActive FROM User WHERE Email IN (${inClause})`;
+    const soql = `SELECT Email, Username, FederationIdentifier, Profile.Name, UserRole.Name, UMUC_Department__c, IsActive, LastLoginDate, CreatedDate, Alias, Department_License__c, Department FROM User WHERE Email IN (${inClause})`;
 
     try {
       const result = await executeSoqlQuery<SfUserRecord>(soql);
@@ -157,15 +179,52 @@ async function enrichWithSalesforce(members: TeamMember[]): Promise<void> {
         if (rec.Email) sfMap.set(rec.Email.toLowerCase(), rec);
       }
     } catch (error) {
-      logInfo(`  Warning: Salesforce query batch failed — ${error instanceof Error ? error.message : String(error)}`);
+      logInfo(`  Warning: Salesforce User query batch failed — ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   logInfo(`  Matched ${sfMap.size} of ${members.length} team members in Salesforce`);
 
-  // Enrich each member
+  // ── Query 2: Success Team memberships ──
+  type TeamEntry = { teamName: string; departmentName: string; type: string; title: string; totalHours: number };
+  const teamMap = new Map<string, TeamEntry[]>();
+
+  for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+    const batch = emails.slice(i, i + BATCH_SIZE);
+    const inClause = batch.map((e) => `'${e.replace(/'/g, "\\'")}'`).join(',');
+    const soql = `SELECT User__r.Email, Success_Team__r.Name, Success_Team__r.Department__r.Name, Success_Team__r.Type__c, Title__c, Active__c, Total_Hours__c FROM Success_Team_Member__c WHERE User__r.Email IN (${inClause}) AND Active__c = true`;
+
+    try {
+      const result = await executeSoqlQuery<SfTeamMemberRecord>(soql);
+      for (const rec of result.records) {
+        const email = rec.User__r?.Email?.toLowerCase();
+        if (!email) continue;
+        const entry: TeamEntry = {
+          teamName: rec.Success_Team__r?.Name ?? '',
+          departmentName: rec.Success_Team__r?.Department__r?.Name ?? '',
+          type: rec.Success_Team__r?.Type__c ?? '',
+          title: rec.Title__c ?? '',
+          totalHours: rec.Total_Hours__c ?? 0,
+        };
+        const existing = teamMap.get(email);
+        if (existing) existing.push(entry);
+        else teamMap.set(email, [entry]);
+      }
+    } catch (error) {
+      logInfo(`  Warning: Salesforce team membership query batch failed — ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  const teamMemberCount = teamMap.size;
+  if (teamMemberCount > 0) {
+    logInfo(`  Matched ${teamMemberCount} team memberships in Success_Team_Member__c`);
+  }
+
+  // ── Merge into members ──
   for (const m of members) {
-    const sfUser = sfMap.get(m.email.toLowerCase());
+    const key = m.email.toLowerCase();
+    const sfUser = sfMap.get(key);
+    const teams = teamMap.get(key);
     if (sfUser) {
       m.salesforce = {
         isSalesforceUser: true,
@@ -173,7 +232,13 @@ async function enrichWithSalesforce(members: TeamMember[]): Promise<void> {
         federationId: sfUser.FederationIdentifier ?? undefined,
         profile: sfUser.Profile?.Name ?? undefined,
         role: sfUser.UserRole?.Name ?? undefined,
-        umgcDepartment: sfUser.umgc_department__c ?? undefined,
+        umgcDepartment: sfUser.UMUC_Department__c ?? undefined,
+        lastLoginDate: sfUser.LastLoginDate ?? undefined,
+        createdDate: sfUser.CreatedDate ?? undefined,
+        alias: sfUser.Alias ?? undefined,
+        departmentLicense: sfUser.Department_License__c ?? undefined,
+        sfDepartment: sfUser.Department ?? undefined,
+        teams: teams ?? undefined,
       };
     } else {
       m.salesforce = { isSalesforceUser: false };
@@ -251,7 +316,7 @@ function writeCsv(members: TeamMember[], outputDir: string, timestamp: string): 
   const filepath = join(outputDir, `team-members-${timestamp}.csv`);
   const hasSf = members.some((m) => m.salesforce);
   const baseCols = 'Name,Title,Email,Manager,ManagerEmail,Department,Relationship';
-  const sfCols = 'SF_User,SF_Username,SF_FederationId,SF_Profile,SF_Role,SF_Department';
+  const sfCols = 'SF_User,SF_Username,SF_FederationId,SF_Profile,SF_Role,SF_UMUC_Dept,SF_Dept,SF_License,SF_Alias,SF_LastLogin,SF_Created,SF_Teams';
   const header = hasSf ? `${baseCols},${sfCols}` : baseCols;
   const esc = (s: string) => s.replace(/"/g, '""');
   const rows = members.map((m) => {
@@ -266,6 +331,7 @@ function writeCsv(members: TeamMember[], outputDir: string, timestamp: string): 
     ];
     if (hasSf) {
       const sf = m.salesforce;
+      const teamNames = sf?.teams?.map((t) => `${t.departmentName} > ${t.teamName}`).join('; ') ?? '';
       base.push(
         sf?.isSalesforceUser ? 'Yes' : 'No',
         `"${esc(sf?.username ?? '')}"`,
@@ -273,6 +339,12 @@ function writeCsv(members: TeamMember[], outputDir: string, timestamp: string): 
         `"${esc(sf?.profile ?? '')}"`,
         `"${esc(sf?.role ?? '')}"`,
         `"${esc(sf?.umgcDepartment ?? '')}"`,
+        `"${esc(sf?.sfDepartment ?? '')}"`,
+        `"${esc(sf?.departmentLicense ?? '')}"`,
+        `"${esc(sf?.alias ?? '')}"`,
+        `"${esc(sf?.lastLoginDate ?? '')}"`,
+        `"${esc(sf?.createdDate ?? '')}"`,
+        `"${esc(teamNames)}"`,
       );
     }
     return base.join(',');

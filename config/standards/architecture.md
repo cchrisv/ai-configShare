@@ -39,7 +39,7 @@ project-root/
 
 Single source of truth for paths, CLI commands, field mappings, tags, templates, artifacts. Read-only by prompts/CLI.
 
-**Key sections:** `version` · `project` · `ado_defaults` · `sf_defaults` · `paths` (directory paths) · `cli_commands` (27 CLI strings) · `work_item_types` · `field_paths` (24 ADO field mappings) · `tags` (9 workflow tags) · `template_files` (33 templates) · `artifact_files` (per-phase filenames) · `retry_settings` · `logging`
+**Key sections:** `version` · `project` · `ado_defaults` · `sf_defaults` · `paths` (directory paths) · `cli_commands` (27 CLI strings) · `work_item_types` · `field_paths` (27 ADO field mappings) · `flow_health` (stalled work thresholds, severity indicators) · `tags` (9 workflow tags) · `template_files` (33 templates) · `artifact_files` (per-phase filenames) · `retry_settings` · `logging`
 
 **Prompt consumption:** `#file:config/shared.json` → template variables:
 
@@ -51,6 +51,7 @@ Single source of truth for paths, CLI commands, field mappings, tags, templates,
 | `{{field_paths.<key>}}` | `{{field_paths.title}}` → `System.Title` |
 | `{{tags.<key>}}` | `{{tags.refined}}` → `AI-Refined` |
 | `{{template_files.<key>}}` | `{{template_files.wiki_page_template}}` → `wiki-page-template.html` |
+| `{{flow_health.<key>}}` | `{{flow_health.warning_days}}` → `3` |
 
 Composite: `{{paths.artifacts_root}}/{{work_item_id}}/research/{{artifact_files.research.ado_workitem}}`
 
@@ -79,7 +80,7 @@ Composite: `{{paths.artifacts_root}}/{{work_item_id}}/research/{{artifact_files.
 
 **Content separation:** What/Why (02b, 02c) → Description, Acceptance Criteria · How (03b, 03c) → DevelopmentSummary, SFComponents. Never cross-write.
 
-**Utilities:** `util-base` (shared vars, guardrails) · `util-research-base` (research schema) · `util-help` · `util-repeat-phase` · `util-feature-solution-design` (Feature/Epic aggregation) · `util-reformat-ticket` · `util-sequence-tickets`
+**Utilities:** `util-base` (shared vars, guardrails) · `util-research-base` (research schema) · `util-help` · `util-repeat-phase` · `util-feature-solution-design` (Feature/Epic aggregation) · `util-reformat-ticket` · `util-sequence-tickets` · `util-update-feature-progress` (Feature flow health + progress fields)
 
 **Run state** (`run-state.json`): `workItemId`, `currentPhase`, `completedSteps[]` (phase, step, completedAt, artifact), `errors[]`. Updated after each phase. Read via `workflow-tools status`, reset via `workflow-tools reset`.
 
