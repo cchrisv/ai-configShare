@@ -43,6 +43,7 @@ Runtime artifacts are stored in `.ai-artifacts/<work_item_id>/` (research, groom
 - `util-sequence-tickets.prompt.md` - Analyze dependencies among child work items under a Feature or Epic, recommend execution order, and create predecessor/successor links in ADO
 - `util-team-members.prompt.md` - Discover team members from Microsoft Graph (Azure AD / Entra ID) org hierarchy
 - `util-update-feature-progress.prompt.md` - Analyze a Feature's descendant work items and update its Progress, Planned Work, and Blockers fields with evidence-based HTML using flow health detection (stalled work, assignment churn, silent work, cascade risks)
+- `util-morning-checkin.prompt.md` - Generate narrative-rich content for the Teams Updates app Morning Check-In. Queries ADO activity for the previous day, runs a health check on assigned work (stalled, silent, aging New items), asks standup questions (priorities via ticket IDs, blockers, flags), enriches with ADO context, and outputs copy-paste-ready text for 3 form fields
 
 Supporting/shared: `util-base.prompt.md`, `util-research-base.prompt.md`
 
