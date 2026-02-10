@@ -11,6 +11,7 @@ Load `#file:config/shared.json`. Extract: `paths.*` · `cli_commands.*` (use as 
 4. **Config read-only** – NEVER modify shared.json or CLI scripts unless asked
 5. **Load config first** – always load shared.json before execution
 6. **Context7 only** – ALWAYS use {{root}}/ticket-context.json; NO separate artifacts
+7. **Template-verbatim HTML** – COPY template HTML from `{{paths.templates}}/` exactly; ONLY replace `{{variable}}` tokens. NEVER generate ad-hoc HTML.
 
 ## Step Types
 `[IO]` file read/write · `[CLI]` tool execution · `[API]` remote API · `[LOGIC]` conditional · `[GEN]` AI reasoning

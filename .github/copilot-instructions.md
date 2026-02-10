@@ -14,6 +14,7 @@ Schema: `#file:config/templates/ticket-context-schema.json`
 4. **Config read-only** – never modify shared.json unless asked
 5. **No comments** – never post to work items unless requested
 6. **Context7 only** – ALWAYS use {{root}}/ticket-context.json; NEVER separate artifacts
+7. **Template-verbatim HTML** – when generating HTML for any ADO field with a template in `config/templates/`, COPY the template file character-for-character and ONLY replace `{{variable}}` tokens. NEVER write HTML tags or CSS from memory. Omit entire repeatable blocks when no data exists.
 
 ## Entry Points
 

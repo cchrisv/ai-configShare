@@ -8,7 +8,7 @@ Input: `{{work_item_id}}`
 - **Single ADO update** – one `ado_update` call at the end
 - **CLI-only** – per util-base guardrails
 - **Solution-neutral** – move "How" to solutioning hints; keep "What/Why" only
-- **Template-driven** – use field HTML templates from `{{paths.templates}}/`
+- **Template-verbatim** – COPY field HTML templates from `{{paths.templates}}/` exactly; ONLY replace `{{variable}}` tokens. NEVER write HTML/CSS from memory.
 - **Outputs to** {{context_file}}.grooming.*
 
 ## Prerequisites [IO]

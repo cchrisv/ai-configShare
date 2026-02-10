@@ -3,6 +3,11 @@
   Purpose: 6-week rolling window of accomplishments with leadership insights
   Variables: Replace {{variable}} placeholders with actual content
   
+  Key Variables:
+  - {{week_narrative_summary}}: 1-sentence theme for the week (appears before activity bullets)
+  - {{activity_item}}: Narrative bullet following What+Why+So-what formula
+  - {{overall_status_summary}}: 4-6 sentence executive narrative
+  
   Color Scheme (Dark Gradients with White Text):
   - Green (#2e7d32 → #1b5e20): Progress Header
   - Blue (#1565c0 → #0d47a1): Weekly Activity (Current Week)
@@ -45,6 +50,9 @@
     <div style="font-weight: 600; color: #1976d2; margin-bottom: 10px;">
       Week of {{week_start}} - {{week_end}} <span style="background: #1976d2; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 8px;">Current</span>
     </div>
+    <div style="font-size: 13px; color: #666; margin-bottom: 8px; line-height: 1.6;">
+      {{week_narrative_summary}}
+    </div>
     <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
       <li>{{activity_item}}</li>
       <li><strong style="color: #2e7d32;">Milestone:</strong> {{milestone_description}}</li>
@@ -55,6 +63,9 @@
   <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
     <div style="font-weight: 600; color: #495057; margin-bottom: 10px; border-bottom: 1px solid #dee2e6; padding-bottom: 8px;">
       Week of {{week_start}} - {{week_end}}
+    </div>
+    <div style="font-size: 13px; color: #666; margin-bottom: 8px; line-height: 1.6;">
+      {{week_narrative_summary}}
     </div>
     <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
       <li>{{activity_item}}</li>
