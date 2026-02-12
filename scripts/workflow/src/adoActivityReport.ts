@@ -3,18 +3,19 @@
  * Generates comprehensive activity reports for specified users
  */
 
-import { createWriteStream, mkdirSync, existsSync } from 'fs';
+import { createWriteStream, mkdirSync, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { createAdoConnection, type AdoConnection } from './adoClient.js';
-import { loadSharedConfig } from './lib/configLoader.js';
-import { logInfo, logDebug, logWarn } from './lib/loggerStructured.js';
+import { executeSoqlQuery } from './sfQueryExecutor.js';
+import { loadSharedConfig, getProjectRoot } from './lib/configLoader.js';
+import { logInfo, logWarn } from './lib/loggerStructured.js';
 import type {
   ActivityTarget,
   ActivityRecord,
   ActivityReportOptions,
   ActivityReportResult,
   ActivityType,
-  WorkItemUpdate,
+  RevisionEntry,
 } from './types/adoActivityTypes.js';
 
 /** ADO defaults from config (organization name and wiki repo ID for activity report). */
@@ -74,6 +75,73 @@ function classifyMention(text: string): ActivityType {
 }
 
 /**
+ * Extract SF component name from SetupAuditTrail Display/Action fields.
+ * Patterns: "Changed LeadTriggerHandlerTest Apex Class code"
+ *           "Created flow MyFlow"
+ *           "Changed validation rule MyRule on Account"
+ *           "changedApexClass" (Action field)
+ */
+function extractSfComponentName(display: string, action: string): string {
+  // Try Display field first — usually "Changed/Created <Name> <Type> code/..."
+  const displayMatch = display.match(
+    /(?:Changed|Created|Deleted|Updated)\s+(.+?)\s+(?:Apex Class|Apex Trigger|Flow|Validation Rule|Lightning Component|Aura Component|LWC|Custom Object|Custom Field|Page Layout|Permission Set|Profile|Report Type|Workflow Rule|Process Builder)\b/i
+  );
+  if (displayMatch?.[1]) return displayMatch[1].trim();
+
+  // Try Action field — camelCase like "changedApexClass" or "createdFlow"
+  const actionMatch = action.match(/(?:changed|created|deleted|updated)(\w+)/i);
+  if (actionMatch?.[1]) {
+    // Extract from the remaining Display text after the verb
+    const afterVerb = display.replace(/^(?:Changed|Created|Deleted|Updated)\s+/i, '');
+    // Take the first word cluster before " code" or end
+    const nameMatch = afterVerb.match(/^(.+?)(?:\s+(?:Apex|code|flow|rule|component)|\s*$)/i);
+    if (nameMatch?.[1]) return nameMatch[1].trim();
+  }
+
+  // Fallback: first meaningful words from Display
+  const fallback = display.replace(/^(?:Changed|Created|Deleted|Updated)\s+/i, '').split(/\s+(?:code|on)\b/)[0];
+  return fallback?.trim() || '';
+}
+
+/**
+ * Parse a file path from a PR diff to identify Salesforce metadata components.
+ * Returns a human-readable label like "Apex Class: MyClass" or empty string if not SF metadata.
+ */
+function parseSfMetadataPath(filePath: string): string {
+  if (!filePath) return '';
+  const p = filePath.replace(/\\/g, '/');
+
+  const patterns: Array<[RegExp, string]> = [
+    [/\/classes\/([^/]+?)(?:\.cls|-meta\.xml)$/, 'Apex Class'],
+    [/\/triggers\/([^/]+?)(?:\.trigger|-meta\.xml)$/, 'Trigger'],
+    [/\/lwc\/([^/]+?)\//, 'LWC'],
+    [/\/aura\/([^/]+?)\//, 'Aura'],
+    [/\/flows\/([^/]+?)(?:\.flow|-meta\.xml)$/, 'Flow'],
+    [/\/objects\/([^/]+?)\/fields\/([^/]+?)\.field-meta\.xml$/, 'Field'],
+    [/\/objects\/([^/]+?)\/[^/]*\.object-meta\.xml$/, 'Object'],
+    [/\/permissionsets\/([^/]+?)\.permissionset-meta\.xml$/, 'Permission Set'],
+    [/\/profiles\/([^/]+?)\.profile-meta\.xml$/, 'Profile'],
+    [/\/layouts\/([^/]+?)\.layout-meta\.xml$/, 'Layout'],
+    [/\/pages\/([^/]+?)(?:\.page|-meta\.xml)$/, 'VF Page'],
+    [/\/flexipages\/([^/]+?)\.flexipage-meta\.xml$/, 'FlexiPage'],
+    [/\/customMetadata\/([^/]+?)\.md-meta\.xml$/, 'Custom Metadata'],
+    [/\/staticresources\/([^/]+?)(?:\.resource|-meta\.xml)$/, 'Static Resource'],
+    [/\/tabs\/([^/]+?)\.tab-meta\.xml$/, 'Tab'],
+    [/\/reports\/([^/]+?)(?:\.report|-meta\.xml)$/, 'Report'],
+    [/\/dashboards\/([^/]+?)(?:\.dashboard|-meta\.xml)$/, 'Dashboard'],
+  ];
+
+  for (const [regex, label] of patterns) {
+    const m = p.match(regex);
+    if (m) {
+      if (label === 'Field' && m[1] && m[2]) return `Field: ${m[1]}.${m[2]}`;
+      return `${label}: ${m[1] || ''}`;
+    }
+  }
+  return '';
+}
+
+/**
  * Check if a name/email matches the target
  */
 function isMatch(
@@ -89,568 +157,664 @@ function isMatch(
   return !!(nameMatch || emailMatch);
 }
 
-/**
- * Fetch work items using WIQL query and return IDs
- */
-async function queryWorkItemIds(
-  conn: AdoConnection,
-  query: string
-): Promise<number[]> {
-  const witApi = await conn.getWorkItemTrackingApi();
-  const result = await witApi.queryByWiql({ query }, conn.project);
-  
-  if (!result.workItems || result.workItems.length === 0) {
-    return [];
-  }
-  
-  return result.workItems.map(wi => wi.id!).filter(id => id !== undefined);
-}
 
 /**
- * Search for work items mentioning a person using Azure DevOps Search API
- * This is MUCH faster than scanning all work items
- * Uses pagination to get all results
+ * Bulk-fetch ALL revisions for the period using the Reporting Revisions API.
+ * Returns a Map keyed by work item ID, each value is an array of RevisionEntry
+ * sorted by revision number ascending.
+ *
+ * This replaces per-item getUpdates() calls (~N calls → ~5-10 paginated GETs).
  */
-export async function searchWorkItemsMentioning(
+export async function bulkFetchRevisions(
   conn: AdoConnection,
-  target: ActivityTarget,
-  _days: number
-): Promise<number[]> {
+  days: number
+): Promise<Map<number, RevisionEntry[]>> {
   const { getAzureBearerToken } = await import('./lib/authAzureCli.js');
   const token = getAzureBearerToken();
-  
-  const searchResults: number[] = [];
-  const { adoOrg } = getAdoReportConfig();
-  const searchUrl = `https://almsearch.dev.azure.com/${adoOrg}/_apis/search/workitemsearchresults?api-version=7.1`;
 
-  // Search for mentions of the person's name (use full name as primary search)
-  const searchTerms = [`"${target.name}"`];
-  
-  for (const searchTerm of searchTerms) {
-    let skip = 0;
-    const pageSize = 1000;
-    let hasMore = true;
-    
-    while (hasMore) {
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+  const startDateStr = startDate.toISOString();
+
+  const revisionsMap = new Map<number, RevisionEntry[]>();
+  let continuationToken: string | null = null;
+  let totalRevisions = 0;
+  const startTime = Date.now();
+
+  logInfo(`[PHASE] Streaming all revisions since ${startDateStr.split('T')[0]}...`);
+  const { adoOrg } = getAdoReportConfig();
+
+  // Request only small metadata fields — System.Description and System.History
+  // are full HTML blobs that repeat per revision, creating multi-GB responses.
+  // Comments and mentions are handled separately via targeted fetches.
+  const revisionFields = [
+    'System.Id', 'System.Rev', 'System.ChangedDate', 'System.ChangedBy',
+    'System.State', 'System.AssignedTo',
+    'System.Title', 'System.WorkItemType', 'System.AreaPath',
+    'System.IterationPath', 'System.Tags',
+    'Microsoft.VSTS.Scheduling.StoryPoints', 'Microsoft.VSTS.Common.Priority',
+    'Microsoft.VSTS.Scheduling.CompletedWork', 'Microsoft.VSTS.Scheduling.RemainingWork',
+    'Microsoft.VSTS.Scheduling.OriginalEstimate', 'Microsoft.VSTS.Common.Activity',
+    'System.BoardColumn', 'Custom.DevelopmentSummary',
+  ].join(',');
+  const baseUrl = `https://dev.azure.com/${adoOrg}/${encodeURIComponent(conn.project)}/_apis/wit/reporting/workitemrevisions?startDateTime=${encodeURIComponent(startDateStr)}&fields=${encodeURIComponent(revisionFields)}&api-version=7.1`;
+
+  let pageNumber = 0;
+
+  do {
+    pageNumber++;
+    try {
+      let url = baseUrl;
+      if (continuationToken) {
+        url += `&continuationToken=${encodeURIComponent(continuationToken)}`;
+      }
+
+      logInfo(`  Fetching revision page ${pageNumber}...`);
+
+      // 60-second timeout per page to avoid hanging indefinitely
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60_000);
+
+      let response: Response;
       try {
-        const response = await fetch(searchUrl, {
-          method: 'POST',
+        response = await fetch(url, {
+          method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            searchText: searchTerm,
-            $skip: skip,
-            $top: pageSize,
-            filters: {
-              'System.TeamProject': [conn.project],
-            },
-            $orderBy: [{ field: 'System.ChangedDate', sortOrder: 'DESC' }],
-            includeFacets: false,
-          }),
+          signal: controller.signal,
         });
-        
-        if (response.ok) {
-          const data = await response.json() as { 
-            count?: number;
-            results?: Array<{ fields?: { 'system.id'?: string } }> 
-          };
-          
-          if (data.results) {
-            for (const result of data.results) {
-              const id = parseInt(result.fields?.['system.id'] || '0', 10);
-              if (id > 0) {
-                searchResults.push(id);
-              }
-            }
-            
-            // Check if there are more results
-            hasMore = data.results.length === pageSize && skip < 5000; // Cap at 5000 to avoid endless loops
-            skip += pageSize;
-          } else {
-            hasMore = false;
-          }
-        } else {
-          hasMore = false;
-        }
-      } catch (error) {
-        logWarn(`Search API error for ${searchTerm}: ${error}`);
-        hasMore = false;
+      } finally {
+        clearTimeout(timeout);
       }
-    }
-    
-    logDebug(`  Search for ${searchTerm} found ${searchResults.length} total results`);
-  }
-  
-  // Return unique IDs
-  return [...new Set(searchResults)];
-}
 
-/**
- * Stream work item revisions using the Reporting API
- * This is a fast way to get all revisions and filter for mentions
- */
-export async function streamRevisionsForMentions(
-  conn: AdoConnection,
-  targets: ActivityTarget[],
-  _days: number
-): Promise<number[]> {
-  const { getAzureBearerToken } = await import('./lib/authAzureCli.js');
-  const token = getAzureBearerToken();
-  
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
-  const startDateStr = startDate.toISOString();
-  
-  const workItemIds = new Set<number>();
-  let continuationToken: string | null = null;
-  let totalRevisions = 0;
-  const startTime = Date.now();
-  
-  // Build target name patterns for matching
-  const targetPatterns = targets.map(t => t.name.toLowerCase());
-  
-  logInfo(`Streaming revisions since ${startDateStr.split('T')[0]} to find all activity...`);
-  const { adoOrg } = getAdoReportConfig();
-
-  do {
-    try {
-      let url = `https://dev.azure.com/${adoOrg}/${encodeURIComponent(conn.project)}/_apis/wit/reporting/workitemrevisions?startDateTime=${encodeURIComponent(startDateStr)}&api-version=7.1`;
-      if (continuationToken) {
-        url += `&continuationToken=${encodeURIComponent(continuationToken)}`;
-      }
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
       if (!response.ok) {
         logWarn(`Reporting API error: ${response.status} ${response.statusText}`);
         break;
       }
-      
+
       const data = await response.json() as {
         values?: Array<{
           id?: number;
+          rev?: number;
           fields?: Record<string, unknown>;
         }>;
         continuationToken?: string;
         isLastBatch?: boolean;
       };
-      
-      // Check each revision for target names
+
       if (data.values) {
-        for (const revision of data.values) {
-          if (!revision.id) continue;
-          
-          // Check ChangedBy field
-          const changedBy = String(revision.fields?.['System.ChangedBy'] || '').toLowerCase();
-          for (const pattern of targetPatterns) {
-            if (changedBy.includes(pattern)) {
-              workItemIds.add(revision.id);
-              break;
-            }
+        for (const raw of data.values) {
+          if (!raw.id || !raw.fields) continue;
+
+          const entry: RevisionEntry = {
+            id: raw.id,
+            rev: raw.rev ?? 0,
+            changedDate: String(raw.fields['System.ChangedDate'] || ''),
+            changedBy: String(raw.fields['System.ChangedBy'] || ''),
+            fields: raw.fields,
+          };
+
+          let list = revisionsMap.get(raw.id);
+          if (!list) {
+            list = [];
+            revisionsMap.set(raw.id, list);
           }
-          
-          // Check AssignedTo field
-          const assignedTo = String(revision.fields?.['System.AssignedTo'] || '').toLowerCase();
-          for (const pattern of targetPatterns) {
-            if (assignedTo.includes(pattern)) {
-              workItemIds.add(revision.id);
-              break;
-            }
-          }
-          
-          // Check History field for mentions
-          const history = String(revision.fields?.['System.History'] || '').toLowerCase();
-          if (history) {
-            for (const pattern of targetPatterns) {
-              if (history.includes(pattern)) {
-                workItemIds.add(revision.id);
-                break;
-              }
-            }
-          }
-          
-          // Check Description field for mentions
-          const description = String(revision.fields?.['System.Description'] || '').toLowerCase();
-          if (description) {
-            for (const pattern of targetPatterns) {
-              if (description.includes(pattern)) {
-                workItemIds.add(revision.id);
-                break;
-              }
-            }
-          }
+          list.push(entry);
         }
-        
+
         totalRevisions += data.values.length;
       }
-      
+
+      const pageSize = data.values?.length ?? 0;
       continuationToken = data.continuationToken || null;
-      
-      // Progress reporting
-      const elapsed = (Date.now() - startTime) / 1000;
-      if (totalRevisions % 10000 === 0 || !continuationToken) {
-        logInfo(`  Scanned ${totalRevisions} revisions, found ${workItemIds.size} relevant work items (${elapsed.toFixed(1)}s)`);
+
+      // Guard: if the API returns a continuation token but zero values, stop
+      if (pageSize === 0 && continuationToken) {
+        logInfo(`  Page ${pageNumber}: empty page with continuation token — stopping`);
+        continuationToken = null;
+        break;
       }
-      
+
+      // Log every page (but throttle to avoid spam)
+      const elapsed = (Date.now() - startTime) / 1000;
+      if (pageSize > 0 || !continuationToken) {
+        logInfo(`  Page ${pageNumber}: +${pageSize.toLocaleString()} revisions (${totalRevisions.toLocaleString()} total, ${revisionsMap.size.toLocaleString()} items, ${elapsed.toFixed(1)}s)`);
+      }
+
     } catch (error) {
-      logWarn(`Reporting API error: ${error}`);
+      if (error instanceof Error && error.name === 'AbortError') {
+        logWarn(`  Page ${pageNumber} timed out after 60s — proceeding with data collected so far`);
+      } else {
+        logWarn(`Reporting API error on page ${pageNumber}: ${error}`);
+      }
       break;
     }
-    
   } while (continuationToken);
-  
+
+  // Sort each work item's revisions by rev number ascending
+  for (const [, revisions] of revisionsMap) {
+    revisions.sort((a, b) => a.rev - b.rev);
+  }
+
   const elapsed = (Date.now() - startTime) / 1000;
-  logInfo(`  Completed: Scanned ${totalRevisions} revisions, found ${workItemIds.size} work items in ${elapsed.toFixed(1)}s`);
-  
-  return Array.from(workItemIds);
+  logInfo(`  Completed: ${totalRevisions.toLocaleString()} revisions across ${revisionsMap.size.toLocaleString()} work items in ${elapsed.toFixed(1)}s`);
+
+  return revisionsMap;
 }
 
+
 /**
- * Fetch work items related to specific people using HYBRID approach
- * For 100% accuracy, scans all recently changed work items
- * Optimized for speed with aggressive parallelization
+ * Process all revisions locally to extract activity records.
+ * Handles edits, state transitions, and assignments from metadata fields only
+ * (no History/Description — those are fetched separately via Comments API).
+ *
+ * Also returns the set of work item IDs where any target was active, so we
+ * can do a targeted comment/mention fetch for just those items.
  */
-export async function fetchHybridWorkItems(
-  conn: AdoConnection,
-  _targets: ActivityTarget[],
-  days: number
-): Promise<Array<{ id: number; fields: Record<string, unknown> }>> {
-  const witApi = await conn.getWorkItemTrackingApi();
+function processRevisionsLocally(
+  revisionsMap: Map<number, RevisionEntry[]>,
+  detailsMap: Map<number, Record<string, unknown>>,
+  targets: ActivityTarget[],
+  cutoffDate: Date
+): { activities: ActivityRecord[]; relevantItemIds: Set<number> } {
+  const activities: ActivityRecord[] = [];
+  const relevantItemIds = new Set<number>();
   const startTime = Date.now();
-  
-  logInfo(`Fetching ALL work items for 100% accuracy...`);
-  
-  // Get all work items changed in the date range
-  const allRecentQuery = `SELECT [System.Id] FROM WorkItems WHERE [System.ChangedDate] >= @Today - ${days}`;
-  const allRecentIds = await queryWorkItemIds(conn, allRecentQuery);
-  
-  const queryTime = ((Date.now() - startTime) / 1000).toFixed(1);
-  logInfo(`Found ${allRecentIds.length} work items in ${queryTime}s`);
-  
-  if (allRecentIds.length === 0) {
-    return [];
-  }
-  
-  // Fetch full details in aggressive parallel batches
-  const allItems: Array<{ id: number; fields: Record<string, unknown> }> = [];
-  const batchSize = 200;
-  const concurrentBatches = 30; // Very aggressive parallelization
-  
-  const batches: number[][] = [];
-  for (let i = 0; i < allRecentIds.length; i += batchSize) {
-    batches.push(allRecentIds.slice(i, i + batchSize));
-  }
-  
-  for (let i = 0; i < batches.length; i += concurrentBatches) {
-    const batchGroup = batches.slice(i, i + concurrentBatches);
-    
-    const batchPromises = batchGroup.map(batchIds => 
-      witApi.getWorkItems(
-        batchIds,
-        ['System.Id', 'System.Title', 'System.WorkItemType', 'System.State', 'System.AreaPath'],
-        undefined,
-        undefined,
-        undefined,
-        conn.project
-      ).catch(() => null)
-    );
-    
-    const batchResults = await Promise.all(batchPromises);
-    
-    for (const items of batchResults) {
-      if (items) {
-        allItems.push(...items.map(item => ({
-          id: item.id!,
-          fields: item.fields as Record<string, unknown>
-        })));
+  let processedItems = 0;
+  let lastReportTime = startTime;
+
+  logInfo(`[PHASE] Processing ${revisionsMap.size.toLocaleString()} work items locally...`);
+
+  for (const [workItemId, revisions] of revisionsMap) {
+    const details = detailsMap.get(workItemId);
+    const wiTitle = String(details?.['System.Title'] || 'No Title');
+    const wiType = String(details?.['System.WorkItemType'] || 'Unknown');
+    const wiState = String(details?.['System.State'] || 'Unknown');
+    const wiArea = String(details?.['System.AreaPath'] || 'Unknown');
+    const wiBase = {
+      workItemId: String(workItemId),
+      workItemType: wiType,
+      state: wiState,
+      areaPath: wiArea,
+      title: wiTitle,
+      assignedTo: String(details?.['System.AssignedTo'] || ''),
+      iterationPath: String(details?.['System.IterationPath'] || ''),
+      tags: String(details?.['System.Tags'] || ''),
+      storyPoints: details?.['Microsoft.VSTS.Scheduling.StoryPoints'] != null
+        ? String(details['Microsoft.VSTS.Scheduling.StoryPoints']) : '',
+      priority: details?.['Microsoft.VSTS.Common.Priority'] != null
+        ? String(details['Microsoft.VSTS.Common.Priority']) : '',
+      completedWork: details?.['Microsoft.VSTS.Scheduling.CompletedWork'] != null
+        ? String(details['Microsoft.VSTS.Scheduling.CompletedWork']) : '',
+      remainingWork: details?.['Microsoft.VSTS.Scheduling.RemainingWork'] != null
+        ? String(details['Microsoft.VSTS.Scheduling.RemainingWork']) : '',
+      originalEstimate: details?.['Microsoft.VSTS.Scheduling.OriginalEstimate'] != null
+        ? String(details['Microsoft.VSTS.Scheduling.OriginalEstimate']) : '',
+      activityType2: String(details?.['Microsoft.VSTS.Common.Activity'] || ''),
+      boardColumn: String(details?.['System.BoardColumn'] || ''),
+      developmentSummary: String(details?.['Custom.DevelopmentSummary'] || ''),
+    };
+
+    for (let ri = 0; ri < revisions.length; ri++) {
+      const rev = revisions[ri]!;
+      const prev: RevisionEntry | null = ri > 0 ? revisions[ri - 1]! : null;
+
+      // Parse and validate the revision date
+      const revDate = new Date(rev.changedDate);
+      if (isNaN(revDate.getTime()) || revDate.getFullYear() > 3000) continue;
+      if (revDate < cutoffDate) continue;
+
+      const changedBy = rev.changedBy;
+
+      for (const target of targets) {
+        const actorIsTarget = isMatch(target, changedBy, '');
+
+        // --- 1. Edits / State changes by target ---
+        if (actorIsTarget && prev) {
+          const changes: string[] = [];
+
+          // Compare fields to detect what changed
+          const allKeys = new Set([
+            ...Object.keys(rev.fields),
+            ...Object.keys(prev.fields),
+          ]);
+
+          for (const key of allKeys) {
+            // Skip metadata fields that always change
+            if (key === 'System.Rev' || key === 'System.ChangedDate' || key === 'System.ChangedBy' || key === 'System.Watermark') continue;
+
+            const newVal = rev.fields[key];
+            const oldVal = prev.fields[key];
+
+            if (key === 'System.State' && newVal !== oldVal) {
+              changes.push(`State: ${String(oldVal || 'New')}->${String(newVal || 'Unknown')}`);
+            } else if (newVal !== oldVal) {
+              if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+                changes.push(key);
+              }
+            }
+          }
+
+          if (changes.length > 0) {
+            relevantItemIds.add(workItemId);
+            activities.push({
+              target: target.name,
+              date: rev.changedDate,
+              ...wiBase,
+              activityType: 'Edit',
+              details: `Changed: ${changes.join(', ')}`,
+              actor: changedBy,
+            });
+          }
+        }
+
+        // --- 1b. First revision in window by target (no prev to diff) ---
+        if (actorIsTarget && !prev) {
+          relevantItemIds.add(workItemId);
+          activities.push({
+            target: target.name,
+            date: rev.changedDate,
+            ...wiBase,
+            activityType: 'Edit',
+            details: 'Work item updated',
+            actor: changedBy,
+          });
+        }
+
+        // --- 2. AssignedTo changes targeting this person ---
+        if (prev) {
+          const newAssigned = String(rev.fields['System.AssignedTo'] || '');
+          const oldAssigned = String(prev.fields['System.AssignedTo'] || '');
+          if (newAssigned !== oldAssigned && isMatch(target, newAssigned, '')) {
+            relevantItemIds.add(workItemId);
+            activities.push({
+              target: target.name,
+              date: rev.changedDate,
+              ...wiBase,
+              activityType: 'AssignedTo',
+              details: `Assigned to ${target.name} by ${changedBy}`,
+              actor: changedBy,
+            });
+          }
+        } else {
+          // First revision — check if assigned to target at creation
+          const assigned = String(rev.fields['System.AssignedTo'] || '');
+          if (assigned && isMatch(target, assigned, '') && !actorIsTarget) {
+            relevantItemIds.add(workItemId);
+            activities.push({
+              target: target.name,
+              date: rev.changedDate,
+              ...wiBase,
+              activityType: 'AssignedTo',
+              details: `Assigned to ${target.name} by ${changedBy}`,
+              actor: changedBy,
+            });
+          }
+        }
       }
     }
-  }
-  
-  const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-  logInfo(`Fetched ${allItems.length} work item details in ${totalTime}s`);
-  
-  return allItems;
-}
 
-/**
- * Fetch work items updated in the last N days (complete scan)
- * Uses aggressive parallel batch fetching for speed
- */
-async function fetchRecentWorkItems(
-  conn: AdoConnection,
-  days: number
-): Promise<Array<{ id: number; fields: Record<string, unknown> }>> {
-  const witApi = await conn.getWorkItemTrackingApi();
-  
-  logInfo(`--- Fetching Work Items ---`);
-  logInfo(`Querying work items changed in last ${days} days...`);
-  
-  const query = `SELECT [System.Id] FROM WorkItems WHERE [System.ChangedDate] >= @Today - ${days} ORDER BY [System.ChangedDate] DESC`;
-  
-  let result;
-  try {
-    result = await witApi.queryByWiql({ query }, conn.project);
-  } catch (error) {
-    logWarn(`WIQL query failed: ${error}`);
-    throw new Error(`Failed to query work items: ${error instanceof Error ? error.message : error}`);
-  }
-  
-  if (!result.workItems || result.workItems.length === 0) {
-    logInfo('No work items found in the specified date range');
-    return [];
-  }
-  
-  const ids = result.workItems.map(wi => wi.id!).filter(id => id !== undefined);
-  logInfo(`Found ${ids.length.toLocaleString()} work items to scan`);
-  
-  // Fetch in parallel batches of 200, with 20 concurrent batch requests
-  const allItems: Array<{ id: number; fields: Record<string, unknown> }> = [];
-  let errors = 0;
-  const batchSize = 200;
-  const concurrentBatches = 20;
-  const startTime = Date.now();
-  
-  // Create all batch ID arrays
-  const batches: number[][] = [];
-  for (let i = 0; i < ids.length; i += batchSize) {
-    batches.push(ids.slice(i, i + batchSize));
-  }
-  
-  logInfo(`Fetching details in ${batches.length} batches (${concurrentBatches} concurrent)...`);
-  
-  // Process batches in parallel groups
-  for (let i = 0; i < batches.length; i += concurrentBatches) {
-    const batchGroup = batches.slice(i, i + concurrentBatches);
-    
-    const batchPromises = batchGroup.map(batchIds => 
-      witApi.getWorkItems(
-        batchIds,
-        ['System.Id', 'System.Title', 'System.WorkItemType', 'System.State', 'System.AreaPath'],
-        undefined,
-        undefined,
-        undefined,
-        conn.project
-      ).catch(err => {
-        errors++;
-        logDebug(`Batch fetch error: ${err}`);
-        return null;
-      })
-    );
-    
-    const results = await Promise.all(batchPromises);
-    
-    for (const items of results) {
-      if (items) {
-        allItems.push(...items.map(item => ({
-          id: item.id!,
-          fields: item.fields as Record<string, unknown>
-        })));
-      }
+    processedItems++;
+
+    // Progress reporting every 10 seconds
+    const now = Date.now();
+    if (now - lastReportTime > 10000 || processedItems === revisionsMap.size) {
+      const elapsed = (now - startTime) / 1000;
+      const pct = ((processedItems / revisionsMap.size) * 100).toFixed(1);
+      logInfo(`[PROGRESS] ${processedItems}/${revisionsMap.size} (${pct}%) | ${elapsed.toFixed(0)}s | Activities: ${activities.length}`);
+      lastReportTime = now;
     }
   }
-  
+
   const elapsed = (Date.now() - startTime) / 1000;
-  logInfo(`Fetched ${allItems.length.toLocaleString()} work items in ${elapsed.toFixed(1)}s${errors > 0 ? ` (${errors} batch errors)` : ''}`);
-  
-  return allItems;
+  logInfo(`  Local processing complete: ${activities.length} activities from ${revisionsMap.size} work items in ${elapsed.toFixed(1)}s`);
+  logInfo(`  Relevant items for comment/mention scan: ${relevantItemIds.size}`);
+
+  return { activities, relevantItemIds };
 }
 
 /**
- * Fetch updates for a work item
+ * Fetch comments for relevant work items and extract comment activities + mentions.
+ * Uses the Comments API in parallel batches — only called for items where a target
+ * was already detected as active via the metadata revision scan.
  */
-async function fetchWorkItemUpdates(
+async function fetchCommentsForRelevantItems(
   conn: AdoConnection,
-  workItemId: number
-): Promise<WorkItemUpdate[]> {
-  const witApi = await conn.getWorkItemTrackingApi();
-  
-  try {
-    const updates = await witApi.getUpdates(workItemId, conn.project);
-    return (updates || []) as unknown as WorkItemUpdate[];
-  } catch (error) {
-    logWarn(`Failed to fetch updates for work item ${workItemId}: ${error}`);
-    return [];
-  }
-}
-
-/**
- * Process a single work item's updates for activity tracking
- */
-async function processWorkItem(
-  conn: AdoConnection,
-  item: { id: number; fields: Record<string, unknown> },
+  itemIds: number[],
+  detailsMap: Map<number, Record<string, unknown>>,
   targets: ActivityTarget[],
   cutoffDate: Date
 ): Promise<ActivityRecord[]> {
+  if (itemIds.length === 0) return [];
+
+  const witApi = await conn.getWorkItemTrackingApi();
   const activities: ActivityRecord[] = [];
-  const updates = await fetchWorkItemUpdates(conn, item.id);
-  
-  const wiTitle = String(item.fields['System.Title'] || 'No Title');
-  const wiType = String(item.fields['System.WorkItemType'] || 'Unknown');
-  const wiState = String(item.fields['System.State'] || 'Unknown');
-  const wiArea = String(item.fields['System.AreaPath'] || 'Unknown');
-  
-  for (const update of updates) {
-    // Parse update date
-    let updateDate: Date;
+  const startTime = Date.now();
+  const concurrency = 20;
+  let errors = 0;
+
+  logInfo(`[PHASE] Fetching comments for ${itemIds.length} relevant work items...`);
+
+  // Process in parallel batches
+  for (let i = 0; i < itemIds.length; i += concurrency) {
+    const batch = itemIds.slice(i, i + concurrency);
+
+    const batchPromises = batch.map(async (itemId) => {
+      try {
+        const commentsResult = await witApi.getComments(conn.project, itemId);
+        const comments = (commentsResult as { comments?: Array<{
+          id?: number;
+          text?: string;
+          createdBy?: { displayName?: string; uniqueName?: string };
+          createdDate?: Date | string;
+        }> }).comments;
+
+        if (!comments) return;
+
+        const details = detailsMap.get(itemId);
+        const wiBase = {
+          workItemId: String(itemId),
+          workItemType: String(details?.['System.WorkItemType'] || 'Unknown'),
+          state: String(details?.['System.State'] || 'Unknown'),
+          areaPath: String(details?.['System.AreaPath'] || 'Unknown'),
+          title: String(details?.['System.Title'] || 'No Title'),
+          assignedTo: String(details?.['System.AssignedTo'] || ''),
+          iterationPath: String(details?.['System.IterationPath'] || ''),
+          tags: String(details?.['System.Tags'] || ''),
+          storyPoints: details?.['Microsoft.VSTS.Scheduling.StoryPoints'] != null
+            ? String(details['Microsoft.VSTS.Scheduling.StoryPoints']) : '',
+          priority: details?.['Microsoft.VSTS.Common.Priority'] != null
+            ? String(details['Microsoft.VSTS.Common.Priority']) : '',
+          boardColumn: String(details?.['System.BoardColumn'] || ''),
+          developmentSummary: String(details?.['Custom.DevelopmentSummary'] || ''),
+        };
+
+        for (const comment of comments) {
+          const commentDate = comment.createdDate
+            ? (typeof comment.createdDate === 'string' ? new Date(comment.createdDate) : comment.createdDate)
+            : null;
+
+          if (!commentDate || commentDate < cutoffDate) continue;
+          if (commentDate.getFullYear() > 3000) continue;
+
+          const authorName = comment.createdBy?.displayName || '';
+          const authorEmail = comment.createdBy?.uniqueName || '';
+          const commentText = cleanHtml(comment.text || '');
+
+          for (const target of targets) {
+            // Comment by target
+            if (isMatch(target, authorName, authorEmail)) {
+              activities.push({
+                target: target.name,
+                date: commentDate.toISOString(),
+                ...wiBase,
+                activityType: 'Comment',
+                details: `Comment: ${commentText.substring(0, 300)}`,
+                actor: authorName,
+              });
+            }
+
+            // Mention of target by someone else
+            if (!isMatch(target, authorName, authorEmail) && commentText) {
+              const textLower = commentText.toLowerCase();
+              const nameInText = target.name && textLower.includes(target.name.toLowerCase());
+              const emailInText = target.email && textLower.includes(target.email.toLowerCase());
+              if (nameInText || emailInText) {
+                const mentionType = classifyMention(commentText);
+                activities.push({
+                  target: target.name,
+                  date: commentDate.toISOString(),
+                  ...wiBase,
+                  activityType: mentionType,
+                  details: `Mentioned in comment: ${commentText.substring(0, 300)}`,
+                  actor: authorName,
+                });
+              }
+            }
+          }
+        }
+      } catch {
+        errors++;
+      }
+    });
+
+    await Promise.all(batchPromises);
+  }
+
+  const elapsed = (Date.now() - startTime) / 1000;
+  logInfo(`  Comment scan complete: ${activities.length} activities from ${itemIds.length} items in ${elapsed.toFixed(1)}s${errors > 0 ? ` (${errors} errors)` : ''}`);
+
+  return activities;
+}
+
+/**
+ * Batch-fetch parent work item IDs and titles for a set of work item IDs.
+ * Uses the ADO Work Item Tracking API with $expand=Relations to find parent links,
+ * then fetches parent titles in a second batch.
+ * Returns a Map<childId, { parentId, parentTitle }>.
+ */
+async function fetchParentRelations(
+  conn: AdoConnection,
+  itemIds: number[]
+): Promise<Map<number, { parentId: string; parentTitle: string }>> {
+  const result = new Map<number, { parentId: string; parentTitle: string }>();
+  if (itemIds.length === 0) return result;
+
+  const witApi = await conn.getWorkItemTrackingApi();
+  const startTime = Date.now();
+  const batchSize = 200; // ADO max per getWorkItems call
+  const parentIdSet = new Set<number>();
+  const childToParent = new Map<number, number>();
+
+  logInfo(`[PHASE] Fetching parent relations for ${itemIds.length} work items...`);
+
+  // Step 1: Fetch work items with relations to find parent links
+  for (let i = 0; i < itemIds.length; i += batchSize) {
+    const batch = itemIds.slice(i, i + batchSize);
     try {
-      const rawDate = update.revisedDate;
-      if (!rawDate) continue;
-      
-      // Handle both string dates and Date objects
-      updateDate = typeof rawDate === 'string' ? new Date(rawDate) : new Date(rawDate as unknown as string);
-      if (isNaN(updateDate.getTime())) continue;
+      const items = await witApi.getWorkItems(
+        batch,
+        undefined, // fields
+        undefined, // asOf
+        4 // WorkItemExpand.Relations
+      );
+
+      for (const item of items || []) {
+        if (!item?.id || !item.relations) continue;
+        for (const rel of item.relations) {
+          if (rel.rel === 'System.LinkTypes.Hierarchy-Reverse' && rel.url) {
+            // Parent link — extract ID from URL
+            const match = rel.url.match(/\/workItems\/(\d+)$/);
+            if (match?.[1]) {
+              const parentId = parseInt(match[1], 10);
+              childToParent.set(item.id, parentId);
+              parentIdSet.add(parentId);
+            }
+          }
+        }
+      }
     } catch {
-      continue;
+      logWarn(`  Failed to fetch relations for batch starting at ${batch[0]}`);
     }
-    
-    // Skip future dates (API artifact)
-    if (updateDate.getFullYear() > 3000) continue;
-    
-    // Skip updates outside our date range (applies to ALL activity types)
-    if (updateDate < cutoffDate) continue;
-    
-    const revisedByName = update.revisedBy?.displayName || '';
-    const revisedByEmail = update.revisedBy?.uniqueName || '';
-    
-    for (const target of targets) {
-      const matched = isMatch(target, revisedByName, revisedByEmail);
-      
-      // 1. Edits/Comments by target
-      if (matched) {
-        if (!update.fields) continue;
-        const changes: string[] = [];
-        let commentText = '';
-        
-        for (const [fieldName, fieldVal] of Object.entries(update.fields)) {
-          if (fieldName === 'System.State') {
-            const oldState = String(fieldVal.oldValue || 'New');
-            const newState = String(fieldVal.newValue || 'Unknown');
-            changes.push(`State: ${oldState}->${newState}`);
-          } else if (fieldName === 'System.History') {
-            commentText = cleanHtml(String(fieldVal.newValue || ''));
-          } else {
-            changes.push(fieldName);
+  }
+
+  // Step 2: Fetch parent titles
+  if (parentIdSet.size > 0) {
+    const parentIds = Array.from(parentIdSet);
+    for (let i = 0; i < parentIds.length; i += batchSize) {
+      const batch = parentIds.slice(i, i + batchSize);
+      try {
+        const items = await witApi.getWorkItems(
+          batch,
+          ['System.Title']
+        );
+        const titleMap = new Map<number, string>();
+        for (const item of items || []) {
+          if (item?.id && item.fields) {
+            titleMap.set(item.id, String(item.fields['System.Title'] || ''));
           }
         }
-        
-        let activityType: ActivityType = 'Edit';
-        let details = `Changed: ${changes.join(', ')}`;
-        
-        if (update.fields['System.History']) {
-          activityType = 'Comment';
-          if (commentText) {
-            details = `Comment: ${commentText.substring(0, 300)}`;
+
+        // Populate result
+        for (const [childId, parentId] of childToParent) {
+          if (titleMap.has(parentId)) {
+            result.set(childId, {
+              parentId: String(parentId),
+              parentTitle: titleMap.get(parentId) || '',
+            });
           }
         }
-        
-        activities.push({
-          target: target.name,
-          date: update.revisedDate,
-          workItemId: String(item.id),
-          workItemType: wiType,
-          state: wiState,
-          areaPath: wiArea,
-          title: wiTitle,
-          activityType,
-          details,
-          actor: revisedByName,
-        });
-      }
-      
-      // 2. Mentions and assignments
-      if (update.fields) {
-        for (const [fieldName, fieldVal] of Object.entries(update.fields)) {
-          const newValue = fieldVal.newValue;
-          
-          // Assignment check
-          if (fieldName === 'System.AssignedTo') {
-            let assigneeMatch = false;
-            if (typeof newValue === 'object' && newValue !== null) {
-              const assignee = newValue as { displayName?: string; uniqueName?: string };
-              assigneeMatch = isMatch(target, assignee.displayName || '', assignee.uniqueName || '');
-            } else if (typeof newValue === 'string') {
-              assigneeMatch = isMatch(target, newValue, newValue);
-            }
-            
-            if (assigneeMatch) {
-              activities.push({
-                target: target.name,
-                date: update.revisedDate,
-                workItemId: String(item.id),
-                workItemType: wiType,
-                state: wiState,
-                areaPath: wiArea,
-                title: wiTitle,
-                activityType: 'AssignedTo',
-                details: `Assigned to ${target.name} by ${revisedByName}`,
-                actor: revisedByName,
-              });
-            }
-          }
-          
-          // Mention check in text fields
-          if (typeof newValue === 'string' && fieldName !== 'System.AssignedTo') {
-            const nameInText = target.name && newValue.toLowerCase().includes(target.name.toLowerCase());
-            const emailInText = target.email && newValue.toLowerCase().includes(target.email.toLowerCase());
-            
-            if ((nameInText || emailInText) && !isMatch(target, revisedByName, revisedByEmail)) {
-              const cleanVal = cleanHtml(newValue);
-              const mentionType = classifyMention(cleanVal);
-              
-              activities.push({
-                target: target.name,
-                date: update.revisedDate,
-                workItemId: String(item.id),
-                workItemType: wiType,
-                state: wiState,
-                areaPath: wiArea,
-                title: wiTitle,
-                activityType: mentionType,
-                details: `Mentioned in ${fieldName}: ${cleanVal}`,
-                actor: revisedByName,
-              });
-            }
-          }
-        }
-      }
-      
-      // 3. Relation comments
-      if (update.relations?.added) {
-        for (const link of update.relations.added) {
-          const comment = link.attributes?.comment || '';
-          if (comment && target.name && comment.toLowerCase().includes(target.name.toLowerCase())) {
-            if (!isMatch(target, revisedByName, revisedByEmail)) {
-              const mentionType = classifyMention(comment);
-              activities.push({
-                target: target.name,
-                date: update.revisedDate,
-                workItemId: String(item.id),
-                workItemType: wiType,
-                state: wiState,
-                areaPath: wiArea,
-                title: wiTitle,
-                activityType: mentionType,
-                details: `Mentioned in link comment: ${comment}`,
-                actor: revisedByName,
-              });
-            }
-          }
-        }
+      } catch {
+        logWarn(`  Failed to fetch parent titles for batch starting at ${batch[0]}`);
       }
     }
   }
-  
-  return activities;
+
+  const elapsed = (Date.now() - startTime) / 1000;
+  logInfo(`  Found ${result.size} parent relations in ${elapsed.toFixed(1)}s`);
+
+  return result;
+}
+
+/**
+ * Batch-fetch Description, AcceptanceCriteria, and ReproSteps for relevant work items.
+ * These fields are excluded from the bulk revision stream (large HTML blobs that repeat
+ * per revision would create multi-GB responses). Instead, we fetch them once per item
+ * using getWorkItems with specific fields.
+ * Returns a Map<workItemId, { description, acceptanceCriteria, reproSteps }>.
+ */
+async function fetchWorkItemDescriptions(
+  conn: AdoConnection,
+  itemIds: number[]
+): Promise<Map<number, { description: string; acceptanceCriteria: string; reproSteps: string }>> {
+  const result = new Map<number, { description: string; acceptanceCriteria: string; reproSteps: string }>();
+  if (itemIds.length === 0) return result;
+
+  const witApi = await conn.getWorkItemTrackingApi();
+  const startTime = Date.now();
+  // Small batches: Description/AC/ReproSteps are large HTML blobs.
+  // Batches >~20 items can exceed ADO response size limits and return empty.
+  const batchSize = 20;
+  const fields = [
+    'System.Description',
+    'Microsoft.VSTS.Common.AcceptanceCriteria',
+    'Microsoft.VSTS.TCM.ReproSteps',
+  ];
+
+  logInfo(`[PHASE] Fetching descriptions for ${itemIds.length} work items (batches of ${batchSize})...`);
+
+  for (let i = 0; i < itemIds.length; i += batchSize) {
+    const batch = itemIds.slice(i, i + batchSize);
+    try {
+      const items = await witApi.getWorkItems(batch, fields);
+      for (const item of items || []) {
+        if (!item?.id || !item.fields) continue;
+        const desc = String(item.fields['System.Description'] || '');
+        const ac = String(item.fields['Microsoft.VSTS.Common.AcceptanceCriteria'] || '');
+        const repro = String(item.fields['Microsoft.VSTS.TCM.ReproSteps'] || '');
+        if (desc || ac || repro) {
+          result.set(item.id, { description: desc, acceptanceCriteria: ac, reproSteps: repro });
+        }
+      }
+    } catch (err) {
+      logWarn(`  Failed to fetch descriptions for batch starting at ${batch[0]}: ${err}`);
+    }
+  }
+
+  const elapsed = (Date.now() - startTime) / 1000;
+  logInfo(`  Fetched descriptions for ${result.size} items in ${elapsed.toFixed(1)}s`);
+
+  return result;
+}
+
+/**
+ * Extract per-person metrics from the revision stream for peer comparison.
+ * The revision data already contains ALL users' changes — we just need to
+ * filter to the peer list and compute aggregate stats.
+ */
+function extractPeerMetrics(
+  revisionsMap: Map<number, RevisionEntry[]>,
+  peerEmails: Set<string>,
+  peerNameMap: Map<string, string>,
+  cutoffDate: Date
+): import('./types/adoActivityTypes.js').PeerMetrics[] {
+  // Build a map: normalized email → metrics accumulator
+  const metricsMap = new Map<string, {
+    name: string;
+    email: string;
+    activities: number;
+    workItems: Set<number>;
+    days: Set<string>;
+    stateTransitions: number;
+    itemsClosed: number;
+    completedHours: number;
+  }>();
+
+  // Initialize accumulators for each peer
+  for (const email of peerEmails) {
+    const name = peerNameMap.get(email) || email;
+    metricsMap.set(email.toLowerCase(), {
+      name, email, activities: 0,
+      workItems: new Set(), days: new Set(),
+      stateTransitions: 0, itemsClosed: 0, completedHours: 0,
+    });
+  }
+
+  // Scan all revisions
+  for (const [workItemId, revisions] of revisionsMap) {
+    for (let ri = 0; ri < revisions.length; ri++) {
+      const rev = revisions[ri]!;
+      const prev = ri > 0 ? revisions[ri - 1]! : null;
+
+      const revDate = new Date(rev.changedDate);
+      if (isNaN(revDate.getTime()) || revDate < cutoffDate) continue;
+
+      // Extract email from changedBy (format: "Name <email>")
+      const emailMatch = rev.changedBy.match(/<([^>]+)>/);
+      const email = (emailMatch?.[1] || '').toLowerCase();
+      if (!email) continue;
+
+      const acc = metricsMap.get(email);
+      if (!acc) continue;
+
+      acc.activities++;
+      acc.workItems.add(workItemId);
+      acc.days.add(revDate.toISOString().substring(0, 10));
+
+      // Detect state transitions
+      if (prev) {
+        const prevState = String(prev.fields['System.State'] || '');
+        const curState = String(rev.fields['System.State'] || '');
+        if (prevState && curState && prevState !== curState) {
+          acc.stateTransitions++;
+          if (curState === 'Closed' || curState === 'Resolved') {
+            acc.itemsClosed++;
+          }
+        }
+      }
+
+      // Track completed work from the latest revision of each work item
+      const completedWork = rev.fields['Microsoft.VSTS.Scheduling.CompletedWork'];
+      if (completedWork != null && ri === revisions.length - 1) {
+        acc.completedHours += parseFloat(String(completedWork)) || 0;
+      }
+    }
+  }
+
+  return Array.from(metricsMap.values())
+    .filter(m => m.activities > 0)
+    .map(m => ({
+      name: m.name,
+      email: m.email,
+      totalActivities: m.activities,
+      workItemsTouched: m.workItems.size,
+      daysActive: m.days.size,
+      stateTransitions: m.stateTransitions,
+      itemsClosed: m.itemsClosed,
+      completedWorkHours: m.completedHours,
+    }));
 }
 
 /**
@@ -662,14 +826,16 @@ async function writeCsvReport(
   outputDir: string,
   timestamp: string
 ): Promise<string> {
+  // Resolve output dir relative to project root (not CWD)
+  const resolvedDir = join(getProjectRoot(), outputDir);
   // Ensure output directory exists
-  if (!existsSync(outputDir)) {
-    mkdirSync(outputDir, { recursive: true });
+  if (!existsSync(resolvedDir)) {
+    mkdirSync(resolvedDir, { recursive: true });
   }
   
   const safeName = targetName.toLowerCase().replace(/\s+/g, '-');
   const filename = `${safeName}-activity-${timestamp}.csv`;
-  const filepath = join(outputDir, filename);
+  const filepath = join(resolvedDir, filename);
 
   // Sort by date descending
   activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -679,23 +845,45 @@ async function writeCsvReport(
   // Write header
   const headers = [
     'Date', 'WorkItemId', 'PRNumber', 'WorkItemType', 'State',
-    'AreaPath', 'Title', 'ActivityType', 'Details', 'Actor'
+    'AreaPath', 'IterationPath', 'Title', 'ActivityType', 'Details', 'Actor',
+    'AssignedTo', 'ParentId', 'ParentTitle', 'Tags', 'StoryPoints', 'Priority', 'ComponentName',
+    'CompletedWork', 'RemainingWork', 'OriginalEstimate', 'ActivityType2', 'PrChangedComponents',
+    'BoardColumn', 'DevelopmentSummary', 'Description', 'AcceptanceCriteria', 'ReproSteps'
   ];
   stream.write(headers.join(',') + '\n');
   
   // Write rows
   for (const activity of activities) {
+    const esc = (s: string | undefined) => s ? `"${s.replace(/"/g, '""')}"` : '';
     const row = [
       activity.date,
       activity.workItemId,
       activity.prNumber || '',
       activity.workItemType,
       activity.state,
-      `"${activity.areaPath.replace(/"/g, '""')}"`,
-      `"${activity.title.replace(/"/g, '""')}"`,
+      esc(activity.areaPath),
+      esc(activity.iterationPath),
+      esc(activity.title),
       activity.activityType,
-      `"${activity.details.replace(/"/g, '""').substring(0, 500)}"`,
+      `"${(activity.details || '').replace(/"/g, '""').substring(0, 500)}"`,
       activity.actor,
+      esc(activity.assignedTo),
+      activity.parentId || '',
+      esc(activity.parentTitle),
+      esc(activity.tags),
+      activity.storyPoints || '',
+      activity.priority || '',
+      esc(activity.componentName),
+      activity.completedWork || '',
+      activity.remainingWork || '',
+      activity.originalEstimate || '',
+      esc(activity.activityType2),
+      esc(activity.prChangedComponents),
+      esc(activity.boardColumn),
+      esc(activity.developmentSummary),
+      esc(activity.description),
+      esc(activity.acceptanceCriteria),
+      esc(activity.reproSteps),
     ];
     stream.write(row.join(',') + '\n');
   }
@@ -708,88 +896,6 @@ async function writeCsvReport(
   });
 }
 
-/**
- * Process work items in parallel batches with production-ready monitoring
- */
-async function processWorkItemsBatch(
-  conn: AdoConnection,
-  items: Array<{ id: number; fields: Record<string, unknown> }>,
-  targets: ActivityTarget[],
-  cutoffDate: Date,
-  concurrency: number = 100
-): Promise<ActivityRecord[]> {
-  const allActivities: ActivityRecord[] = [];
-  let processed = 0;
-  let errors = 0;
-  let skipped = 0;
-  const total = items.length;
-  const startTime = Date.now();
-  let lastReportTime = startTime;
-  
-  // Track rate over time for better ETA
-  const rateHistory: number[] = [];
-  
-  // Process in batches with concurrency limit
-  for (let i = 0; i < items.length; i += concurrency) {
-    const batch = items.slice(i, i + concurrency);
-    const batchStart = Date.now();
-    
-    const batchPromises = batch.map(item => 
-      processWorkItem(conn, item, targets, cutoffDate)
-        .then(activities => ({ success: true, activities, error: null }))
-        .catch(error => ({ success: false, activities: [] as ActivityRecord[], error }))
-    );
-    
-    const batchResults = await Promise.all(batchPromises);
-    
-    for (const result of batchResults) {
-      if (result.success) {
-        allActivities.push(...result.activities);
-        if (result.activities.length === 0) {
-          skipped++;
-        }
-      } else {
-        errors++;
-      }
-    }
-    
-    processed += batch.length;
-    
-    // Calculate batch rate
-    const batchElapsed = (Date.now() - batchStart) / 1000;
-    const batchRate = batch.length / batchElapsed;
-    rateHistory.push(batchRate);
-    if (rateHistory.length > 10) rateHistory.shift(); // Keep last 10 batches
-    
-    // Progress reporting every 10 seconds
-    const now = Date.now();
-    if (processed === total || now - lastReportTime > 10000) {
-      const elapsedSec = (now - startTime) / 1000;
-      const avgRate = rateHistory.reduce((a, b) => a + b, 0) / rateHistory.length;
-      const remaining = (total - processed) / avgRate;
-      const pct = ((processed / total) * 100).toFixed(1);
-      const eta = new Date(Date.now() + remaining * 1000).toLocaleTimeString();
-      
-      logInfo(`Progress: ${processed}/${total} (${pct}%) | ${elapsedSec.toFixed(0)}s elapsed | Rate: ${avgRate.toFixed(0)}/sec | ETA: ${eta} | Activities: ${allActivities.length} | Errors: ${errors}`);
-      lastReportTime = now;
-    }
-  }
-  
-  // Final summary
-  const elapsed = (Date.now() - startTime) / 1000;
-  const avgRate = processed / elapsed;
-  
-  logInfo(`--- Processing Complete ---`);
-  logInfo(`  Total work items: ${total}`);
-  logInfo(`  Processed successfully: ${processed - errors}`);
-  logInfo(`  Errors: ${errors} (${((errors / total) * 100).toFixed(1)}%)`);
-  logInfo(`  Items with activity: ${processed - errors - skipped}`);
-  logInfo(`  Activities found: ${allActivities.length}`);
-  logInfo(`  Duration: ${formatDuration(elapsed)}`);
-  logInfo(`  Average rate: ${avgRate.toFixed(0)} items/sec`);
-  
-  return allActivities;
-}
 
 /**
  * Format duration in human-readable format
@@ -823,14 +929,13 @@ async function fetchWikiActivities(
     const gitApi = await conn.getGitApi();
     const { wikiRepoId } = getAdoReportConfig();
 
-    // Search by name
     const commits = await gitApi.getCommits(
       wikiRepoId,
       {
         author: target.name,
-        fromDate: startDate,
-        toDate: endDate,
-      },
+        fromDate: startDate as unknown as Date,
+        toDate: endDate as unknown as Date,
+      } as Record<string, unknown>,
       conn.project
     );
     
@@ -845,7 +950,7 @@ async function fetchWikiActivities(
       const commitId = commit.commitId?.substring(0, 8) || 'unknown';
       const comment = commit.comment?.trim() || 'Wiki commit';
       const authorDate = commit.author?.date;
-      const changeCounts = commit.changeCounts || { Add: 0, Edit: 0, Delete: 0 };
+      const changeCounts = (commit.changeCounts || {}) as Record<string, number>;
       
       // Determine activity type
       let activityType: ActivityType = 'WikiEdit';
@@ -853,7 +958,7 @@ async function fetchWikiActivities(
         activityType = 'WikiCreate';
       } else if (comment.toLowerCase().includes('page move') || comment.toLowerCase().includes('rename')) {
         activityType = 'WikiMove';
-      } else if (changeCounts.Delete > 0 && changeCounts.Add === 0 && changeCounts.Edit === 0) {
+      } else if ((changeCounts['Delete'] ?? 0) > 0 && (changeCounts['Add'] ?? 0) === 0 && (changeCounts['Edit'] ?? 0) === 0) {
         activityType = 'WikiDelete';
       }
       
@@ -866,7 +971,7 @@ async function fetchWikiActivities(
         areaPath: 'Wiki',
         title: comment.substring(0, 100),
         activityType,
-        details: `Changes: +${changeCounts.Add} ~${changeCounts.Edit} -${changeCounts.Delete}`,
+        details: `Changes: +${changeCounts['Add'] ?? 0} ~${changeCounts['Edit'] ?? 0} -${changeCounts['Delete'] ?? 0}`,
         actor: target.name,
       });
     }
@@ -878,11 +983,13 @@ async function fetchWikiActivities(
 }
 
 /**
- * Fetch pull request activities for a target person
+ * Fetch PR activities for ALL targets at once.
+ * Fetches repo list once, fans out getPullRequests in parallel across repos,
+ * then filters locally for each target person.
  */
-async function fetchPRActivities(
+async function fetchAllPRActivities(
   conn: AdoConnection,
-  target: ActivityTarget,
+  targets: ActivityTarget[],
   startDate: Date,
   endDate: Date
 ): Promise<ActivityRecord[]> {
@@ -890,46 +997,52 @@ async function fetchPRActivities(
   
   try {
     const gitApi = await conn.getGitApi();
+    const { adoOrg } = getAdoReportConfig();
     
-    // Get all repositories
+    // Fetch repo list ONCE
     const repos = await gitApi.getRepositories(conn.project);
     if (!repos) return activities;
     
-    const activeRepos = repos.filter(r => !r.isDisabled);
-    logInfo(`  Scanning ${activeRepos.length} repositories for PR activity...`);
+    const activeRepos = repos.filter(r => !r.isDisabled && r.id);
+    logInfo(`  Scanning ${activeRepos.length} repositories for PR activity (parallel)...`);
+    
+    // Fan out PR fetching in parallel across all repos
+    type PRResult = { repo: typeof activeRepos[0]; prs: Awaited<ReturnType<typeof gitApi.getPullRequests>> };
+    const prPromises = activeRepos.map(repo =>
+      gitApi.getPullRequests(repo.id!, {
+        status: 4, // All statuses
+      }, conn.project, undefined, undefined, 50)
+        .then((prs): PRResult => ({ repo, prs: prs || [] }))
+        .catch((): PRResult => ({ repo, prs: [] }))
+    );
+    
+    const repoResults = await Promise.all(prPromises);
     
     const processedPRs = new Set<number>();
     
-    for (const repo of activeRepos) {
-      if (!repo.id) continue;
-      
-      try {
-        // Get recent PRs
-        const prs = await gitApi.getPullRequests(repo.id, {
-          status: 4, // All statuses
-        }, conn.project, undefined, undefined, 50);
+    // Filter locally for all targets
+    for (const { repo, prs } of repoResults) {
+      for (const pr of prs) {
+        if (!pr.pullRequestId || processedPRs.has(pr.pullRequestId)) continue;
         
-        if (!prs) continue;
+        const creationDate = pr.creationDate ? new Date(pr.creationDate) : null;
+        const closedDate = pr.closedDate ? new Date(pr.closedDate) : null;
         
-        for (const pr of prs) {
-          if (!pr.pullRequestId || processedPRs.has(pr.pullRequestId)) continue;
-          
-          const creationDate = pr.creationDate ? new Date(pr.creationDate) : null;
-          const closedDate = pr.closedDate ? new Date(pr.closedDate) : null;
-          
-          // Check if PR is in date range
-          const inRange = (creationDate && creationDate >= startDate && creationDate <= endDate) ||
-                         (closedDate && closedDate >= startDate && closedDate <= endDate);
-          if (!inRange) continue;
-          
-          const prLink = `https://dev.azure.com/UMGC/${conn.project}/_git/${repo.name}/pullrequest/${pr.pullRequestId}`;
-          
+        // Check if PR is in date range
+        const inRange = (creationDate && creationDate >= startDate && creationDate <= endDate) ||
+                       (closedDate && closedDate >= startDate && closedDate <= endDate);
+        if (!inRange) continue;
+        
+        processedPRs.add(pr.pullRequestId);
+        const prLink = `https://dev.azure.com/${adoOrg}/${conn.project}/_git/${repo.name}/pullrequest/${pr.pullRequestId}`;
+        const prBranch = (pr as { sourceRefName?: string }).sourceRefName?.replace('refs/heads/', '') || '';
+        
+        for (const target of targets) {
           // Check if created by target
           const createdByName = pr.createdBy?.displayName || '';
           const createdByEmail = pr.createdBy?.uniqueName || '';
           
           if (isMatch(target, createdByName, createdByEmail) && creationDate && creationDate >= startDate) {
-            processedPRs.add(pr.pullRequestId);
             activities.push({
               target: target.name,
               date: creationDate.toISOString(),
@@ -943,6 +1056,7 @@ async function fetchPRActivities(
               details: `Created PR in ${repo.name}`,
               actor: target.name,
               link: prLink,
+              componentName: prBranch,
             });
           }
           
@@ -988,30 +1102,198 @@ async function fetchPRActivities(
                     details,
                     actor: target.name,
                     link: prLink,
+                    componentName: prBranch,
                   });
                 }
               }
             }
           }
         }
-      } catch (repoError) {
-        // Skip repos that fail
-        continue;
       }
     }
     
-    logInfo(`  Found ${activities.length} PR activities for ${target.name}`);
+    logInfo(`  Found ${activities.length} PR activities across ${targets.length} people`);
+
+    // Second pass: fetch file changes for PRCreated activities to identify SF metadata
+    const createdPRs = activities.filter(a => a.activityType === 'PRCreated');
+    if (createdPRs.length > 0) {
+      logInfo(`  Fetching file changes for ${createdPRs.length} created PRs...`);
+      for (const act of createdPRs) {
+        try {
+          const prId = parseInt(act.prNumber || '0', 10);
+          // Find the repo ID for this PR
+          const repoName = act.details.replace('Created PR in ', '');
+          const repo = activeRepos.find(r => r.name === repoName);
+          if (!repo?.id || !prId) continue;
+
+          const iterations = await gitApi.getPullRequestIterations(repo.id, prId, conn.project);
+          if (!iterations?.length) continue;
+          const lastIterId = iterations[iterations.length - 1]!.id!;
+
+          const iterChanges = await gitApi.getPullRequestIterationChanges(
+            repo.id, prId, lastIterId, conn.project
+          );
+          const entries = (iterChanges as { changeEntries?: Array<{ item?: { path?: string } }> })?.changeEntries;
+          if (!entries?.length) continue;
+
+          const sfComponents: string[] = [];
+          const allFiles: string[] = [];
+          for (const entry of entries) {
+            const path = entry.item?.path || '';
+            allFiles.push(path);
+            const component = parseSfMetadataPath(path);
+            if (component) sfComponents.push(component);
+          }
+
+          // Deduplicate (LWC/Aura have multiple files per component)
+          const uniqueComponents = [...new Set(sfComponents)];
+          if (uniqueComponents.length > 0) {
+            act.prChangedComponents = uniqueComponents.join('; ');
+            act.details += ` | SF Components: ${uniqueComponents.join(', ')}`;
+          }
+          act.details += ` | ${allFiles.length} files changed`;
+        } catch {
+          // Non-fatal — file list is enrichment
+        }
+      }
+    }
   } catch (error) {
-    logWarn(`Failed to fetch PR activities for ${target.name}: ${error}`);
+    logWarn(`Failed to fetch PR activities: ${error}`);
   }
   
   return activities;
 }
 
 /**
- * Generate activity report for specified users
- * 
- * Scans ALL work items to catch all mentions for 100% accuracy.
+ * Resolve a person's Salesforce UserId from their email
+ */
+async function resolveSfUserId(
+  email: string,
+  sfOrg: string
+): Promise<string | null> {
+  try {
+    const result = await executeSoqlQuery<{ Id: string; Name: string }>(
+      `SELECT Id, Name FROM User WHERE Email = '${email}' AND IsActive = true LIMIT 1`,
+      { alias: sfOrg }
+    );
+    const firstRecord = result.records[0];
+    if (firstRecord) {
+      return firstRecord.Id;
+    }
+    return null;
+  } catch (error) {
+    logWarn(`Failed to resolve SF UserId for ${email}: ${error}`);
+    return null;
+  }
+}
+
+/**
+ * Fetch Salesforce login history and metadata changes for a target person
+ */
+async function fetchSalesforceActivities(
+  target: ActivityTarget,
+  days: number,
+  sfOrg: string
+): Promise<ActivityRecord[]> {
+  const activities: ActivityRecord[] = [];
+
+  if (!target.email) {
+    logWarn(`  No email for ${target.name}, skipping SF activity`);
+    return activities;
+  }
+
+  // Resolve email to SF UserId
+  const userId = await resolveSfUserId(target.email, sfOrg);
+  if (!userId) {
+    logWarn(`  Could not resolve SF user for ${target.email}, skipping SF activity`);
+    return activities;
+  }
+
+  logInfo(`  Resolved SF UserId for ${target.name}: ${userId}`);
+
+  // Fetch LoginHistory
+  try {
+    const loginResult = await executeSoqlQuery<{
+      Id: string;
+      LoginTime: string;
+      Status: string;
+      SourceIp: string;
+      LoginType: string;
+      Application: string;
+    }>(
+      `SELECT Id, LoginTime, Status, SourceIp, LoginType, Application FROM LoginHistory WHERE UserId = '${userId}' AND LoginTime >= LAST_N_DAYS:${days} ORDER BY LoginTime DESC`,
+      { alias: sfOrg }
+    );
+
+    for (const login of loginResult.records) {
+      activities.push({
+        target: target.name,
+        date: login.LoginTime,
+        workItemId: '',
+        workItemType: 'Salesforce',
+        state: login.Status,
+        areaPath: 'Salesforce',
+        title: `Login via ${login.LoginType || 'Unknown'}`,
+        activityType: 'SFLogin',
+        details: `App: ${login.Application || 'N/A'} | IP: ${login.SourceIp || 'N/A'} | Status: ${login.Status || 'Success'}`,
+        actor: target.name,
+      });
+    }
+
+    logInfo(`  Found ${loginResult.records.length} SF logins for ${target.name}`);
+  } catch (error) {
+    logWarn(`  Failed to fetch LoginHistory for ${target.name}: ${error}`);
+  }
+
+  // Fetch SetupAuditTrail
+  try {
+    const auditResult = await executeSoqlQuery<{
+      Id: string;
+      Action: string;
+      Section: string;
+      CreatedDate: string;
+      Display: string;
+      DelegateUser: string;
+    }>(
+      `SELECT Id, Action, Section, CreatedDate, Display, DelegateUser FROM SetupAuditTrail WHERE CreatedById = '${userId}' AND CreatedDate >= LAST_N_DAYS:${days} ORDER BY CreatedDate DESC`,
+      { alias: sfOrg }
+    );
+
+    for (const audit of auditResult.records) {
+      // Extract component name from Display field for SF↔ADO correlation
+      // Patterns: "Changed LeadTriggerHandlerTest Apex Class code"
+      //           "Created flow MyFlow"
+      //           "Changed validation rule MyRule on Account"
+      const componentName = extractSfComponentName(audit.Display || '', audit.Action || '');
+
+      activities.push({
+        target: target.name,
+        date: audit.CreatedDate,
+        workItemId: '',
+        workItemType: 'Salesforce',
+        state: '',
+        areaPath: `Salesforce/${audit.Section || 'Setup'}`,
+        title: audit.Display || audit.Action || 'Setup Change',
+        activityType: 'SFMetadataChange',
+        details: `Action: ${audit.Action || 'N/A'} | Section: ${audit.Section || 'N/A'} | ${audit.Display || ''}`.trim(),
+        actor: audit.DelegateUser || target.name,
+        componentName,
+      });
+    }
+
+    logInfo(`  Found ${auditResult.records.length} SF metadata changes for ${target.name}`);
+  } catch (error) {
+    logWarn(`  Failed to fetch SetupAuditTrail for ${target.name}: ${error}`);
+  }
+
+  return activities;
+}
+
+/**
+ * Generate activity report for specified users.
+ *
+ * Uses bulk-fetch approach: stream all revisions + batch-fetch work item details,
+ * then process locally. ~30 API calls instead of ~3,000.
  */
 export async function generateActivityReport(
   options: ActivityReportOptions
@@ -1019,9 +1301,14 @@ export async function generateActivityReport(
   const { 
     people, 
     days, 
+    startDate: startDateStr,
+    endDate: endDateStr,
     outputDir = 'reports',
     includeWiki = true,
     includePullRequests = true,
+    sfOrg,
+    narrative = false,
+    teamJsonPath,
   } = options;
 
   if (people.length === 0) {
@@ -1035,9 +1322,26 @@ export async function generateActivityReport(
   }
   
   const startTime = Date.now();
-  logInfo(`Generating activity report for ${people.length} people, last ${days} days`);
   
-  logInfo(`Mode: FULL (comprehensive scan, 100% coverage)`);
+  // Resolve date range: explicit --start/--end takes precedence over --days
+  let cutoffDate: Date;
+  let endDate: Date;
+  if (startDateStr) {
+    cutoffDate = new Date(startDateStr + 'T00:00:00Z');
+    endDate = endDateStr ? new Date(endDateStr + 'T23:59:59Z') : new Date();
+    logInfo(`[PHASE] Starting activity report for ${people.length} people, ${startDateStr} to ${endDateStr || 'today'}`);
+  } else {
+    cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    endDate = new Date();
+    logInfo(`[PHASE] Starting activity report for ${people.length} people, last ${days} days`);
+  }
+  logInfo(`Mode: BULK (stream revisions + local processing)`);
+  
+  // Compute days-back for APIs that require it (bulkFetchRevisions, SF LAST_N_DAYS).
+  // When using --start/--end, we fetch from startDate to today (may over-fetch) and filter later.
+  const msPerDay = 86400000;
+  const daysBack = Math.max(1, Math.ceil((Date.now() - cutoffDate.getTime()) / msPerDay));
   
   for (const p of people) {
     logInfo(`  - ${p.name} (${p.email})`);
@@ -1046,68 +1350,169 @@ export async function generateActivityReport(
   // Create ADO connection
   const conn = await createAdoConnection();
   
-  // Calculate cutoff date
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - days);
-  const endDate = new Date();
-  
-  // Fetch work items based on mode
-  let workItems: Array<{ id: number; fields: Record<string, unknown> }>;
-  
-  workItems = await fetchRecentWorkItems(conn, days);
+  // --- PHASE 1: Bulk data collection (parallel where possible) ---
+  // Stream all revisions and kick off wiki/PR/SF fetches in parallel
+  const revisionsPromise = bulkFetchRevisions(conn, daysBack);
 
-  // Initialize activities by target
+  const wikiPromise = includeWiki
+    ? (logInfo('[PHASE] Fetching wiki activities...'),
+       Promise.all(people.map(target => fetchWikiActivities(conn, target, cutoffDate, endDate))))
+    : Promise.resolve(people.map(() => [] as ActivityRecord[]));
+
+  const prPromise = includePullRequests
+    ? (logInfo('[PHASE] Fetching PR activities (parallel across repos)...'),
+       fetchAllPRActivities(conn, people, cutoffDate, endDate))
+    : Promise.resolve([] as ActivityRecord[]);
+
+  const sfPromise = sfOrg
+    ? (logInfo(`[PHASE] Fetching Salesforce activities from org '${sfOrg}'...`),
+       Promise.all(people.map(target => fetchSalesforceActivities(target, daysBack, sfOrg))))
+    : Promise.resolve(people.map(() => [] as ActivityRecord[]));
+
+  // Wait for revisions stream + supplemental fetches
+  const [revisionsMap, wikiResults, prActivities, sfResults] = await Promise.all([
+    revisionsPromise,
+    wikiPromise,
+    prPromise,
+    sfPromise,
+  ]);
+
+  // --- PHASE 2: Build details map from revision data (zero API calls) ---
+  // The last revision for each work item contains the current title/type/state/area.
+  const detailsMap = new Map<number, Record<string, unknown>>();
+  for (const [wiId, revisions] of revisionsMap) {
+    const last = revisions[revisions.length - 1];
+    if (last) {
+      detailsMap.set(wiId, last.fields);
+    }
+  }
+  logInfo(`  Built details map for ${detailsMap.size.toLocaleString()} work items from revision data (0 API calls)`);
+
+  // --- PHASE 3: Local processing (edits, state changes, assignments) ---
+  const { activities: metadataActivities, relevantItemIds } = processRevisionsLocally(revisionsMap, detailsMap, people, cutoffDate);
+
+  // --- PHASE 3b: Targeted comment/mention fetch for relevant items only ---
+  const commentActivities = await fetchCommentsForRelevantItems(
+    conn, Array.from(relevantItemIds), detailsMap, people, cutoffDate
+  );
+
+  // --- PHASE 3c: Fetch parent relations for relevant items ---
+  const parentMap = await fetchParentRelations(conn, Array.from(relevantItemIds));
+
+  // Apply parent data to all work item activities
+  const workItemActivities = [...metadataActivities, ...commentActivities];
+  for (const act of workItemActivities) {
+    if (act.workItemId) {
+      const parent = parentMap.get(parseInt(act.workItemId, 10));
+      if (parent) {
+        act.parentId = parent.parentId;
+        act.parentTitle = parent.parentTitle;
+      }
+    }
+  }
+
+  // --- PHASE 3d: Fetch Description/AC/ReproSteps for relevant items + parents ---
+  const allItemIds = new Set(relevantItemIds);
+  for (const { parentId } of parentMap.values()) {
+    allItemIds.add(parseInt(parentId, 10));
+  }
+  const descMap = await fetchWorkItemDescriptions(conn, Array.from(allItemIds));
+
+  // Apply description data to all work item activities
+  for (const act of workItemActivities) {
+    if (act.workItemId) {
+      const desc = descMap.get(parseInt(act.workItemId, 10));
+      if (desc) {
+        act.description = desc.description;
+        act.acceptanceCriteria = desc.acceptanceCriteria;
+        act.reproSteps = desc.reproSteps;
+      }
+    }
+  }
+
+  // --- PHASE 4: Merge all activity sources ---
   const activitiesByTarget: Record<string, ActivityRecord[]> = {};
   for (const p of people) {
     activitiesByTarget[p.name] = [];
   }
-  
-  // Run work item processing, wiki, and PR fetching in PARALLEL for maximum speed
-  // Use very high concurrency - accept some rate limit errors for speed
-  const concurrency = 150;
-  
-  // Create promises for all three types of activities
-  const workItemPromise = workItems.length > 0 
-    ? (logInfo(`Processing ${workItems.length} work items with ${concurrency} concurrent requests...`),
-       processWorkItemsBatch(conn, workItems, people, cutoffDate, concurrency))
-    : Promise.resolve([] as ActivityRecord[]);
-  
-  const wikiPromise = includeWiki
-    ? (logInfo('Fetching wiki activities in parallel...'),
-       Promise.all(people.map(target => fetchWikiActivities(conn, target, cutoffDate, endDate))))
-    : Promise.resolve(people.map(() => [] as ActivityRecord[]));
-  
-  const prPromise = includePullRequests
-    ? (logInfo('Fetching PR activities in parallel...'),
-       Promise.all(people.map(target => fetchPRActivities(conn, target, cutoffDate, endDate))))
-    : Promise.resolve(people.map(() => [] as ActivityRecord[]));
-  
-  // Wait for all to complete
-  const [workItemActivities, wikiResults, prResults] = await Promise.all([
-    workItemPromise,
-    wikiPromise,
-    prPromise,
-  ]);
 
-  // Group work item activities by target
+  // Work item activities
   for (const activity of workItemActivities) {
-    if (!activitiesByTarget[activity.target]) {
-      activitiesByTarget[activity.target] = [];
+    const bucket = activitiesByTarget[activity.target];
+    if (bucket) {
+      bucket.push(activity);
     }
-    activitiesByTarget[activity.target].push(activity);
   }
-  
-  // Add wiki activities
+
+  // Wiki activities
   for (let i = 0; i < people.length; i++) {
-    activitiesByTarget[people[i].name].push(...wikiResults[i]);
+    const person = people[i];
+    const wikiActs = wikiResults[i];
+    if (person && wikiActs) {
+      activitiesByTarget[person.name]?.push(...wikiActs);
+    }
   }
-  
-  // Add PR activities
+
+  // PR activities (already flat, grouped by target)
+  for (const activity of prActivities) {
+    const bucket = activitiesByTarget[activity.target];
+    if (bucket) {
+      bucket.push(activity);
+    }
+  }
+
+  // Salesforce activities
   for (let i = 0; i < people.length; i++) {
-    activitiesByTarget[people[i].name].push(...prResults[i]);
+    const person = people[i];
+    const sfActs = sfResults[i];
+    if (person && sfActs) {
+      activitiesByTarget[person.name]?.push(...sfActs);
+    }
   }
   
-  // Write CSV files
+  // --- PHASE 4b: Filter by endDate when using --start/--end (bounded range) ---
+  // bulkFetchRevisions and SF queries may over-fetch; clip to the requested window.
+  if (endDateStr) {
+    const endCutoff = endDate.getTime();
+    for (const [targetName, activities] of Object.entries(activitiesByTarget)) {
+      activitiesByTarget[targetName] = activities.filter(a => {
+        if (!a.date) return true;
+        return new Date(a.date).getTime() <= endCutoff;
+      });
+    }
+  }
+
+  // Extract peer metrics from revision data if team JSON is provided
+  let peerMetrics: import('./types/adoActivityTypes.js').PeerMetrics[] = [];
+  let teamMembers: Array<{ name: string; email: string; relationship: string; title: string }> = [];
+  if (teamJsonPath && narrative) {
+    try {
+      const resolvedTeamPath = teamJsonPath.startsWith('/') || teamJsonPath.startsWith('\\') || /^[a-zA-Z]:/.test(teamJsonPath)
+        ? teamJsonPath
+        : join(getProjectRoot(), teamJsonPath);
+      const teamJson = JSON.parse(readFileSync(resolvedTeamPath, 'utf-8'));
+      teamMembers = (teamJson.members || []).map((m: Record<string, unknown>) => ({
+        name: String(m['name'] || ''),
+        email: String(m['email'] || ''),
+        relationship: String(m['relationship'] || ''),
+        title: String(m['title'] || ''),
+      }));
+      // Identify peers — Subordinate, Peer, Peer's Team (exclude You, Your Manager, Leader)
+      const peerEntries = teamMembers.filter(m =>
+        !['You', 'Your Manager', 'Leader'].includes(m.relationship)
+      );
+      const peerEmails = new Set(peerEntries.map(m => m.email.toLowerCase()));
+      const peerNameMap = new Map(peerEntries.map(m => [m.email.toLowerCase(), m.name]));
+
+      logInfo(`[PHASE] Extracting peer metrics for ${peerEmails.size} team members from revision data...`);
+      peerMetrics = extractPeerMetrics(revisionsMap, peerEmails, peerNameMap, cutoffDate);
+      logInfo(`  Found activity for ${peerMetrics.length} of ${peerEmails.size} peers`);
+    } catch (err) {
+      logInfo(`  ⚠️ Could not read team JSON: ${err instanceof Error ? err.message : err}`);
+    }
+  }
+
+  logInfo('[PHASE] Writing reports...');
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
   const files: string[] = [];
   const activityCounts: Record<string, number> = {};
@@ -1119,6 +1524,21 @@ export async function generateActivityReport(
       files.push(filepath);
       activityCounts[targetName] = activities.length;
       totalActivities += activities.length;
+
+      // Generate activity digest for agent-driven narrative generation
+      if (narrative) {
+        const { generateActivityDigest } = await import('./adoActivityNarrative.js');
+        const dateRange = `${cutoffDate.toLocaleDateString()} – ${endDate.toLocaleDateString()}`;
+        const digestPath = generateActivityDigest({
+          csvPath: filepath,
+          personName: targetName,
+          dateRange,
+          peerMetrics: peerMetrics.length > 0 ? peerMetrics : undefined,
+          teamMembers: teamMembers.length > 0 ? teamMembers : undefined,
+          days,
+        });
+        files.push(digestPath);
+      }
     }
   }
 
@@ -1130,25 +1550,30 @@ export async function generateActivityReport(
     }
   }
   
-  // Calculate wiki and PR counts
-  const wikiCount = wikiResults.reduce((sum, arr) => sum + arr.length, 0);
-  const prCount = prResults.reduce((sum, arr) => sum + arr.length, 0);
+  // Calculate source counts
+  const wikiCount = wikiResults.reduce((sum: number, arr: ActivityRecord[]) => sum + arr.length, 0);
+  const prCount = prActivities.length;
+  const sfCount = sfResults.reduce((sum: number, arr: ActivityRecord[]) => sum + arr.length, 0);
   const workItemCount = workItemActivities.length;
   
   // Final summary
   const elapsed = (Date.now() - startTime) / 1000;
   
+  logInfo(`[PHASE] Complete — ${totalActivities} activities found`);
   logInfo('');
   logInfo('========================================');
   logInfo('         ACTIVITY REPORT SUMMARY        ');
   logInfo('========================================');
   logInfo(`Date Range: ${cutoffDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`);
-  logInfo(`Mode: FULL (comprehensive scan, 100% coverage)`);
+  logInfo(`Mode: BULK (stream revisions + local processing)`);
+  logInfo(`Revisions streamed: ${Array.from(revisionsMap.values()).reduce((s, r) => s + r.length, 0).toLocaleString()}`);
+  logInfo(`Work items in scope: ${revisionsMap.size.toLocaleString()}`);
   logInfo('');
   logInfo('--- Sources ---');
   logInfo(`  Work Items: ${workItemCount} activities`);
   logInfo(`  Wiki: ${wikiCount} activities`);
   logInfo(`  Pull Requests: ${prCount} activities`);
+  if (sfOrg) logInfo(`  Salesforce (${sfOrg}): ${sfCount} activities`);
   logInfo('');
   logInfo('--- Activity Types ---');
   const sortedTypes = Object.entries(activityTypeBreakdown).sort((a, b) => b[1] - a[1]);

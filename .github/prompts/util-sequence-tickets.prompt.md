@@ -34,6 +34,12 @@ A4 [LOGIC]: If collected-tickets.json exists → skip to Step 3
 B1 [CLI]: `{{cli.ado_get}} {{work_item_id}} --expand All --json`
 B2 [CLI]: `{{cli.ado_relations}} {{work_item_id}} --type child --json` → child IDs; **STOP** if none
 B3 [CLI]: Per child: `{{cli.ado_get}} {{child_id}} --expand All --json`
+B3.5 [CLI]: Per active child (state != Closed/Done/Removed): `{{cli.ado_get}} {{child_id}} --comments --json`
+  - Limit to top 10 comments per child
+B3.6 [GEN]: **Dependency signal extraction** from comments:
+  - Scan for: "depends on", "blocked by", "must complete before", "requires", "waiting on", "after we finish"
+  - Extract referenced ticket IDs (numeric patterns like #12345 or "ticket 12345")
+  - Store as supplementary dependency signals for Step 3 analysis
 B4 [IO]: Save → collected-tickets.json (Feature, epic=null, features=[1 entry + children])
 
 **Epic path** (2-level):
@@ -73,6 +79,7 @@ D2 [GEN]: **Analyze dependencies** using signals (priority order):
 4. **Logical dependencies** — config before usage, core before extensions, backend before frontend
 5. **Tags/grouping** — shared tags indicate related sequencing
 6. **Priority/points** — higher-priority + foundation items with many dependents earlier
+7. **Comment-based signals** — explicit dependency mentions in comments ("depends on X", "blocked by Y", "must finish Z first")
 
 D3 [GEN]: **Build dependency graph** — record predecessor, successor, rationale per edge. Detect cycles → flag.
 D4 [GEN]: **Topological sort** → execution phases (Phase 1: no predecessors; Phase N: all predecessors in Phase 1..N-1)

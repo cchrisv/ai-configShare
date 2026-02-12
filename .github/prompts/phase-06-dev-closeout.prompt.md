@@ -23,17 +23,30 @@ field_mappings · field_solution_design · field_release_notes · wiki_format ·
 
 ### Step 1 [IO/CLI] – Init
 A1 [IO]: Load shared.json; ensure {{context_file}} exists
-A2 [CLI]: `{{cli.ado_get}} {{work_item_id}} --expand All --json`
+A2 [CLI]: `{{cli.ado_get}} {{work_item_id}} --expand All --comments --json`
 A3 [CLI]: Find wiki: `{{cli.wiki_search}} "{{work_item_id}}" --json`
 A4 [LOGIC]: Extract current state from ADO + wiki
 A5 [IO]: Load dev_updates.updates[] (optional context)
+A6 [LOGIC]: Extract child IDs from relations (`System.LinkTypes.Hierarchy-Forward`)
+A7 [CLI]: Per child: `{{cli.ado_get}} {{child_id}} --expand Relations --comments --json`
+A8 [GEN]: Per child: extract state, key fields, classify comments (decisions, scope changes, lessons learned)
+A9 [GEN]: **Comment mining** across all comments (self + children):
+  - Final decisions made during development
+  - Scope changes documented in discussions
+  - Meeting transcripts and action item resolutions
+  - Lessons learned mentioned in comments
+  - Blocker resolutions
 
 ### Step 2 [CLI/GEN] – Evidence Gathering
 B1 [CLI]: `{{cli.ado_relations}} {{work_item_id}} --json` — filter PR links
 B2 [CLI]: `{{cli.sf_query}} "SELECT Action, Section, Display, CreatedDate, CreatedBy.Name, DelegateUser FROM SetupAuditTrail WHERE CreatedDate = LAST_N_DAYS:90 ORDER BY CreatedDate DESC" --json`
 B3 [CLI]: `{{cli.sf_discover}}` / `{{cli.sf_describe}}` on SF components
 B4 [LOGIC]: Extract ADO revision history
-B5 [GEN]: Compile evidence: PRs, SF audit, SF as-built vs planned
+B4.5 [GEN]: **Child reconciliation** — compare child states against planned components:
+  - Map children to solutioning.solution_design.components[] where possible
+  - Identify: completed children, modified children, new children not in plan, removed/cancelled children
+  - Use child comments + states as evidence for planned-vs-actual delta
+B5 [GEN]: Compile evidence: PRs, SF audit, SF as-built vs planned, child reconciliation
 
 ### Step 3 [GEN] – Assumptions & Unknowns Resolution (Final)
 C1 [GEN]: Extract all assumptions + unknowns from wiki

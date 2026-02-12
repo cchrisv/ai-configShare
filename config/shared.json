@@ -157,7 +157,9 @@
     "field_progress": "field-progress.html",
     "solution_design_document": "feature-solution-design-document-template.md",
     "solution_design_wiki": "feature-solution-design-wiki.html",
-    "wiki_general_template": "wiki-general-template.html"
+    "wiki_general_template": "wiki-general-template.html",
+    "report_activity_narrative": "report-activity-narrative.html",
+    "report_activity_briefing": "report-activity-briefing.html"
   },
   "artifact_files": {
     "run_state": "run-state.json",

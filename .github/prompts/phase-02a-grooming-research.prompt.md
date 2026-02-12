@@ -26,8 +26,9 @@ Verify {{context_file}} exists. **STOP** on failure.
 ## Research Schema
 All outputs to {{context_file}}.research:
 - organization_dictionary (terms, acronyms, undefined_terms)
-- ado_workitem (scrubbed_data, business_summary, technical_context, detective_analysis, keywords)
+- ado_workitem (scrubbed_data, business_summary, technical_context, detective_analysis, keywords, comments[], comment_summary)
 - similar_workitems (similar_items_found, duplicate_assessment, pattern_analysis)
+- related_context (parent{}, children[], siblings[])
 - wiki_search (search_results, metadata_references, detective_correlation)
 - business_context (organizational_context, business_rules, detective_cues)
 - team_impact (team_members_file, impacted_roles[], coordination_contacts[], stakeholder_summary)
@@ -57,6 +58,14 @@ B2 [GEN]: List undefined terms needing clarification
 
 A1 [CLI]: `{{cli.ado_get}} {{work_item_id}} --expand Relations --json`
 A2 [CLI]: `{{cli.ado_get}} {{work_item_id}} --comments --json`
+A3 [GEN]: **Comment Mining** — classify each comment:
+  - Scan for decision signals: "decided to", "agreed that", "approved", "going with"
+  - Scan for meeting/transcript signals: "meeting notes", "transcript", "action items", "discussed"
+  - Scan for requirement changes: "changed to", "new requirement", "descoped", "added scope"
+  - Scan for blockers: "blocked by", "waiting on", "dependency on"
+  - Classify each as: `decision` | `meeting_transcript` | `requirement_change` | `blocker` | `question` | `status_update` | `general`
+  - Store classified array → {{context_file}}.research.ado_workitem.comments[]
+A4 [GEN]: **Comment Summary** — synthesize key decisions, open questions, and action items from classified comments → {{context_file}}.research.ado_workitem.comment_summary
 B1 [GEN]: Scrub PII → tokens (`[User]`, `[Email]`)
 B2 [GEN]: Extract **business content** + **classification** fields into scrubbed_data; discard routing/output fields
 B3 [GEN]: Segregate business vs technical content
@@ -66,6 +75,28 @@ D1 [CLI]: `{{cli.ado_search}} --text "{{keyword}}" --type "User Story" --top 20 
 D2 [CLI]: `{{cli.ado_search}} --area "{{area_path}}" --type "User Story" --top 20 --json`
 D3 [CLI]: `{{cli.ado_search}} --tags "{{tags}}" --top 20 --json`
 D4 [GEN]: Identify link candidates (NO ado_link calls)
+
+---
+
+## Stream 2b [CLI/GEN] – Related Context (Parent, Children, Siblings)
+**Goal:** Gather context from related work items → {{context_file}}.research.related_context
+
+**Parent traversal** (from relations in A1):
+E1 [LOGIC]: Extract parent ID from `System.LinkTypes.Hierarchy-Reverse` relations
+E2 [CLI]: If parent exists: `{{cli.ado_get}} {{parent_id}} --comments --json`
+E3 [GEN]: Summarize parent description + classify parent comments
+E4 [GEN]: Extract key decisions from parent comments → store in related_context.parent
+
+**Child traversal** (from relations in A1):
+F1 [LOGIC]: Extract child IDs from `System.LinkTypes.Hierarchy-Forward` relations
+F2 [CLI]: Per child (max 10): `{{cli.ado_get}} {{child_id}} --comments --json`
+F3 [GEN]: Per child: summarize description, classify comments, extract key decisions
+F4 [GEN]: Store → related_context.children[]
+
+**Sibling discovery** (via parent's children):
+G1 [LOGIC]: If parent exists, extract sibling IDs from parent's `Hierarchy-Forward` relations (exclude self)
+G2 [CLI]: Per sibling (max 5): `{{cli.ado_get}} {{sibling_id}} --json` (fields only, no comments)
+G3 [GEN]: Classify relevance (high/medium/low) based on title/tags overlap → related_context.siblings[]
 
 ---
 

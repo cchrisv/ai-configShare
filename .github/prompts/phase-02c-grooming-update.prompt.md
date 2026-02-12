@@ -17,6 +17,12 @@ Input: `{{work_item_id}}`
 ### Step 1 [IO/CLI] – Init
 A1 [IO]: Load shared.json; ensure {{context_file}} exists
 A2 [CLI]: `{{cli.ado_get}} {{work_item_id}} --expand All --json`
+A2.5 [CLI]: `{{cli.ado_get}} {{work_item_id}} --comments --json`
+A2.6 [LOGIC]: **Comment diff** — compare fetched comments against {{context_file}}.research.ado_workitem.comments[] (by comment ID):
+  - Identify NEW comments added since research phase
+  - Classify new comments using context_type taxonomy (decision/meeting_transcript/requirement_change/blocker/question/status_update/general)
+  - Extract key decisions, scope changes, requirements discussions from new comments
+A2.7 [IO]: Update {{context_file}}.research.ado_workitem.comments[] with new entries
 A3 [CLI]: Find wiki: `{{cli.wiki_search}} "{{work_item_id}}" --json`
 A4 [LOGIC]: Extract grooming baseline from ADO + wiki
 A5 [IO]: Count existing dev_updates.updates[]; set update_number
@@ -32,7 +38,9 @@ C2 [GEN]: Cross-reference against evidence
 C3 [GEN]: Present unresolved items to developer
 
 ### Step 4 [GEN] – Developer Questionnaire
-Present evidence; ask about requirements/scope:
+Present evidence — including any **new comments** found since last research phase (highlight decisions, scope changes, and meeting transcripts).
+If new comments contain answers to the questionnaire questions below, pre-fill answers and ask for confirmation.
+Ask about requirements/scope:
 1. "Requirements delivered: [list]. Accurate?"
 2. "AC added/removed/modified?"
 3. "Business requirements changed?"

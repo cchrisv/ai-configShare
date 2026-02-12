@@ -18,6 +18,12 @@ Input: `{{work_item_id}}`
 ### Step 1 [IO/CLI] – Init
 A1 [IO]: Load shared.json; ensure {{context_file}} exists
 A2 [CLI]: `{{cli.ado_get}} {{work_item_id}} --expand All --json`
+A2.5 [CLI]: `{{cli.ado_get}} {{work_item_id}} --comments --json`
+A2.6 [LOGIC]: **Comment diff** — compare fetched comments against {{context_file}}.research.ado_workitem.comments[] (by comment ID):
+  - Identify NEW comments added since last phase
+  - Classify new comments (decision/meeting_transcript/requirement_change/blocker/question/status_update/general)
+  - Extract technical decisions, architecture changes, dependency updates from new comments
+A2.7 [IO]: Update {{context_file}}.research.ado_workitem.comments[] with new entries
 A3 [CLI]: Find wiki: `{{cli.wiki_search}} "{{work_item_id}}" --json`
 A4 [LOGIC]: Extract solutioning baseline from ADO + wiki
 A5 [IO]: Count existing dev_updates.updates[]; set update_number
@@ -34,7 +40,9 @@ C2 [GEN]: Cross-reference against evidence (SF metadata, PRs, audit)
 C3 [GEN]: Present unresolved items to developer
 
 ### Step 4 [GEN] – Developer Questionnaire
-Present evidence; ask about architecture/implementation:
+Present evidence — including any **new comments** found since last phase (highlight technical decisions, architecture changes, and integration updates).
+If new comments contain answers to the questionnaire questions below, pre-fill answers and ask for confirmation.
+Ask about architecture/implementation:
 1. "PRs found: [list]. Any others? Sandbox-only?"
 2. "SF audit shows: [list]. Related to this work?"
 3. "SF metadata vs wiki plan: built as designed?"

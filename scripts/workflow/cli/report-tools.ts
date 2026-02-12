@@ -26,10 +26,15 @@ program
     '-p, --people <people...>',
     'People to track in format "Name|email@domain.com"'
   )
-  .option('-d, --days <days>', 'Number of days to look back', '30')
+  .option('-d, --days <days>', 'Number of days to look back (default: 30, ignored when --start is used)')
+  .option('--start <date>', 'Start date for the report period (ISO format: YYYY-MM-DD)')
+  .option('--end <date>', 'End date for the report period (ISO format: YYYY-MM-DD, defaults to today)')
   .option('-o, --output <dir>', 'Output directory for reports', '.ai-artifacts/reports')
   .option('--no-wiki', 'Exclude wiki activities')
   .option('--no-prs', 'Exclude pull request activities')
+  .option('--sf-org <alias>', 'Salesforce org alias for login/metadata activity (omit to skip SF)')
+  .option('--narrative', 'Generate narrative HTML report alongside CSV (for PDF sharing)')
+  .option('--team-json <path>', 'Path to team-members JSON for peer comparison in narrative')
   .option('--json', 'Output result as JSON (suppresses progress output)')
   .option('-q, --quiet', 'Quiet mode - minimal output')
   .option('-v, --verbose', 'Verbose output with debug information')
@@ -38,7 +43,9 @@ program
     
     try {
       // Configure logging based on options
-      if (options.json || options.quiet) {
+      if (options.json) {
+        configureLogger({ useStderr: true });
+      } else if (options.quiet) {
         configureLogger({ silent: true });
       } else if (options.verbose) {
         configureLogger({ minLevel: 'debug' });
@@ -56,20 +63,61 @@ program
         process.exit(1);
       }
 
-      // Validate days
-      const days = parseInt(options.days, 10);
-      if (isNaN(days) || days < 1 || days > 365) {
-        console.error('Error: --days must be a number between 1 and 365');
-        process.exit(1);
+      // Resolve date range: --start/--end take precedence over --days
+      let days: number;
+      let startDate: string | undefined;
+      let endDate: string | undefined;
+
+      if (options.start) {
+        // Validate start date
+        const parsedStart = new Date(options.start);
+        if (isNaN(parsedStart.getTime())) {
+          console.error(`Error: --start '${options.start}' is not a valid date. Use YYYY-MM-DD format.`);
+          process.exit(1);
+        }
+        startDate = parsedStart.toISOString().split('T')[0];
+
+        // Validate end date (default to today)
+        if (options.end) {
+          const parsedEnd = new Date(options.end);
+          if (isNaN(parsedEnd.getTime())) {
+            console.error(`Error: --end '${options.end}' is not a valid date. Use YYYY-MM-DD format.`);
+            process.exit(1);
+          }
+          endDate = parsedEnd.toISOString().split('T')[0];
+          if (parsedEnd < parsedStart) {
+            console.error('Error: --end date must be on or after --start date.');
+            process.exit(1);
+          }
+        } else {
+          endDate = new Date().toISOString().split('T')[0];
+        }
+
+        // Compute days for backward-compat (distance from start to today)
+        const msPerDay = 86400000;
+        days = Math.ceil((Date.now() - parsedStart.getTime()) / msPerDay);
+      } else {
+        // Classic mode: --days
+        const daysStr = options.days || '30';
+        days = parseInt(daysStr, 10);
+        if (isNaN(days) || days < 1 || days > 365) {
+          console.error('Error: --days must be a number between 1 and 365');
+          process.exit(1);
+        }
       }
 
       // Generate report
       const result = await generateActivityReport({
         people,
         days,
+        startDate,
+        endDate,
         outputDir: options.output,
         includeWiki: options.wiki !== false,
         includePullRequests: options.prs !== false,
+        sfOrg: options.sfOrg,
+        narrative: options.narrative === true,
+        teamJsonPath: options.teamJson,
       });
 
       if (options.json) {
@@ -128,6 +176,7 @@ program.addHelpText('after', `
 Examples:
   $ report-tools activity --people "John Doe|john.doe@company.com" --days 30
   $ report-tools activity --people "John Doe|john@co.com" "Jane Doe|jane@co.com" --days 7
+  $ report-tools activity --people "John Doe|john@co.com" --start 2025-01-01 --end 2025-01-31
   $ report-tools activity --people "John Doe|john@co.com" --json > report.json
 
 Output:

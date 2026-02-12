@@ -15,6 +15,7 @@ Schema: `#file:config/templates/ticket-context-schema.json`
 5. **No comments** – never post to work items unless requested
 6. **Context7 only** – ALWAYS use {{root}}/ticket-context.json; NEVER separate artifacts
 7. **Template-verbatim HTML** – when generating HTML for any ADO field with a template in `config/templates/`, COPY the template file character-for-character and ONLY replace `{{variable}}` tokens. NEVER write HTML tags or CSS from memory. Omit entire repeatable blocks when no data exists.
+8. **Comments by default** – when fetching work items for context, ALWAYS include `--comments` unless the prompt explicitly states comments are not needed (e.g., formatting-only operations)
 
 ## Entry Points
 
@@ -68,7 +69,7 @@ Reset sections: `research`, `grooming`, `solutioning`, `wiki`, `finalization`, `
 ### ado-tools
 | Command | Syntax |
 |---------|--------|
-| get | `{{cli.ado_get}} <id> [--expand All\|Relations\|Fields] [--comments] [--fields <csv>] --json` |
+| get | `{{cli.ado_get}} <id> [--expand All\|Relations\|Fields] [--comments] [--fields <csv>] --json` ← **include `--comments` for context-gathering calls** |
 | update | `{{cli.ado_update}} <id> [field options] --json` |
 | create | `{{cli.ado_create}} <type> --title "<title>" [--parent <id>] [--area <path>] [--iteration <path>] [--assigned-to <user>] [--tags <csv>] --json` |
 | search | `{{cli.ado_search}} [--text "<keyword>"] [--type "<type>"] [--state "<state>"] [--wiql "<wiql>"] [--top <n>] --json` |
@@ -110,8 +111,8 @@ Reset sections: `research`, `grooming`, `solutioning`, `wiki`, `finalization`, `
 **Page ID vs Path:** use `--page-id` (PATCH, update-only) for existing pages; `--path` (PUT, create-or-update) otherwise.
 
 ### report-tools
-`{{cli.report_activity}} -p "Name|email" [-p ...] [-d <days>] [-o <dir>] --json`
-Options: `-d` days (default 30) · `-o` output dir · `--no-wiki` · `--no-prs` · `--fast` · `-q` quiet · `-v` verbose
+`{{cli.report_activity}} -p "Name|email" [-p ...] [-d <days>] [--start <YYYY-MM-DD> --end <YYYY-MM-DD>] [-o <dir>] [--sf-org <alias>] --json`
+Options: `-d` days (default 30) · `--start` / `--end` explicit date range (use for bounded historical periods like "month of January") · `-o` output dir · `--no-wiki` · `--no-prs` · `--sf-org <alias>` (SF login/metadata activity) · `-q` quiet · `-v` verbose
 
 ### team-tools
 `{{cli.team_discover}} [--leader <email>] [--department] [--salesforce] [--markdown] [-o <dir>] --json`

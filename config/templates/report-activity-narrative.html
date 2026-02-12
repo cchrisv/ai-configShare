@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{report_title}}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', -apple-system, sans-serif; font-size: 14px; color: #333; background: #f5f5f5; line-height: 1.6; }
+    .page { max-width: 900px; margin: 0 auto; background: #fff; padding: 40px; }
+    .gradient-header { border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; }
+    .gradient-header span { font-weight: 700; color: #fff; font-size: 15px; }
+    .gradient-header .sub { font-weight: 400; font-size: 13px; opacity: 0.9; color: rgba(255,255,255,0.85); }
+    .card { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+    .card-accent { border-left: 4px solid; border-radius: 0 8px 8px 0; }
+    .section-title { font-weight: 600; margin-bottom: 10px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+    .badge-blue { background: #1976d2; color: #fff; }
+    .badge-green { background: #28a745; color: #fff; }
+    .badge-yellow { background: #fff3cd; color: #856404; }
+    .badge-red { background: #dc3545; color: #fff; }
+    .badge-gray { background: #6c757d; color: #fff; }
+    .badge-orange { background: #e65100; color: #fff; }
+    .badge-purple { background: #7b1fa2; color: #fff; }
+    .wi-ref { color: #1976d2; font-weight: 600; }
+    ul.activity-list { margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333; }
+    table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.data-table th { background: #f8f9fa; text-align: left; padding: 10px; font-weight: 600; border-bottom: 1px solid #eee; }
+    table.data-table td { padding: 10px; border-bottom: 1px solid #eee; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .stat-card { background: #f8f9fa; border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-value { font-size: 28px; font-weight: 700; line-height: 1.2; }
+    .stat-label { font-size: 12px; color: #666; margin-top: 4px; }
+    .text-muted { color: #666; font-size: 13px; }
+    .narrative-body { font-size: 13px; line-height: 1.7; color: #333; }
+    .hypothesis-box { background: #f3e5f5; border: 1px solid #ce93d8; border-radius: 8px; padding: 12px 16px; margin: 12px 0; font-size: 13px; }
+    .celebration-box { background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 8px; padding: 12px 16px; margin: 12px 0; font-size: 13px; }
+    .question-box { background: #fff3e0; border: 1px solid #ffcc80; border-radius: 8px; padding: 12px 16px; margin: 12px 0; font-size: 13px; }
+    .chart-container { margin: 16px 0; text-align: center; }
+    .chart-container svg { max-width: 100%; }
+    .mb-0 { margin-bottom: 0; }
+    .mb-8 { margin-bottom: 8px; }
+    .mb-12 { margin-bottom: 12px; }
+    .mb-20 { margin-bottom: 20px; }
+    .evidence { font-size: 12px; color: #546e7a; font-style: italic; }
+    .evidence::before { content: "📎 "; }
+    .evidence-inline { color: #546e7a; font-size: 12px; }
+    .question-evidence { font-size: 12px; color: #546e7a; font-style: italic; margin-top: 4px; }
+    .question-evidence::before { content: "📎 Evidence: "; font-style: normal; font-weight: 600; }
+    .question-why { font-size: 12px; color: #7b1fa2; margin-top: 2px; }
+    .question-why::before { content: "💡 Why ask: "; font-weight: 600; }
+    .need-evidence { font-size: 12px; color: #546e7a; font-style: italic; display: block; margin-top: 4px; }
+    .need-evidence::before { content: "📎 "; font-style: normal; }
+
+    @media print {
+      body { background: #fff; }
+      .page { padding: 20px; max-width: 100%; }
+      .page-break { page-break-before: always; }
+      .gradient-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .badge, .stat-card, .hypothesis-box, .celebration-box, .question-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ HEADER ============ -->
+  <div class="gradient-header" style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); padding: 24px; margin-bottom: 16px;">
+    <div style="font-size: 24px; font-weight: 700; color: #fff;">{{person_name}}</div>
+    <div style="font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 4px;">1:1 Prep &amp; Activity Narrative &middot; {{date_range}}</div>
+    <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px;">Generated {{generated_date}}</div>
+  </div>
+
+  <!-- ============ ABOUT THIS REPORT ============ -->
+  <div class="card" style="background: #fafafa; border: 1px dashed #ccc;">
+    <div class="narrative-body" style="color: #555;">
+      <strong>How to use this report:</strong> This is a jumping-off point for your 1:1 prep. It organizes
+      tracked activity from Azure DevOps and Salesforce into a narrative briefing — evidence, patterns,
+      and areas that might be worth exploring together. Meetings, mentoring, design thinking, and untracked
+      work are not captured here, so this is only <em>one dimension</em> of contribution. The observations
+      and recommendations reflect the AI's reasoning — you decide what matters.
+    </div>
+  </div>
+
+  <!-- ============ AT A GLANCE ============ -->
+  {{activity_type_chart}}
+
+  <!-- ============ PERIOD OVERVIEW ============ -->
+  <div class="gradient-header" style="background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);">
+    <span>📖 {{period_label}} in Review</span>
+  </div>
+  <div class="card card-accent" style="border-left-color: #2e7d32;">
+    <div class="narrative-body">{{executive_summary}}</div>
+  </div>
+
+  <!-- ============ WORKSTREAMS ============ -->
+  <div class="gradient-header" style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);">
+    <span>📋 Workstream Narratives</span>
+    <div class="sub">What was worked on this period — evidence, context, and observations</div>
+  </div>
+  {{workstream_sections}}
+
+  <!-- ============ NOTABLE MOMENTS ============ -->
+  <div class="gradient-header" style="background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);">
+    <span>💡 Notable Moments</span>
+  </div>
+  {{notable_moments_section}}
+
+  <!-- ============ PATTERNS & AREAS TO EXPLORE ============ -->
+  <div class="gradient-header" style="background: linear-gradient(135deg, #5e35b1 0%, #4527a0 100%);">
+    <span>🔍 Patterns &amp; Areas to Explore</span>
+    <div class="sub">Things that caught my attention — with evidence and reasoning</div>
+  </div>
+  {{patterns_section}}
+
+  <!-- ============ OPEN QUESTIONS ============ -->
+  <div class="gradient-header" style="background: linear-gradient(135deg, #37474f 0%, #263238 100%);">
+    <span>❓ Open Questions</span>
+    <div class="sub">Gaps in the data that might be worth exploring in your 1:1</div>
+  </div>
+  {{open_questions_section}}
+
+  <!-- ============ FOOTER ============ -->
+  <div style="text-align: center; padding: 20px; color: #999; font-size: 12px; border-top: 1px solid #eee; margin-top: 30px;">
+    Generated by Activity Report Tool &middot; {{generated_date}}
+  </div>
+
+</div>
+</body>
+</html>
+
+<!--
+  ============================================================
+  COMPONENT REFERENCE BLOCKS
+  These patterns are used by the agent when filling the template.
+  Copy each pattern verbatim; only replace {{variable}} tokens.
+  ============================================================
+-->
+
+<!-- ====== WORKSTREAM CARD ====== -->
+<!--
+<div class="card card-accent" style="border-left-color: {{card_accent_color}};">
+  <div class="section-title" style="color: {{card_accent_color}}; font-size: 15px; margin-bottom: 4px;">
+    {{workstream_name}} <span class="wi-ref">#{{work_item_id}}</span>
+  </div>
+  <div class="text-muted" style="margin-bottom: 8px;">
+    {{area_path}} · {{item_count}} work items
+  </div>
+  <div style="font-size: 13px; line-height: 1.7; padding: 10px 12px; margin-bottom: 10px; background: #f0f4ff; border-radius: 4px;">
+    {{narrative_paragraph}}
+  </div>
+  <div style="font-size: 13px; margin-bottom: 8px;">
+    📌 <strong>Status:</strong> {{state_counts}}
+  </div>
+  <div style="margin-top: 8px;">
+    <div style="font-size: 12px; font-weight: 600; color: #546e7a; margin-bottom: 6px;">💬 Key exchanges</div>
+    {{comment_excerpts}}
+  </div>
+</div>
+
+Card accent colors (rotate): #1565c0, #303f9f, #00695c, #5d4037, #546e7a, #37474f
+-->
+
+<!-- ====== EVIDENCE CITATION CLASSES ====== -->
+<!--
+Inline evidence in narrative paragraphs:
+  <span class="evidence-inline">(#12345, Jan 15 · state: Active → Resolved)</span>
+
+Block evidence under a notable moment or pattern:
+  <div class="evidence">#12345 moved New→Active→Resolved→Closed between Jan 8-15</div>
+
+Pattern observation with reasoning (use in Patterns & Areas to Explore):
+  <div class="hypothesis-box">
+    <strong>Pattern:</strong> description of what caught attention<br/>
+    <span class="need-evidence">evidence citations here</span><br/>
+    Reasoning and recommendation text here.
+  </div>
+
+Open question (use in Open Questions):
+  <div class="question-box">
+    <strong>question or gap description</strong><br/>
+    <span class="evidence-inline">supporting evidence</span>
+  </div>
+-->

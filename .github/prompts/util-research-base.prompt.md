@@ -32,6 +32,22 @@ Triggers (max 3 iterations/stream):
 
 Log to .research.synthesis.conflict_log[]
 
+## Comment Mining Taxonomy
+When processing work item comments, classify each by `context_type`:
+
+| Type | Signal Patterns | Priority |
+|------|----------------|----------|
+| `decision` | "decided to", "agreed that", "approved", "going with", "final answer" | 1 (highest) |
+| `meeting_transcript` | "meeting notes", "transcript", "discussed in", "action items", "attendees" | 2 |
+| `requirement_change` | "changed to", "new requirement", "descoped", "added scope", "revised" | 3 |
+| `blocker` | "blocked by", "waiting on", "dependency on", "cannot proceed" | 4 |
+| `question` | "question:", "asking about", "need clarification", "does anyone know" | 5 |
+| `status_update` | "completed", "in progress", "started", "finished", "deployed" | 6 |
+| `general` | (none of the above) | 7 (lowest) |
+
+**Priority:** decisions > transcripts > requirement changes > blockers > questions > status updates > general.
+When summarizing, always lead with decisions and transcripts.
+
 ## Run State Update
 After each stream, add to run_state.completed_steps[]:
 `{"phase":"research","step":"<stream_name>","completedAt":"<timestamp>","artifact":"{{context_file}}"}`
@@ -39,7 +55,7 @@ After each stream, add to run_state.completed_steps[]:
 ## CLI Quick Reference (Batch Optimized)
 | Action | Command | Batch |
 |--------|---------|-------|
-| Get work item | `{{cli.ado_get}} {{work_item_id}} --expand All --json` | — |
+| Get work item | `{{cli.ado_get}} {{work_item_id}} --expand All --comments --json` | — |
 | Get comments | `{{cli.ado_get}} {{work_item_id}} --comments --json` | — |
 | Search wiki | `{{cli.wiki_search}} "{{keywords}}" --json` | — |
 | SF describe | `{{cli.sf_describe}} {{obj}} --json` | `--batch` |

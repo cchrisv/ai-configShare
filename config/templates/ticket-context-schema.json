@@ -135,6 +135,27 @@
             "keywords": { "type": "array", "items": { "type": "string" } },
             "unknowns": { "type": "array" },
             "pii_stats": { "type": "object" },
+            "comments": {
+              "type": "array",
+              "description": "Classified comments from the work item",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer" },
+                  "author": { "type": "string" },
+                  "date": { "type": "string", "format": "date-time" },
+                  "text_scrubbed": { "type": "string" },
+                  "context_type": {
+                    "type": "string",
+                    "enum": ["decision", "meeting_transcript", "requirement_change", "blocker", "question", "status_update", "general"]
+                  }
+                }
+              }
+            },
+            "comment_summary": {
+              "type": "string",
+              "description": "AI-generated synthesis of key decisions and information from comments"
+            },
             "research_complete": { "type": "boolean" }
           }
         },
@@ -261,6 +282,52 @@
             "pattern_analysis": { "type": "object" },
             "pii_stats": { "type": "object" },
             "research_complete": { "type": "boolean" }
+          }
+        },
+        "related_context": {
+          "type": "object",
+          "description": "Context from parent, children, and sibling work items",
+          "properties": {
+            "parent": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer" },
+                "type": { "type": "string" },
+                "title": { "type": "string" },
+                "state": { "type": "string" },
+                "description_summary": { "type": "string" },
+                "comments_summary": { "type": "string" },
+                "key_decisions": { "type": "array", "items": { "type": "string" } }
+              }
+            },
+            "children": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer" },
+                  "type": { "type": "string" },
+                  "title": { "type": "string" },
+                  "state": { "type": "string" },
+                  "description_summary": { "type": "string" },
+                  "comments_summary": { "type": "string" },
+                  "key_decisions": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            },
+            "siblings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer" },
+                  "type": { "type": "string" },
+                  "title": { "type": "string" },
+                  "state": { "type": "string" },
+                  "relevance": { "type": "string" }
+                }
+              }
+            }
           }
         },
         "assumptions": {

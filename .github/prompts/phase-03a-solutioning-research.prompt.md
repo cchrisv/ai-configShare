@@ -30,6 +30,12 @@ A2 [IO]: Verify {{context_file}}:
   - `.grooming` exists (solutioning_hints from phase-02b)
   - `.metadata.phases_completed` includes `"grooming"`
 A3 [CLI]: Verify SF auth: `{{cli.sf_query}} "SELECT Id FROM Organization LIMIT 1" --json`
+A3.5 [CLI]: `{{cli.ado_get}} {{work_item_id}} --comments --json` — **Comment Refresh**
+A3.6 [LOGIC]: Compare against {{context_file}}.research.ado_workitem.comments[]:
+  - Identify new comments since grooming research (phase 02a)
+  - Classify new comments; update {{context_file}}.research.ado_workitem.comments[]
+  - Update {{context_file}}.research.ado_workitem.comment_summary with new decisions
+  - If new comments contain technical direction, requirements changes, or blockers → flag for Stream 1 consideration
 A4: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
 
 ## Research Schema Extension

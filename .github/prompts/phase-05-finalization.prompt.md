@@ -43,13 +43,19 @@ B9 [IO]: Read `.wiki.creation_audit` — wiki page path, page_id, url
 B10 [IO]: Read `.solutioning.level_of_effort` — overall_complexity, component_count, risk_surface, uncertainty_flags
 
 ## Step 2 [IO/LOGIC] – Evidence Gathering
-C1 [LOGIC]: **Extract link candidates** from `.research.ado_workitem`:
+C1 [CLI]: `{{cli.ado_get}} {{work_item_id}} --comments --json` — **Comment Refresh**
+C1.5 [LOGIC]: Compare against {{context_file}}.research.ado_workitem.comments[]:
+  - Identify new comments since last phase
+  - Extract: deadline changes, priority escalations, scope decisions, stakeholder directives
+  - Update {{context_file}}.research.ado_workitem.comments[] with new entries
+  - Feed new decisions into WSJF evidence (especially Time Criticality and Business Value signals)
+C2 [LOGIC]: **Extract link candidates** from `.research.ado_workitem`:
   - Related work items referenced in description, comments, or tags
   - Similar work items from `.research.similar_workitems[]`
   - Companion stories identified during research/solutioning
   - Deduplicate and exclude `{{work_item_id}}` itself
-C2 [IO]: Load `{{paths.templates}}/{{template_files.wsjf_scoring}}` — scoring anchors
-C3 [LOGIC]: **Extract WSJF input signals**:
+C3 [IO]: Load `{{paths.templates}}/{{template_files.wsjf_scoring}}` — scoring anchors
+C4 [LOGIC]: **Extract WSJF input signals**:
   - **BV**: grooming.classification (effort, risk, priority) + applied_content (user impact, scope)
   - **TC**: research.ado_workitem (deadlines, sprint goals, iteration_path, tags)
   - **RR/OE**: solutioning.option_analysis (pillar scores) + traceability (gaps) + solution_design (quality_bar)
