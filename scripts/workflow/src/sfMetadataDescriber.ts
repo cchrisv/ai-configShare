@@ -4,7 +4,7 @@
  */
 
 import { createSfConnection, type SfConnectionConfig } from './sfClient.js';
-import { executeToolingQuery } from './sfQueryExecutor.js';
+import { executeSoqlQuery, executeToolingQuery } from './sfQueryExecutor.js';
 import { retryWithBackoff, RETRY_PRESETS } from './lib/retryWithBackoff.js';
 import { logInfo, createTimer } from './lib/loggerStructured.js';
 import type {
@@ -342,18 +342,39 @@ export async function getFlows(
   
   logInfo('Getting flows', { objectName, activeOnly });
 
+  // Use FlowDefinitionView (standard API) — it has DeveloperName, TriggerType,
+  // TriggerObjectOrEvent, and all fields we need in a single queryable entity.
+  // The Tooling API Flow entity is missing many of these fields.
+
   let query = `
-    SELECT Id, DeveloperName, MasterLabel, NamespacePrefix, ApiVersion,
-           ProcessType, Status, Description, TriggerType, TriggerObjectOrEvent,
-           RecordTriggerType, IsActive, IsTemplate, RunInMode,
-           LastModifiedDate, LastModifiedById
-    FROM Flow
+    SELECT Id, ApiName, Label, ProcessType, TriggerType,
+           TriggerObjectOrEventId, TriggerObjectOrEventLabel,
+           IsActive, Description, RecordTriggerType, NamespacePrefix,
+           ActiveVersionId, IsTemplate, LastModifiedDate
+    FROM FlowDefinitionView
   `;
 
   const conditions: string[] = [];
 
   if (objectName) {
-    conditions.push(`TriggerObjectOrEvent = '${objectName}'`);
+    // For --object filter, resolve the object label since FlowDefinitionView
+    // stores the object label (not API name) in TriggerObjectOrEventLabel.
+    // Standard objects: label = API name (e.g., 'Account')
+    // Custom objects: label = display name (e.g., 'Journey Pipeline' for Journey_Pipeline__c)
+    let objectLabel = objectName;
+    try {
+      const labelResult = await executeToolingQuery<{ Label: string }>(
+        `SELECT Label FROM EntityDefinition WHERE QualifiedApiName = '${objectName}' LIMIT 1`,
+        config
+      );
+      if (labelResult.records.length > 0) {
+        objectLabel = labelResult.records[0].Label;
+        logInfo(`Resolved object label: ${objectName} → ${objectLabel}`);
+      }
+    } catch (error) {
+      logInfo(`Could not resolve object label, using API name: ${error instanceof Error ? error.message : error}`);
+    }
+    conditions.push(`TriggerObjectOrEventLabel = '${objectLabel}'`);
   }
 
   if (activeOnly) {
@@ -364,14 +385,54 @@ export async function getFlows(
     query += ` WHERE ${conditions.join(' AND ')}`;
   }
 
-  query += ' ORDER BY MasterLabel';
+  query += ' ORDER BY Label';
 
-  const result = await executeToolingQuery<Flow>(query, config);
+  // FlowDefinitionView uses standard API (not Tooling API)
+  interface FlowDefView {
+    Id: string;
+    ApiName: string;
+    Label: string;
+    ProcessType: string;
+    TriggerType: string | null;
+    TriggerObjectOrEventId: string | null;
+    TriggerObjectOrEventLabel: string | null;
+    IsActive: boolean;
+    Description: string | null;
+    RecordTriggerType: string | null;
+    NamespacePrefix: string | null;
+    ActiveVersionId: string | null;
+    IsTemplate: boolean;
+    LastModifiedDate: string;
+  }
+
+  const result = await executeSoqlQuery<FlowDefView>(query, config);
   
   logInfo(`Got ${result.records.length} flows`);
+
+  // Map FlowDefinitionView to our Flow interface
+  const flows: Flow[] = result.records.map(r => ({
+    Id: r.ActiveVersionId || r.Id,
+    DefinitionId: r.Id,
+    DeveloperName: r.ApiName,
+    MasterLabel: r.Label,
+    NamespacePrefix: r.NamespacePrefix,
+    ApiVersion: 0, // Not available from FlowDefinitionView
+    ProcessType: r.ProcessType,
+    Status: r.IsActive ? 'Active' : 'Inactive',
+    Description: r.Description,
+    TriggerType: r.TriggerType,
+    TriggerObjectOrEvent: r.TriggerObjectOrEventLabel,
+    RecordTriggerType: r.RecordTriggerType,
+    IsActive: r.IsActive,
+    IsTemplate: r.IsTemplate,
+    RunInMode: '', // Not available from FlowDefinitionView
+    LastModifiedDate: r.LastModifiedDate,
+    LastModifiedById: '', // Not available from FlowDefinitionView
+  }));
+
   timer.log('getFlows');
   
-  return result.records;
+  return flows;
 }
 
 /**

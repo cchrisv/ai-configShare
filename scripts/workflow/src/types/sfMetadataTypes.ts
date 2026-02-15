@@ -252,10 +252,13 @@ export interface ValidationRule {
 
 /**
  * Flow metadata
+ * Note: DeveloperName is on FlowDefinition, not Flow. 
+ * getFlows() merges it from a separate FlowDefinition query.
  */
 export interface Flow {
   Id: string;
-  DeveloperName: string;
+  DefinitionId: string;
+  DeveloperName: string; // merged from FlowDefinition
   MasterLabel: string;
   NamespacePrefix: string | null;
   ApiVersion: number;
@@ -270,6 +273,19 @@ export interface Flow {
   RunInMode: string;
   LastModifiedDate: string;
   LastModifiedById: string;
+}
+
+/**
+ * FlowDefinition — parent of Flow versions, owns DeveloperName
+ */
+export interface FlowDefinition {
+  Id: string;
+  DeveloperName: string;
+  MasterLabel: string;
+  NamespacePrefix: string | null;
+  ActiveVersionId: string | null;
+  LatestVersionId: string | null;
+  Description: string | null;
 }
 
 /**
