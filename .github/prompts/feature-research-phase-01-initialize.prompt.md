@@ -9,6 +9,7 @@ Input: `{{sf_entry}}` (SF object API names or feature area) and/or `{{work_item_
 - **CLI-only** – per util-base guardrails
 - **At least one input required** – `{{sf_entry}}` or `{{work_item_id}}`; **ASK** if neither provided
 - **Idempotent** – if `{{context_file}}` exists, load and report status; continue only with `--force`
+- **Mission-first** – the scope you establish here is the mission anchor for ALL subsequent phases; make `feature_area` and `domain_keywords` descriptive enough that a new agent session can immediately understand what is being researched and why
 
 ## Context Paths
 `{{research_root}}` = `{{paths.artifacts_root}}/sf-research/{{sanitized_name}}`
@@ -29,19 +30,21 @@ Input: `{{sf_entry}}` (SF object API names or feature area) and/or `{{work_item_
   "scope": {
     "sf_objects": [],
     "feature_area": "",
+    "research_purpose": "",
     "related_ado_items": [],
     "domain_keywords": []
   },
   "ado_research": {},
   "sf_schema": {},
   "sf_automation": {},
+  "sf_architecture": {},
   "sf_platform": {},
   "analysis": {},
   "synthesis": { "unified_truth": {}, "assumptions": [], "conflict_log": [] },
   "documentation": { "wiki_path": "", "published_at": "" }
 }
 ```
-**Valid `current_phase` values:** `initialize` · `ado_discovery` · `sf_schema` · `sf_automation` · `sf_platform` · `analysis` · `documentation` · `complete`
+**Valid `current_phase` values:** `initialize` · `ado_discovery` · `sf_schema` · `sf_automation` · `sf_architecture` · `sf_platform` · `analysis` · `documentation` · `complete`
 
 ---
 
@@ -95,10 +98,14 @@ E1: Execute Mode A steps (C1–C5) for SF validation
 E2: Execute Mode B steps (D1–D6) for ADO context
 E3 [GEN]: Merge and deduplicate scope from both modes; cross-validate SF objects found in ADO match those validated against the org
 
-### Step 4 [GEN] – Finalize Scope
-F1 [GEN]: Generate `scope.feature_area` — human-readable name for this research (e.g., "Journey Pipeline", "Case Management")
-F2 [GEN]: Deduplicate `scope.sf_objects[]`, `scope.related_ado_items[]`, `scope.domain_keywords[]`
-F3 [LOGIC]: Validate scope is non-empty:
+### Step 4 [GEN] – Finalize Scope (Mission Anchor)
+This step establishes the **mission anchor** — the grounding context that all subsequent phases will load to stay focused on what is being researched.
+
+F1 [GEN]: Generate `scope.feature_area` — a clear, human-readable name for this research (e.g., "Journey Pipeline", "Case Management"). This name will appear in every phase's mission recall.
+F2 [GEN]: Generate `scope.research_purpose` — a 1–2 sentence statement explaining **what** we are documenting and **why** (e.g., "Document the Journey Pipeline feature to understand current automation, data model, and integrations before architectural redesign"). This becomes the north star for all phases.
+F3 [GEN]: Deduplicate `scope.sf_objects[]`, `scope.related_ado_items[]`, `scope.domain_keywords[]`
+F4 [GEN]: Ensure `scope.domain_keywords[]` includes both technical terms (API names) and business terms (feature labels, business process names) — later phases use these for relevance filtering
+F5 [LOGIC]: Validate scope is non-empty:
   - `scope.sf_objects` must have ≥1 entry → if empty, **STOP**: "No valid SF objects found. Verify object names or provide an ADO work item with SF component references."
 
 ### Step 5 [IO] – Create Context File

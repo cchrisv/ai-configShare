@@ -2,11 +2,12 @@
 Role: Business Research Coordinator
 Mission: Gather all ADO work item context and wiki documentation related to the Salesforce feature area.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md` · `#file:.github/prompts/util-research-base.prompt.md`
-Input: `{{sf_entry}}` and/or `{{work_item_id}}` (resolved in phase 01)
+Input: Context from `{{context_file}}` — `scope.sf_objects[]`, `scope.related_ado_items[]`, `scope.domain_keywords[]`
 
 ## Constraints
 - **Read-only** – NO ADO/wiki modifications
 - **CLI-only** – per util-base guardrails
+- **Mission-focused** – every search query, relevance classification, and judgment must be filtered through the lens of `{{scope.feature_area}}`; discard noise that doesn't serve the research mission
 - **Outputs to** `{{context_file}}.ado_research` + extends `.synthesis`
 - **All streams mandatory** – parallel/batch when beneficial
 - **Feedback loops** – max 3 iterations/stream
@@ -14,6 +15,7 @@ Input: `{{sf_entry}}` and/or `{{work_item_id}}` (resolved in phase 01)
 
 ## After Each Stream (MANDATORY — do NOT batch)
 **MUST write to disk before starting next stream.** This ensures resumability if context is lost.
+Stream sections: Stream 1 → `ado_research.work_items` + `.comment_summaries` + `.related_context`, Stream 2 → `ado_research.wiki_pages`, Stream 3 → `ado_research.business_context` + `synthesis`
 1. [IO] Write `{{context_file}}.ado_research.[stream_section]` → save to disk
 2. [GEN] Update `{{context_file}}.synthesis` + `.synthesis.assumptions[]` with new evidence
 3. [IO] Append to `{{context_file}}.run_state.completed_steps[]`
@@ -27,11 +29,26 @@ Input: `{{sf_entry}}` and/or `{{work_item_id}}` (resolved in phase 01)
 ## Prerequisites [IO]
 A1 [IO]: Load `{{context_file}}`; verify:
   - `"initialize"` in `metadata.phases_completed`
-  - `metadata.current_phase` = `"ado_discovery"` (set by phase 01 on completion)
   - `scope.sf_objects` has ≥1 entry
   - `scope.domain_keywords` is populated
 A2 [IO]: Load `scope.related_ado_items[]` and `scope.domain_keywords[]`
 A3: **STOP** if prerequisites missing. Log to `run_state.errors[]` and save.
+
+## Mission Anchor [IO/GEN]
+**Before any research begins, ground yourself in the mission.**
+
+MA1 [IO]: From `{{context_file}}`, read and internalize:
+  - `scope.feature_area` — **what** we are researching
+  - `scope.research_purpose` — **why** we are researching it
+  - `scope.sf_objects[]` — the Salesforce objects in scope
+  - `scope.domain_keywords[]` — domain terms for relevance filtering
+  - `synthesis.unified_truth` — what has been learned so far (empty or minimal at this point)
+
+MA2 [GEN]: State the mission in one sentence to yourself: *"I am researching **{{scope.feature_area}}** to gather all ADO work item context and wiki documentation that describes or influences the {{scope.sf_objects | join(", ")}} functionality. My purpose: {{scope.research_purpose}}"*
+
+MA3: **Carry this mission context as your lens for EVERY decision in this phase.** When classifying search results as relevant/contextual/noise, when mining comments for decisions, when evaluating wiki pages — ask: *"Does this relate to {{scope.feature_area}} and the in-scope objects?"*
+
+---
 
 ## ADO Research Schema
 All outputs to `{{context_file}}.ado_research`:
@@ -44,7 +61,7 @@ All outputs to `{{context_file}}.ado_research`:
 ---
 
 ## Stream 1 [CLI/GEN] – Work Item Discovery
-**Goal:** Fetch and analyze all related ADO work items → `{{context_file}}.ado_research.work_items` + `.comment_summaries` + `.related_context`
+**Goal:** Fetch and analyze all ADO work items related to **{{scope.feature_area}}** → `{{context_file}}.ado_research.work_items` + `.comment_summaries` + `.related_context`
 
 ### Primary Items
 B1 [CLI]: For each ID in `scope.related_ado_items[]`:
@@ -89,7 +106,7 @@ B12 [GEN]: Summarize each related item → `ado_research.related_context`
 ---
 
 ## Stream 2 [CLI/GEN] – Wiki Research
-**Goal:** Search ADO Wiki, retrieve relevant pages → `{{context_file}}.ado_research.wiki_pages`
+**Goal:** Search ADO Wiki for existing documentation about **{{scope.feature_area}}** and related architecture → `{{context_file}}.ado_research.wiki_pages`
 
 ### Search
 C1 [IO]: Load keywords from `scope.domain_keywords[]` + `scope.sf_objects[]`
@@ -122,7 +139,7 @@ C12 [GEN]: Extract additional SF object names discovered in wiki pages; if new o
 ---
 
 ## Stream 3 [GEN] – Synthesis
-**Goal:** Consolidate all ADO research into business context and update rolling synthesis.
+**Goal:** Consolidate all ADO research into a cohesive business narrative for **{{scope.feature_area}}** and update rolling synthesis.
 
 D1 [GEN]: Build `ado_research.business_context`:
   - `feature_purpose` — clear statement of what this feature area does, derived from work items + wiki
@@ -145,13 +162,13 @@ D3 [GEN]: Update `synthesis.assumptions[]`:
 
 ## Completion [IO]
 Update `{{context_file}}`:
-- `metadata.phases_completed` append `"initialize"` (if not already) and `"ado_discovery"`
+- `metadata.phases_completed` append `"ado_discovery"`
 - `metadata.current_phase` = `"sf_schema"`
 - `metadata.last_updated` = ISO timestamp
 - Append `{"phase":"ado_discovery","step":"complete","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `run_state.completed_steps[]`
 - Save to disk
 
-Tell user: **"ADO discovery complete. Found {{work_item_count}} work items, {{wiki_page_count}} wiki pages. Use `/feature-research-phase-03a` for Salesforce schema discovery."**
+Tell user: **"ADO discovery for {{scope.feature_area}} complete. Found {{work_item_count}} work items, {{wiki_page_count}} wiki pages. Business context established: {{ado_research.business_context.feature_purpose | truncate(100)}}. Use `/feature-research-phase-03a` for Salesforce schema discovery."**
 
 ---
 

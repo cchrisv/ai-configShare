@@ -2,11 +2,12 @@
 Role: Solution Architect
 Mission: Benchmark discovered implementation against web best practices and internal standards; assess risks, gaps, and modernization opportunities.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md` · `#file:.github/prompts/util-research-base.prompt.md`
-Input: Full context from `{{context_file}}` — all prior phases (scope, ado_research, sf_schema, sf_automation, sf_platform)
+Input: Full context from `{{context_file}}` — all prior phases (scope, ado_research, sf_schema, sf_automation, sf_architecture, sf_platform)
 
 ## Constraints
 - **Read-only** – NO ADO/wiki/SF modifications
 - **CLI-only** – per util-base guardrails
+- **Mission-focused** – you are analyzing the implementation of **{{scope.feature_area}}**; every risk, compliance check, and recommendation should be framed in terms of this feature's health and architectural quality
 - **Outputs to** `{{context_file}}.analysis` + extends `.synthesis`
 - **All streams mandatory**
 - **Feedback loops** – max 3 iterations/stream
@@ -14,6 +15,7 @@ Input: Full context from `{{context_file}}` — all prior phases (scope, ado_res
 
 ## After Each Stream (MANDATORY — do NOT batch)
 **MUST write to disk before starting next stream.** This ensures resumability if context is lost.
+Stream sections: Stream 1 → `analysis.web_research`, Stream 2 → `.compliance_scorecard`, Stream 3 → `.risk_register` + `.gap_analysis` + `.modernization_opportunities`, Stream 4 → `.executive_summary_data`
 1. [IO] Write `{{context_file}}.analysis.[stream_section]` → save to disk
 2. [GEN] Extend `{{context_file}}.synthesis` with new evidence
 3. [IO] Append to `{{context_file}}.run_state.completed_steps[]`
@@ -32,9 +34,29 @@ A2 [IO]: Load all prior phase data for cross-referencing:
   - `scope` — objects, feature area, keywords
   - `ado_research` — business context, decisions, wiki pages
   - `sf_schema` — objects, fields, relationships, PII
-  - `sf_automation` — triggers, flows, Apex, validation rules, dependency graph, risk assessment
+  - `sf_automation` — triggers, flows, Apex, LWC, Aura, validation rules, dependency graph, risk assessment
+  - `sf_architecture` — order of operations, execution chains, cross-object cascades, anti-patterns, architectural narrative
   - `sf_platform` — security, integrations, data landscape
 A3: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
+
+## Mission Anchor [IO/GEN]
+**Before any analysis begins, ground yourself in the full research context.**
+
+MA1 [IO]: From `{{context_file}}`, read and internalize:
+  - `scope.feature_area` — **what** we are researching
+  - `scope.research_purpose` — **why** we are researching it
+  - `scope.sf_objects[]` — the Salesforce objects in scope
+  - `ado_research.business_context` — business purpose, rules, decisions, stakeholders
+  - `sf_schema` — object model summary (object count, field count, relationships, PII)
+  - `sf_automation` — automation inventory (triggers, flows, Apex, dependency graph, risk assessment)
+  - `sf_platform` — security model, integrations, data landscape
+  - `synthesis.unified_truth` — cumulative understanding from all discovery phases
+
+MA2 [GEN]: State the full picture: *"I am analyzing the implementation quality of **{{scope.feature_area}}**. This feature spans {{sf_schema.objects | length}} objects, {{sf_automation.dependency_graph.stats.total_nodes}} automation components, and {{sf_platform.integrations.platform_events | length}} integrations. Architecture analysis found {{sf_architecture.architecture_patterns.anti_patterns | length}} anti-patterns with max cascade depth of {{sf_architecture.execution_complexity.max_cascade_depth}}. Business purpose: {{ado_research.business_context.feature_purpose | truncate(100)}}. I will benchmark this implementation against web best practices and internal standards, incorporating the architectural risks from Phase 03c."*
+
+MA3: **Frame EVERY finding in terms of {{scope.feature_area}}.** Don't write generic compliance observations — write "The {{scope.feature_area}} trigger handler for {{object}} lacks..." and "The {{scope.feature_area}} flow for {{process}} does not handle...". Make the analysis feel like it was written by an architect who deeply understands this specific feature.
+
+---
 
 ## Analysis Output Structure
 All outputs to `{{context_file}}.analysis`:
@@ -48,16 +70,17 @@ All outputs to `{{context_file}}.analysis`:
 ---
 
 ## Stream 1 [API/GEN] – Web Research
-**Goal:** Benchmark against industry standards and Salesforce best practices → `{{context_file}}.analysis.web_research`
+**Goal:** Benchmark **{{scope.feature_area}}**'s implementation patterns against industry standards and Salesforce best practices → `{{context_file}}.analysis.web_research`
 
 ### Query Generation
 B1 [IO]: Load key patterns from prior phases:
   - Automation patterns (trigger framework type, flow patterns, batch processing)
+  - Architecture patterns (order of operations conflicts, cascade depth, governor risks from `sf_architecture`)
   - Integration patterns (callout types, event architecture)
   - Object model patterns (custom object count, relationship complexity)
-  - Known risks from `sf_automation.risk_assessment[]`
+  - Known risks from `sf_automation.risk_assessment[]` + `sf_architecture.architecture_patterns.anti_patterns[]`
 B2 [GEN]: Generate 3–5 targeted search queries based on:
-  - Technologies discovered (e.g., "Salesforce trigger actions framework best practices 2024")
+  - Technologies discovered (e.g., "Salesforce trigger actions framework best practices" + current year)
   - Patterns found (e.g., "Salesforce record-triggered flow vs trigger performance")
   - Anti-patterns detected (e.g., "Salesforce flow without error handling risks")
   - Integration patterns (e.g., "Salesforce platform events retry and error handling")
@@ -87,7 +110,7 @@ B6 [GEN]: Store:
 ---
 
 ## Stream 2 [IO/GEN] – Standards Compliance
-**Goal:** Compare discovered implementation against internal standards → `{{context_file}}.analysis.compliance_scorecard`
+**Goal:** Compare **{{scope.feature_area}}**'s implementation against internal architectural standards — produce a feature-specific scorecard → `{{context_file}}.analysis.compliance_scorecard`
 
 ### Load Standards
 C1 [IO]: Load applicable standards from `{{paths.standards}}/` based on what was discovered:
@@ -142,10 +165,10 @@ C7 [GEN]: For each component checked, generate scorecard entry:
 ---
 
 ## Stream 3 [GEN] – Risk and Gap Analysis
-**Goal:** Consolidate risks and identify gaps → `{{context_file}}.analysis.risk_register` + `.gap_analysis`
+**Goal:** Consolidate all risks to **{{scope.feature_area}}** and identify gaps that could impact reliability, security, or maintainability → `{{context_file}}.analysis.risk_register` + `.gap_analysis`
 
 ### Risk Register
-D1 [IO]: Load `sf_automation.risk_assessment[]` from phase 03b (baseline risks)
+D1 [IO]: Load `sf_automation.risk_assessment[]` from Phase 03b and `sf_architecture.architecture_patterns.anti_patterns[]` + `sf_architecture.transaction_analysis.governor_risks[]` from Phase 03c (baseline risks)
 D2 [GEN]: Augment with new risks from compliance analysis + web research:
   - **Security risks** — PII exposure (from `sf_schema.pii_fields[]` + `sf_platform.security`), missing FLS checks, overly permissive sharing
   - **Performance risks** — governor limit exposure (from Apex analysis), large data volumes + complex queries, DML in loops
@@ -180,7 +203,7 @@ D8 [GEN]: For each opportunity:
 ---
 
 ## Stream 4 [GEN] – Final Synthesis
-**Goal:** Consolidate all analysis into executive summary data → `{{context_file}}.analysis.executive_summary_data`
+**Goal:** Distill the full **{{scope.feature_area}}** analysis into executive summary data — the story an architect needs to tell leadership → `{{context_file}}.analysis.executive_summary_data`
 
 ### Key Statistics
 E1 [GEN]: Compile `key_stats{}`:
@@ -191,7 +214,10 @@ E1 [GEN]: Compile `key_stats{}`:
   - `triggers_count` (active/total) — from `sf_automation.triggers[]`
   - `flows_count` (active/total) — from `sf_automation.flows[]`
   - `apex_classes_count` — from `sf_automation.apex_classes[]`
+  - `lwc_count` — from `sf_automation.lwc_components[]`
+  - `aura_count` — from `sf_automation.aura_components[]`
   - `validation_rules_count` (active/total) — from `sf_automation.validation_rules[]`
+  - `discovery_stats` — from `sf_automation.relevance_filter.stats` (candidates found vs feature-relevant)
   - `integrations_count` — platform events + named credentials + callout patterns
   - `total_records` — sum from `sf_platform.data_landscape.volumes[]`
   - `profiles_with_access` — distinct profiles from `sf_platform.security.object_permissions[]`
@@ -229,7 +255,7 @@ Update `{{context_file}}`:
 - Append `{"phase":"analysis","step":"complete","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `run_state.completed_steps[]`
 - Save to disk
 
-Tell user: **"Analysis complete. Compliance score: {{score}}%. {{critical_count}} critical findings, {{risk_count}} total risks identified. Use `/feature-research-phase-05` for documentation generation."**
+Tell user: **"Analysis of {{scope.feature_area}} complete. Compliance score: {{score}}%. {{critical_count}} critical findings, {{risk_count}} total risks. Top recommendation: {{recommendations_priority[0].recommendation | truncate(100)}}. Use `/feature-research-phase-05` to generate the research report."**
 
 ---
 
@@ -238,7 +264,7 @@ Tell user: **"Analysis complete. Compliance score: {{score}}%. {{critical_count}
 | Scenario | Action |
 |----------|--------|
 | Context file missing | **STOP** — "Run `/feature-research-phase-01` first" |
-| Phase 03c not completed | **STOP** — "Run `/feature-research-phase-03c` first" |
+| Phase 03d not completed | **STOP** — "Run `/feature-research-phase-03d` first" |
 | Standards file not found | Log warning; skip that standard; note partial compliance check |
 | Web search returns 0 results | Log; proceed with standards analysis only; note limited external benchmarking |
 | Web fetch fails for a URL | Log; continue with remaining results |
