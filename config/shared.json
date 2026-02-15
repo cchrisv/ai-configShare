@@ -52,7 +52,14 @@
     "workflow_status": "npx --prefix scripts/workflow workflow-tools status",
     "workflow_reset": "npx --prefix scripts/workflow workflow-tools reset",
     "report_activity": "npx --prefix scripts/workflow report-tools activity",
-    "team_discover": "npx --prefix scripts/workflow team-tools discover"
+    "team_discover": "npx --prefix scripts/workflow team-tools discover",
+    "template_list": "npx --prefix scripts/workflow template-tools list",
+    "template_scaffold": "npx --prefix scripts/workflow template-tools scaffold",
+    "template_scaffold_phase": "npx --prefix scripts/workflow template-tools scaffold-phase",
+    "template_render": "npx --prefix scripts/workflow template-tools render",
+    "template_render_phase": "npx --prefix scripts/workflow template-tools render-phase",
+    "template_validate": "npx --prefix scripts/workflow template-tools validate",
+    "template_info": "npx --prefix scripts/workflow template-tools info"
   },
   "work_item_types": {
     "user_story": "User Story",
@@ -136,6 +143,7 @@
     "wiki_format": "wiki-page-format.md",
     "wiki_page_template": "wiki-page-template.html",
     "test_case": "test-case-template.md",
+    "test_cases_playbook": "test-cases-playbook.md",
     "audit_task": "audit-task-template.md",
     "wsjf_scoring": "wsjf-scoring-anchors.md",
     "research_iteration": "research-iteration-tracking.md",

@@ -1,6 +1,6 @@
 # Phase 02a – Grooming Research
 Role: Business Research Coordinator
-Mission: Gather business context for evidence-based requirements.
+Mission: Gather evidence to answer: *What* is being requested and *Why* does it matter? Do NOT investigate *How* to implement — that belongs in phase 03.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md` · `#file:.github/prompts/util-research-base.prompt.md`
 Input: `{{work_item_id}}`
 
@@ -15,9 +15,10 @@ Input: `{{work_item_id}}`
 **MUST write to disk before starting next stream.** This ensures resumability if context is lost.
 1. [IO] Write {{context_file}}.research.[stream_name] → save to disk
 2. [GEN] Update {{context_file}}.research.synthesis + .assumptions with new evidence
-3. [IO] Append to {{context_file}}.run_state.completed_steps[]
-4. [IO] Save {{context_file}} to disk — **GATE: do not proceed until confirmed written**
-5. On error: log to run_state.errors[]; save to disk; retry
+3. [GEN] Evaluate: "Did this stream surface anything that can only be answered by technical research?" If yes, append to {{context_file}}.research.solutioning_investigation (assumptions_to_validate, questions_for_solutioning, unknowns, or scope_risks as appropriate)
+4. [IO] Append to {{context_file}}.run_state.completed_steps[]
+5. [IO] Save {{context_file}} to disk — **GATE: do not proceed until confirmed written**
+6. On error: log to run_state.errors[]; save to disk; retry
 
 ## Prerequisite [CLI]
 `{{cli.workflow_status}} -w {{work_item_id}} --json`
@@ -26,14 +27,15 @@ Verify {{context_file}} exists. **STOP** on failure.
 ## Research Schema
 All outputs to {{context_file}}.research:
 - organization_dictionary (terms, acronyms, undefined_terms)
-- ado_workitem (scrubbed_data, business_summary, technical_context, detective_analysis, keywords, comments[], comment_summary)
+- ado_workitem (scrubbed_data, business_summary, scope_context, problem_analysis, domain_keywords, comments[], comment_summary)
 - similar_workitems (similar_items_found, duplicate_assessment, pattern_analysis)
 - related_context (parent{}, children[], siblings[])
 - wiki_search (search_results, metadata_references, detective_correlation)
 - business_context (organizational_context, business_rules, detective_cues)
 - team_impact (team_members_file, impacted_roles[], coordination_contacts[], stakeholder_summary)
 - assumptions[] (id, assumption, category, confidence, source, phase_identified)
-- synthesis (unified_truth, conflict_log, swot_analysis, reusable_assets)
+- solutioning_investigation (assumptions_to_validate[], questions_for_solutioning[], unknowns[], scope_risks[]) — items that can only be answered by technical research in phase 03
+- synthesis (unified_truth{ what_requested, why_it_matters, who_affected, scope_boundaries, open_questions }, conflict_log, swot_analysis, reusable_assets)
 
 ---
 
@@ -48,7 +50,7 @@ B2 [GEN]: List undefined terms needing clarification
 ---
 
 ## Stream 2 [CLI/GEN] – ADO Work Item + Similar Items
-**Goal:** Extract, scrub PII, find related items → {{context_file}}.research.ado_workitem + .similar_workitems
+**Goal:** Extract, scrub PII, understand the request, find related items → {{context_file}}.research.ado_workitem + .similar_workitems
 
 **Field Categories** (from `{{field_paths.*}}`):
 - **Business content** → scrubbed_data: `title`, `description`, `acceptance_criteria`, `business_problem_and_value`, `business_objectives_and_impact`, `technical_notes`, `sf_components`, `repro_steps`, `system_info`
@@ -69,8 +71,8 @@ A4 [GEN]: **Comment Summary** — synthesize key decisions, open questions, and 
 B1 [GEN]: Scrub PII → tokens (`[User]`, `[Email]`)
 B2 [GEN]: Extract **business content** + **classification** fields into scrubbed_data; discard routing/output fields
 B3 [GEN]: Segregate business vs technical content
-C1 [GEN]: Detective analysis on business content
-C2 [GEN]: Extract keywords from technical context
+C1 [GEN]: Problem & scope analysis — identify what is being asked and why it matters; flag any embedded solution/implementation language for extraction in phase 02b
+C2 [GEN]: Extract domain keywords from scope context (business terms, object/process names — not implementation or technology terms)
 D1 [CLI]: `{{cli.ado_search}} --text "{{keyword}}" --type "User Story" --top 20 --json`
 D2 [CLI]: `{{cli.ado_search}} --area "{{area_path}}" --type "User Story" --top 20 --json`
 D3 [CLI]: `{{cli.ado_search}} --tags "{{tags}}" --top 20 --json`
@@ -126,13 +128,13 @@ D3 [GEN]: Identify documentation gaps (missing pages for key concepts)
 
 ---
 
-## Stream 4 [CLI/GEN] – Business Context
-**Goal:** Query Salesforce data → {{context_file}}.research.business_context
+## Stream 4 [CLI/GEN] – Business Data Context
+**Goal:** Query Salesforce data to understand current state (what exists today) → {{context_file}}.research.business_context
+**Scope:** Business SOQL only — record volumes, data patterns, business rule evidence. Do NOT query tooling API (metadata discovery belongs in phase 03a).
 
-A1 [CLI]: `{{cli.sf_query}} "{{soql_query}}" --json` (business)
-A2 [CLI]: `{{cli.sf_query}} "{{tooling_query}}" --tooling --json` (metadata)
-B1 [GEN]: Analyze results; extract business patterns
-B2 [GEN]: Combine with prior streams; generate context summary
+A1 [CLI]: `{{cli.sf_query}} "{{soql_query}}" --json` (business data — record counts, field distributions, active configurations)
+B1 [GEN]: Analyze results; extract business patterns and current-state evidence
+B2 [GEN]: Combine with prior streams; generate what/why context summary
 
 ---
 
@@ -164,4 +166,11 @@ Update {{context_file}}:
 - metadata.phases_completed append "research"
 - metadata.current_phase = "grooming"
 - research.synthesis.research_phase_complete = true
-Tell user: **"Research complete. Use /phase-02b-grooming."**
+- Verify research.synthesis.unified_truth contains all required what/why fields:
+  - `what_requested` — clear statement of the request
+  - `why_it_matters` — business value and impact
+  - `who_affected` — stakeholders, users, teams
+  - `scope_boundaries` — what is in/out of scope
+  - `open_questions` — unresolved items needing clarification
+- Verify research.solutioning_investigation exists (section must be present even if arrays are empty) — this is the handoff to phase 03
+Tell user: **"What/why research complete. Use /phase-02b-grooming."**

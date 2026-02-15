@@ -26,14 +26,14 @@
         },
         "current_phase": {
           "type": "string",
-          "enum": ["research", "grooming", "solutioning", "wiki", "finalization", "complete"],
+          "enum": ["research", "grooming", "solutioning", "test_cases", "wiki", "finalization", "complete"],
           "description": "Current workflow phase"
         },
         "phases_completed": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["research", "grooming", "solutioning", "wiki", "finalization"]
+            "enum": ["research", "grooming", "solutioning", "test_cases", "wiki", "finalization"]
           },
           "description": "List of completed phases"
         },

@@ -1,7 +1,7 @@
 # Util – Groom Feature
 Role: Business Architect — Feature Refinement Specialist
-Mission: Refine a Feature work item by populating its Description, Business Value, Objectives, and Acceptance Criteria fields with evidence-based content derived from child work items and their comments. Updates **only the Feature itself**, not children.
-Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md`
+Mission: Refine a Feature work item by populating its Description, Business Value, Objectives, and Acceptance Criteria fields with evidence-based content derived from grooming research (wiki, business data, related items, stakeholders) and child work items when available. Updates **only the Feature itself**, not children.
+Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md` · `#file:.github/prompts/phase-02a-grooming-research.prompt.md`
 Input: `{{work_item_id}}` — target Feature Work Item ID
 
 ## Persona
@@ -52,7 +52,13 @@ Every `style="..."` in output must exist character-for-character in the source t
 
 ## Execution
 
-### Phase A: Discovery [CLI]
+### Phase A: Discovery
+
+#### Step A0 [PROMPT] – Gather Research Context
+Execute `#file:.github/prompts/phase-02a-grooming-research.prompt.md` for `{{work_item_id}}`.
+- Produces `{{context_file}}.research.*` — business context, wiki research, related items, stakeholder impact, and unified synthesis
+- Research covers: work item analysis, comment mining, parent/child/sibling context, wiki search, business data, team impact
+- Load all research outputs as the primary context source for content generation
 
 #### Step A1 [CLI] – Retrieve Feature
 A1.1: `{{cli.ado_get}} {{work_item_id}} --expand Relations --json`
@@ -69,33 +75,36 @@ A1.2 [CLI]: `{{cli.ado_get}} {{work_item_id}} --comments --json`
 A1.3 [LOGIC]: Analyze current state:
 - Review existing field content to determine what needs enhancement vs creation
 - If a field already has well-structured template-matching content, plan to enhance rather than replace
-- Count direct children; if zero, **STOP** and suggest adding children first
+- Count direct children; note count for optional supplemental retrieval in Steps A2–A3
 
-#### Step A2 [CLI] – Retrieve Child Work Items
+#### Step A2 [CLI] – Retrieve Child Work Items (if children exist)
+Skip if no children. Research context (Step A0) already includes child summaries from Stream 2b; this step supplements with full field detail.
 Per child ID from A1:
 A2.1: `{{cli.ado_get}} {{child_id}} --json`
 - Extract: `System.Id`, `System.Title`, `System.WorkItemType`, `System.State`
 - Extract: `{{field_paths.description}}`, `{{field_paths.acceptance_criteria}}`, `{{field_paths.tags}}`
 - Note work item types (User Story, Bug, Task, Defect, PBI)
 
-#### Step A3 [CLI] – Retrieve Child Comments
+#### Step A3 [CLI] – Retrieve Child Comments (if children exist)
+Skip if no children. Research context (Step A0) already includes child comment summaries.
 Per child from A2 (prioritize Active/In Progress items):
 A3.1: `{{cli.ado_get}} {{child_id}} --comments --json`
 - Limit processing to top 20 comments per item
 - Extract: business context, requirements discussions, pain points, decisions
 
 #### Step A4 [GEN] – Extract Business Context
-From all child data and comments, extract ONLY:
-- **Business requirements** — what users need
-- **Acceptance criteria** — success conditions from child stories
-- **User personas** — departments, roles, stakeholders mentioned
+From research context (`{{context_file}}.research.*`) as the primary source, supplemented by child data (if available), extract ONLY:
+- **Business requirements** — what users need (research synthesis + child stories if any)
+- **Acceptance criteria** — success conditions from research synthesis and child stories (if any)
+- **User personas** — departments, roles, stakeholders from research team impact and comments
 - **Pain points** — problems being solved
 - **Expected outcomes** — benefits and business value
 - **Dependencies** — cross-team or system dependencies
-- **Assumptions** — what must hold true
-- **Known issues** — risks or open questions
-- **Feature-level decisions** — decisions from Feature comments that set direction for child stories
-- **Strategic context** — stakeholder discussions, meeting transcripts, original request rationale from Feature comments
+- **Assumptions** — from research assumptions and synthesis
+- **Known issues** — risks, open questions, and research solutioning investigation items
+- **Wiki insights** — architecture, business rules, and integration context from wiki research
+- **Feature-level decisions** — decisions from Feature and parent comments that set direction
+- **Strategic context** — stakeholder discussions, meeting transcripts, original request rationale
 
 #### Step A5 [GEN] – Filter Out Technical Details
 Explicitly EXCLUDE from the extracted context:
@@ -242,8 +251,9 @@ Present markdown summary:
 **Feature ID:** [ID] | **Status:** [State]
 
 ### Context Gathered
-- Child Work Items Analyzed: [count]
-- Comments Reviewed: [total count across all children]
+- Research Phase: Complete (wiki, business data, stakeholders, related items)
+- Child Work Items Analyzed: [count, or "N/A — no children"]
+- Comments Reviewed: [total count]
 
 ### Fields Updated
 
@@ -258,7 +268,7 @@ Present markdown summary:
 - [Theme 1 from child analysis]
 - [Theme 2 from child analysis]
 
-**Child Stories (Not Modified):** [count] items
+**Child Stories (Not Modified):** [count] items (if any)
 
 [View Feature](https://dev.azure.com/UMGC/Digital%20Platforms/_workitems/edit/[id])
 ```
@@ -270,7 +280,7 @@ Present markdown summary:
 | Scenario | Action |
 |----------|--------|
 | Not a Feature | **STOP** — inform user, suggest correct work item |
-| No children | **STOP** — inform user, suggest adding child stories first |
+| No children | Proceed — use research context (wiki, parent, siblings, business data) for content generation; note "no child stories" in summary |
 | All children closed | Proceed — generate content from closed items' final state; note "all children completed" in summary |
 | No comments on children | Proceed with fields/states only; note "limited comment history" in summary |
 | Existing fields well-structured | Enhance rather than replace; preserve existing quality content |

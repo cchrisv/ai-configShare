@@ -8,8 +8,9 @@ Input: `{{work_item_id}}`
 - **Extend over new** – prefer existing components; avoid net-new when platform supports it
 - **Standards-driven** – reference `{{paths.standards}}/` for compliance
 - **No timelines** – do not produce sprint estimates, delivery dates, schedule commitments, or task-level duration estimates. Capture high-level LOE only (component `complexity_estimate` as Simple/Medium/Complex) for Phase 5 WSJF scoring. Story points are derived exclusively in Phase 5 finalization.
-- **Single ADO update** – one `ado_update` call at the end
+- **Single ADO update** – one `ado_update --from-context` call at the end
 - **CLI-only** – per util-base guardrails
+- **Template-engine only** – NEVER generate raw HTML. Use `template-tools scaffold` for Development Summary fill spec, fill JSON slots, save to context. The CLI renders and validates.
 - **Outputs to** {{context_file}}.solutioning.*
 
 ## Prerequisites [IO]
@@ -24,12 +25,10 @@ A2 [IO]: Load {{context_file}} → verify:
 A3: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
 
 ## Templates
-Load from `{{paths.templates}}/` (use `{{template_files.*}}` keys):
-- `{{template_files.field_solution_design}}` — ADO Development Summary HTML field
-- `{{template_files.solution_design}}` — solution design structure (markdown)
-- `{{template_files.solution_design_document}}` — feature solution design document
-- `{{template_files.field_mappings}}` — field mapping reference
-- `{{template_files.test_case}}` — test case structure
+Templates are managed by the template engine. The CLI scaffolds fill specs, AI fills slots, CLI renders:
+- `field-solution-design` — ADO Development Summary HTML (rendered by template engine)
+- `{{template_files.solution_design}}` — solution design structure (markdown, manual)
+- `{{template_files.solution_design_document}}` — feature solution design document (markdown, manual)
 
 ---
 
@@ -43,6 +42,7 @@ B6 [IO]: Read `.grooming.solutioning_hints[]` — extracted implementation clues
 B7 [IO]: Read `.grooming.templates_applied.applied_content.acceptance_criteria` — what we must trace to
 
 ## Step 2 [GEN/CLI] – Option Analysis
+C0 [GEN]: **Refine preliminary classifications** — load `.grooming.classification` (effort, complexity, feasibility are marked `"preliminary"` from phase 02b). Using technical evidence from 03a research, produce evidence-based values to replace the preliminaries.
 C1 [GEN]: Enumerate solution options — score each on **Trusted** / **Easy** / **Adaptable** (1–5):
   - **OOTB**: Out-of-the-box platform capability (declarative)
   - **Extension**: Extend existing components (modify trigger action, update CMT, adjust flow)
@@ -65,16 +65,11 @@ D4 [GEN]: **Standards compliance** — load relevant standards from `{{paths.sta
   - `metadata-naming-conventions.md` — always
 D5 [GEN]: **Quality bar** — define code review, test coverage, performance thresholds
 
-## Step 4 [GEN] – Traceability & Testing
+## Step 4 [GEN] – Traceability & LOE
 E1 [GEN]: **AC traceability** — map every acceptance criterion → component_ids that implement it
 E2 [GEN]: **Gap analysis** — identify ACs not covered by any component; flag as gaps
 E3 [GEN]: **Orphan detection** — identify components not traced to any AC
-E4 [GEN]: **Test cases** — generate for each AC (test cases define *what* to test, not *when* or *how long*):
-  - id, title, path_type (happy_path | negative | edge_case | security)
-  - covers_ac[], priority (P1 | P2 | P3), objective, preconditions, steps, verification_checklist
-  - Do NOT include estimated durations or timeline information in test cases
-E5 [GEN]: **AC coverage matrix** — compute total_ac, fully_covered, partially_covered, not_covered
-E6 [GEN]: **Level of effort summary** — capture high-level LOE signals for Phase 5 WSJF scoring:
+E4 [GEN]: **Level of effort summary** — capture high-level LOE signals for Phase 5 WSJF scoring:
   - overall_complexity (Simple | Medium | Complex) — derived from component count and architecture decisions
   - risk_surface (Low | Medium | High) — derived from integration points, dependency depth, standards deviations
   - uncertainty_flags[] — list any unresolved assumptions, traceability gaps, or untested patterns
@@ -84,11 +79,10 @@ Run ALL gates before saving:
 
 | Gate | Check | On Fail |
 |------|-------|---------|
-| **AC coverage** | Every AC maps to ≥1 component AND ≥1 test case | Flag gaps, attempt to fill |
+| **AC coverage** | Every AC maps to ≥1 component | Flag gaps, attempt to fill |
 | **Standards compliance** | All components comply with loaded standards | Adjust design or document exception |
 | **Risk alignment** | Solution risk ≤ grooming risk classification | Escalate if solution is riskier |
 | **No orphans** | Every component traces to ≥1 AC | Remove or justify orphan components |
-| **Test completeness** | Every AC has happy + unhappy path tests | Generate missing tests |
 
 **Max 3 iterations** — proceed with best effort and log warnings if gates still fail.
 
@@ -122,33 +116,25 @@ Save → {{context_file}}.solutioning:
     "gaps": [],
     "orphans": []
   },
-  "testing": {
-    "test_data_matrix": { "rows": [], "columns": [] },
-    "test_cases": [
-      { "id": "", "title": "", "path_type": "happy_path|negative|edge_case|security",
-        "covers_ac": [], "priority": "P1|P2|P3", "objective": "",
-        "preconditions": [], "steps": [], "verification_checklist": [] }
-    ],
-    "ac_coverage_matrix": {
-      "coverage_summary": { "total_ac": 0, "fully_covered": 0, "partially_covered": 0, "not_covered": 0 },
-      "acceptance_criteria": [
-        { "ac_id": "", "description": "", "happy_path_tests": [], "unhappy_path_tests": [],
-          "coverage_status": "full|partial|none", "coverage_notes": "" }
-      ]
-    }
-  },
   "level_of_effort": {
     "overall_complexity": "Simple|Medium|Complex",
     "component_count": 0,
     "risk_surface": "Low|Medium|High",
     "uncertainty_flags": [],
-    "loe_notes": ""
+    "loe_notes": "",
+    "refined_from_grooming": { "effort": "", "complexity": "", "feasibility": "", "note": "Replaces preliminary values from phase 02b classification" }
   },
-  "applied_content": {
-    "development_summary": "<full generated HTML from field_solution_design template>",
-    "technical_notes": "<component list + architecture decisions summary>",
-    "sf_components": "<comma-separated SF component names>",
-    "story_points": null, // ALWAYS null — derived in Phase 5 WSJF scoring from level_of_effort
+  "filled_slots": {
+    "field-solution-design": {
+      "business_problem_statement": { "value": "..." },
+      "solution_approach_narrative": { "value": "..." },
+      "technical_narrative": { "value": "..." },
+      "components": { "rows": [{ "name": "", "type": "", "responsibility": "" }] },
+      "integration_points_brief": { "value": "..." }
+    }
+  },
+  "extra_fields": {
+    "story_points": null,
     "tags": ["existing", "tags", "{{tags.solutioned}}"]
   }
 }
@@ -162,21 +148,27 @@ Update `run_state`:
 
 **Save {{context_file}} to disk — GATE: do not proceed until confirmed written.**
 
-## Step 7 [CLI] – Update ADO
-The CLI reads `applied_content` from the solutioning section and maps fields automatically:
+## Step 7 [CLI] – Render & Push to ADO
+The `--from-context` flag reads `filled_slots`, auto-renders via the template engine, validates, then pushes:
 
 `{{cli.ado_update}} {{work_item_id}} --from-context "{{context_file}}" --phase solutioning --json`
 
-Maps: `development_summary` → `{{field_paths.development_summary}}`, `story_points` → `{{field_paths.story_points}}`, `tags` → `{{field_paths.tags}}` (joined with "; ", includes `{{tags.solutioned}}`).
+The CLI automatically:
+1. Renders `field-solution-design` template from filled_slots → final HTML
+2. Validates: no unfilled tokens, sections present, gradients intact
+3. Maps rendered HTML → `{{field_paths.development_summary}}`
+4. Reads `extra_fields` for story_points, tags
+5. Writes `templates_applied.applied_content` back to context for audit trail
+6. Pushes all fields to ADO in a single update
 
 On error: log to `run_state.errors[]`; save to disk; retry once; **STOP** on second failure.
 
 ## Completion [IO/GEN]
 Update {{context_file}}:
 - `metadata.phases_completed` append `"solutioning"`
-- `metadata.current_phase` = `"wiki"`
+- `metadata.current_phase` = `"test_cases"`
 - `metadata.last_updated` = current ISO timestamp
 - Append `{"phase":"solutioning","step":"ado_update","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
 - Save to disk
 
-Tell user: **"Solutioning complete. Use /phase-04-wiki."**
+Tell user: **"Solutioning complete. Use /phase-03d-test-cases."**

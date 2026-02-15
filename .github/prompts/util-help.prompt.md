@@ -21,6 +21,7 @@ New users → `/util-setup`. Full workflow → `/phase-01-initialize` with work 
 - `phase-03a-solutioning-research` — technical research → context.research
 - `phase-03b-solutioning` — design solution → context.solutioning
 - `phase-03c-solutioning-update` — iterative updates → context.dev_updates
+- `phase-03d-test-cases` — test case generation → context.solutioning.testing
 
 **Completion (04–06):**
 - `phase-04-wiki` — wiki documentation → context.wiki

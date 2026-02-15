@@ -10,14 +10,18 @@ Input: `{{work_item_id}}`
 - **Single ADO update** – one combined payload
 - **Preserve investigation trail** – add as-built alongside planned
 - **CLI-only** – per util-base guardrails
+- **Template-engine only** – NEVER generate raw HTML. Use `template-tools scaffold-phase` for fill specs, fill JSON slots, save to context. The CLI renders and validates.
 - **No prior artifacts required** – fetch from ADO + wiki
 - **Graceful degradation** – proceed with reduced evidence if needed
 - **Tag**: append {{tags.dev_complete}} to tags
 - **Context7 only** – outputs to {{context_file}}.closeout.*
 
 ## Templates
-Load from `{{paths.templates}}/`:
-field_mappings · field_solution_design · field_release_notes · wiki_format · Field HTML templates per work item type
+Templates are managed by the template engine. Use `template-tools scaffold-phase --phase closeout` to get fill specs for:
+- `field-solution-design` — ADO Development Summary HTML
+- `field-release-notes` — ADO Release Notes HTML
+- Grooming field templates (description, AC, etc.) per work item type
+- `wiki-page-template` — Wiki page markdown
 
 ## Execution
 

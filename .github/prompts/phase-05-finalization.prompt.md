@@ -19,7 +19,7 @@ A2 [IO]: Load {{context_file}} → verify:
   - `.grooming` exists (classification, templates_applied)
   - `.solutioning` exists (option_analysis, solution_design, traceability, testing)
   - `.wiki` exists (creation_audit)
-  - `.metadata.phases_completed` includes `"wiki"`
+  - `.metadata.phases_completed` includes `"test_cases"` AND `"wiki"`
 A3: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
 
 ## Templates
@@ -129,6 +129,30 @@ Update `run_state`:
 - Save to disk
 
 **Save {{context_file}} to disk — GATE: do not proceed until confirmed written.**
+
+## Step 4b [LOGIC] – Test Completeness Validation
+**⛔ Validate test suite completeness before proceeding. Do NOT skip this step.**
+
+D8 [LOGIC]: Read `.solutioning.testing` and validate:
+  - `test_cases[]` is non-empty
+  - `ac_coverage_matrix.coverage_summary.not_covered` == 0 (no ACs without tests)
+  - `ac_coverage_matrix.coverage_summary.fully_covered` == `ac_coverage_matrix.coverage_summary.total_ac` (100% full coverage)
+  - Every test case has non-empty `steps[]` and `expected_results_per_step[]`
+  - Every test case has non-empty `developer_validation` and `qa_validation`
+  - `uat_scripts[]` is non-empty
+  - `smoke_pack[]` has ≥3 entries
+
+D9 [LOGIC]: If any validation fails:
+  - Log failures to `run_state.errors[]` with details
+  - Add warning to `finalization.context_snapshot.quality_bar`: `"test_completeness_issues": ["description of each failure"]`
+  - Tell user: **"⚠️ Test suite completeness issues detected. Consider re-running /phase-03d-test-cases before finalizing."**
+  - Continue (do not block finalization) but ensure issues are visible in the completion summary
+
+D10 [LOGIC]: Record in `finalization.context_snapshot.solutioning_summary`:
+  - `test_cases_count` = length of `test_cases[]`
+  - `uat_scripts_count` = length of `uat_scripts[]`
+  - `smoke_checks_count` = length of `smoke_pack[]`
+  - `ac_coverage` = `"{fully_covered}/{total_ac} ACs fully covered"`
 
 ## Step 5 [CLI] – ADO Link Operations
 E1 [CLI]: Check existing relations: `{{cli.ado_relations}} {{work_item_id}} --json`

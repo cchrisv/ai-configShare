@@ -12,7 +12,8 @@
     "wiki-tools": "./dist/cli/wiki-tools.js",
     "workflow-tools": "./dist/cli/workflow-tools.js",
     "report-tools": "./dist/cli/report-tools.js",
-    "team-tools": "./dist/cli/team-tools.js"
+    "team-tools": "./dist/cli/team-tools.js",
+    "template-tools": "./dist/cli/template-tools.js"
   },
   "scripts": {
     "build": "tsup",

@@ -1047,6 +1047,115 @@ These tests provide additional coverage for edge cases and long-tail scenarios. 
 
 ---
 
+### � UAT Scripts
+
+Business-friendly test scripts for stakeholder validation. These scripts use non-technical language and focus on observable business outcomes rather than system internals.
+
+> 💡 **Audience:** These scripts are designed for business stakeholders who validate the feature meets their needs. They complement the technical QA test cases above.
+
+#### UAT-001: [Business-Language Test Title]
+
+| | |
+|---|---|
+| **Persona** | [Business role — e.g., Admissions Advisor] |
+| **Covers AC** | AC-1, AC-2 |
+| **Data Requirements** | [What records/users must exist before starting] |
+
+**Test Steps:**
+
+| Step | Action (Business Language) | What You Should See |
+|:----:|---------------------------|---------------------|
+| 1 | [Open the application and navigate to...] | [Page loads with expected content] |
+| 2 | [Perform the business action...] | [Confirmation message or visual change] |
+| 3 | [Verify the outcome by checking...] | [Expected business result] |
+
+**Acceptance Decision:**
+- ✅ **Pass if:** [All expected results observed — business stakeholder confirms feature works as intended]
+- ❌ **Fail if:** [Any deviation from expected behavior — describe what would constitute failure]
+
+---
+
+#### UAT-002: [Second Business Test Title]
+
+| | |
+|---|---|
+| **Persona** | [Different business role if applicable] |
+| **Covers AC** | AC-3 |
+| **Data Requirements** | [Preconditions in business terms] |
+
+**Test Steps:**
+
+| Step | Action (Business Language) | What You Should See |
+|:----:|---------------------------|---------------------|
+| 1 | [Business action] | [Expected observation] |
+| 2 | [Verification action] | [Expected outcome] |
+
+**Acceptance Decision:**
+- ✅ **Pass if:** [Business criteria met]
+- ❌ **Fail if:** [Business criteria not met]
+
+---
+
+### 🚀 Smoke Test Pack
+
+Minimum post-deployment verification checklist. These checks confirm "the org is healthy after deployment" — they are intentionally shallow and fast.
+
+> ⚠️ **Purpose:** Run these checks immediately after deployment to verify basic functionality. The full test suite (P1/P2/P3 above) provides comprehensive coverage.
+
+| # | Check | What to Verify | Pass Criteria |
+|:-:|-------|---------------|---------------|
+| 1 | **Login + Navigation** | Core app loads, affected tabs/pages accessible | No errors, pages render, menus work |
+| 2 | **Create Key Record** | Create/update records affected by the change | Record saves successfully, fields populated correctly |
+| 3 | **Automation Sanity** | Routing, assignment, approval rules fire | Expected automation triggers, correct outcomes |
+| 4 | **Integration Handshake** | External system queues, logging, event delivery | No errors in integration logs, events published/received |
+| 5 | **Report/Dashboard** | Representative report loads (if applicable) | Data displays correctly, no timeouts |
+
+**Smoke Pack Principles:**
+- **Shallow** — confirms basic health, not full coverage
+- **Fast** — entire pack completes in <15 minutes
+- **Independent** — each check runs in any order
+- **Repeatable** — same results on repeated execution
+
+---
+
+### 📋 Test Data Setup Guide
+
+Step-by-step procedure for testers to prepare the test environment. This guide references the Test Data Matrix personas above and provides actionable setup instructions.
+
+> **Purpose:** A tester should be able to follow these steps to create all required test data from scratch in a clean sandbox.
+
+**Step 1: Create Test Users**
+
+| # | Username | Profile | Permission Sets | Role | Purpose |
+|:-:|----------|---------|----------------|------|---------|
+| 1 | test.d1.user@sandbox.test | [Profile] | [Perm Set 1, Perm Set 2] | [Role] | Primary persona (D1) |
+| 2 | test.d2.user@sandbox.test | [Profile] | [Perm Set 1] | [Role] | Secondary persona (D2) |
+| 3 | test.d4.restricted@sandbox.test | Minimum Access | [None] | [None] | Negative testing (D4) |
+
+**Step 2: Create Test Records**
+
+| # | Object | Record Name | Key Field Values | Related To | Purpose |
+|:-:|--------|-------------|------------------|------------|---------|
+| 1 | [Account] | Test Account A | Type=Prospect | — | Parent record for D1 tests |
+| 2 | [Contact] | Test Contact A | Email=test@example.com | Account A | Primary test subject |
+| 3 | [Custom Object] | Test Record B | Status=Active, Type=Standard | Contact A | Child record scenario |
+
+**Step 3: Configure Feature Flags / Settings**
+
+| # | Setting | Object/Type | Value | Purpose |
+|:-:|---------|-------------|-------|---------|
+| 1 | [Feature_Enabled__c] | Custom Setting | `true` | Enable feature under test |
+| 2 | [Queue Mapping] | Custom Metadata | [Values] | Required routing configuration |
+
+**Step 4: Verify Environment**
+- [ ] All test users can log in
+- [ ] Required permission sets are assigned
+- [ ] Test records are visible to appropriate users
+- [ ] Feature flags are set correctly
+- [ ] Integration endpoints are available (or mocked)
+
+---
+
 ### 🔗 Requirements Traceability Matrix
 
 This matrix provides a detailed view linking each acceptance criterion to its test cases, organized by path type. This supplements the AC-Centric Coverage Matrix above with additional detail.

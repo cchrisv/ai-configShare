@@ -27,17 +27,10 @@
   </div>
   <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
     <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-      <!-- Work item with status badge -->
-      <li>
-        <strong style="color: #1976d2;">#{{work_item_id}}</strong> {{work_item_title}} - 
-        <span style="background: #fff3cd; color: #856404; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600;">{{status}}</span>
-        {{description}}
-      </li>
-      <!-- Priority item -->
-      <li>
-        <strong style="color: #dc3545;">Priority:</strong> 
-        <strong style="color: #1976d2;">#{{work_item_id}}</strong> - {{urgency_description}}
-      </li>
+      <li><strong style="color: #1976d2;">#{{immediate_1_id}}</strong> {{immediate_1_title}} — {{immediate_1_detail}}</li>
+      <li><strong style="color: #1976d2;">#{{immediate_2_id}}</strong> {{immediate_2_title}} — {{immediate_2_detail}}</li>
+      <li><strong style="color: #1976d2;">#{{immediate_3_id}}</strong> {{immediate_3_title}} — {{immediate_3_detail}}</li>
+      <!-- Add more immediate items as needed -->
     </ul>
   </div>
   
@@ -58,18 +51,24 @@
         <td style="padding: 10px; font-weight: 600;">Notes</td>
       </tr>
       <tr style="border-bottom: 1px solid #eee;">
-        <td style="padding: 10px;"><strong style="color: #1976d2;">#{{work_item_id}}</strong></td>
-        <td style="padding: 10px;">{{work_item_title}}</td>
-        <td style="padding: 10px; text-align: center;">{{story_points}}</td>
-        <td style="padding: 10px; color: #666;">{{notes}}</td>
+        <td style="padding: 10px;"><strong style="color: #1976d2;">#{{near_term_1_id}}</strong></td>
+        <td style="padding: 10px;">{{near_term_1_title}}</td>
+        <td style="padding: 10px; text-align: center;">{{near_term_1_points}}</td>
+        <td style="padding: 10px; color: #666;">{{near_term_1_notes}}</td>
       </tr>
-      <!-- Blocked item example -->
       <tr style="border-bottom: 1px solid #eee;">
-        <td style="padding: 10px;"><strong style="color: #1976d2;">#{{work_item_id}}</strong></td>
-        <td style="padding: 10px;">{{work_item_title}}</td>
-        <td style="padding: 10px; text-align: center;">{{story_points}}</td>
-        <td style="padding: 10px;"><span style="background: #dc3545; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 11px;">Blocked</span> by #{{blocker_id}}</td>
+        <td style="padding: 10px;"><strong style="color: #1976d2;">#{{near_term_2_id}}</strong></td>
+        <td style="padding: 10px;">{{near_term_2_title}}</td>
+        <td style="padding: 10px; text-align: center;">{{near_term_2_points}}</td>
+        <td style="padding: 10px; color: #666;">{{near_term_2_notes}}</td>
       </tr>
+      <tr style="border-bottom: 1px solid #eee;">
+        <td style="padding: 10px;"><strong style="color: #1976d2;">#{{near_term_3_id}}</strong></td>
+        <td style="padding: 10px;">{{near_term_3_title}}</td>
+        <td style="padding: 10px; text-align: center;">{{near_term_3_points}}</td>
+        <td style="padding: 10px; color: #666;">{{near_term_3_notes}}</td>
+      </tr>
+      <!-- Add more near-term rows as needed -->
     </table>
   </div>
   
@@ -82,16 +81,10 @@
       {{upcoming_context}}
     </div>
     <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #333;">
-      <li>
-        <strong style="color: #333;">#{{work_item_id}}</strong> {{work_item_title}} - 
-        <span style="background: #6c757d; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 11px;">{{effort_level}}</span>
-        {{description}}
-      </li>
-      <li>
-        <strong style="color: #333;">#{{work_item_id}}</strong> {{work_item_title}} - 
-        <span style="background: #6c757d; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 11px;">On Hold</span>
-        awaiting {{dependency}}
-      </li>
+      <li><strong style="color: #333;">#{{upcoming_1_id}}</strong> {{upcoming_1_title}} — {{upcoming_1_detail}}</li>
+      <li><strong style="color: #333;">#{{upcoming_2_id}}</strong> {{upcoming_2_title}} — {{upcoming_2_detail}}</li>
+      <li><strong style="color: #333;">#{{upcoming_3_id}}</strong> {{upcoming_3_title}} — {{upcoming_3_detail}}</li>
+      <!-- Add more upcoming items as needed -->
     </ul>
   </div>
   
@@ -99,11 +92,11 @@
   <div style="background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 20px;">
     <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">🤝 Where Leadership Can Help</div>
     <div style="font-size: 13px; color: #333; line-height: 1.8;">
-      <strong>{{ask_category_1}}:</strong> {{ask_detail_1}}
+      <strong>{{ask_1_category}}:</strong> {{ask_1_detail}}
       <br><br>
-      <strong>{{ask_category_2}}:</strong> {{ask_detail_2}}
+      <strong>{{ask_2_category}}:</strong> {{ask_2_detail}}
       <br><br>
-      <strong>{{ask_category_3}}:</strong> {{ask_detail_3}}
+      <strong>{{ask_3_category}}:</strong> {{ask_3_detail}}
     </div>
   </div>
   

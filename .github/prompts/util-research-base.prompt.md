@@ -13,7 +13,7 @@ Shared patterns for research prompts. Uses unified ticket-context.json.
 
 ## Context7 Research Pattern
 All research outputs go to {{context_file}}.research.*:
-- 02a: organization_dictionary, ado_workitem, similar_workitems, wiki_search, business_context, synthesis
+- 02a: organization_dictionary, ado_workitem (scope_context, domain_keywords), similar_workitems, wiki_search, business_context, solutioning_investigation (assumptions_to_validate, questions_for_solutioning, unknowns, scope_risks), synthesis (what_requested, why_it_matters, who_affected, scope_boundaries, open_questions)
 - 03a: salesforce_metadata, web_research (extends synthesis)
 
 ## Rolling Synthesis

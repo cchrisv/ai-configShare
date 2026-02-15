@@ -5,10 +5,11 @@ Config: `#file:.github/prompts/util-base.prompt.md`
 Input: `{{work_item_id}}`
 
 ## Constraints
-- **How only** – solutioning fields: DevelopmentSummary (HTML), SFComponents
+- **How only** – solutioning fields: DevelopmentSummary (HTML via template engine)
 - **No timelines** – do not produce sprint estimates, delivery dates, or schedule commitments
 - **Single ADO update** – one call; only changed fields
 - **CLI-only** – per util-base guardrails
+- **Template-engine only** – NEVER generate raw HTML. Use `template-tools scaffold` for `field-solution-design` fill spec, fill JSON slots, save to context. The CLI renders and validates.
 - **Re-runnable** – each run appends to {{context_file}}.dev_updates.updates[]
 - **Graceful degradation** – proceed with reduced evidence if needed
 - **For "what/why" updates** → use `/phase-02c-grooming-update`

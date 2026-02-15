@@ -28,6 +28,7 @@ Schema: `#file:config/templates/ticket-context-schema.json`
 | Solutioning research | `#file:.github/prompts/phase-03a-solutioning-research.prompt.md` |
 | Solutioning | `#file:.github/prompts/phase-03b-solutioning.prompt.md` |
 | Solutioning update (dev) | `#file:.github/prompts/phase-03c-solutioning-update.prompt.md` |
+| Test cases | `#file:.github/prompts/phase-03d-test-cases.prompt.md` |
 | Wiki | `#file:.github/prompts/phase-04-wiki.prompt.md` |
 | Finalization | `#file:.github/prompts/phase-05-finalization.prompt.md` |
 | Dev closeout | `#file:.github/prompts/phase-06-dev-closeout.prompt.md` |

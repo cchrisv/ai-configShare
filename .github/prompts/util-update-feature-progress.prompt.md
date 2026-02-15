@@ -62,14 +62,31 @@ Feature (Level 0)
 
 ### Phase B: Analysis & Synthesis [GEN]
 
-#### B1 – Categorize Descendants
-Group ALL descendants:
+#### B1 – Categorize Descendants & Score Progress
+Group ALL descendants for narrative context:
 - **Completed:** Closed, Done, Resolved, Completed
 - **In Progress:** Active, In Progress, Committed, Development, Code Review
 - **Blocked:** `{{field_paths.blockers}}` populated or "Blocked" tag
 - **Not Started:** New, Proposed, etc.
 
-Calculate: count per category, Story Points per category, percentage complete `(Completed / Total) × 100`, weighted completion (User Stories = 3×, Bugs/Defects = 2×, Tasks = 1×; formula: `sum(weighted_completed) / sum(weighted_total) × 100`).
+**Progress % — Story-State Scoring (User Stories only):**
+Progress is measured exclusively by User Story / PBI board column (`System.BoardColumn`). Each story earns points out of 6 based on its current board column:
+
+| Board Column | Points | Notes |
+|--------------|--------|-------|
+| New, Backlog, Identified, Product Backlog, Discovery, On Hold | 0 | No refinement started — no points earned |
+| In Refinement, Refinement, Refinement & Solutioning, Ready for Solutioning | 1 | Refinement in progress or complete |
+| Ready for Development | 2 | Solutioned — ready to build |
+| In Development, Delivery | 3 | Development in progress |
+| QA Testing, Ready for Delivery | 4 | QA in progress or dev complete |
+| UAT Testing | 5 | UAT in progress |
+| Closed | 6 | Done |
+
+**Active:** Map `Active` → use child-task context or default to 3 (in-progress).
+
+Formula: `completion_percent = (sum of earned points across all stories) / (total_stories × 6) × 100`
+
+Bugs, Defects, and Tasks are still categorized above for narrative context but do **not** factor into the completion percentage.
 
 #### B2 – Extract Weekly Raw Events (6-Week Window)
 Week boundaries: Monday–Sunday. Current week = Week 1.
@@ -134,8 +151,8 @@ Categorize: **Immediate** (this week), **Near-term** (next 2–4 weeks), **Upcom
 
 | Variable | Source | Description |
 |----------|--------|-------------|
-| `{{completion_percent}}` | B1 | Integer: `(completed / total) × 100` |
-| `{{completed_count}}` / `{{total_count}}` | B1 | Closed items / total descendants |
+| `{{completion_percent}}` | B1 | Integer: story-state score `(earned_points / (total_stories × 6)) × 100` |
+| `{{completed_count}}` / `{{total_count}}` | B1 | Earned story points / max possible points (total_stories × 6) |
 | `{{update_date}}` | Today | Format: `Mon DD, YYYY` |
 | `{{overall_status_summary}}` | B1–B4 | 4–6 sentence executive narrative. Open with trajectory (accelerating, steady, slowing, pivoting). Cover 2–3 most significant developments and their business impact. Close with key risk or opportunity. Write for a leader who reads ONLY this paragraph. |
 | `{{window_start}}` / `{{window_end}}` | Calc | 6-week window dates `MM/DD/YYYY` |

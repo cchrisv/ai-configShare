@@ -11,6 +11,7 @@ Input: `{{work_item_id}}` (work item) OR `{{wiki_page_id}}` (wiki) — one requi
 - **Never add** AC, goals, assumptions, scope items.
 - **Wiki: update by page ID only** – never create new pages.
 - **CLI-only** – per util-base guardrails
+- **Template-engine only** – per util-base guardrails #7-8. NEVER generate raw HTML. Use `template-tools scaffold` → fill JSON slots → `template-tools render` → `template-tools validate` for all ADO field updates.
 
 ## Prerequisites [IO]
 A1 [IO]: Load `#file:config/shared.json` → extract `paths.*`, `cli_commands.*`, `template_files.*`, `field_paths.*`
@@ -68,27 +69,36 @@ A3 [LOGIC]: Extract `System.WorkItemType` → select template set from table abo
 A4 [LOGIC]: Extract current content for each mapped field (Description, AC, DevelopmentSummary, etc.)
 A5 [IO]: Load field HTML templates from `{{paths.templates}}/` for the detected type
 
-### Step 2 [GEN] – Reformat
+### Step 2 [CLI/GEN] – Scaffold & Fill
 Per field with existing content:
-1. Strip old HTML → extract raw text/data
-2. Fix typos, grammar, punctuation only
-3. Re-populate HTML template with corrected content
-4. Preserve all data (IDs, error messages, GWT clauses, steps)
-5. Same item count — never add/remove
+B1 [CLI]: `{{cli.template_scaffold}} --template <template_key> --json` → get fill spec with slot shapes
+B2 [GEN]: Extract raw text/data from current field HTML into fill spec JSON slots:
+  - Fix typos, grammar, punctuation only — never rewrite
+  - Preserve all data (IDs, error messages, GWT clauses, steps)
+  - Same item count — never add/remove
+  - Fill `text` slots with plain text; `html` slots with existing HTML content
+  - Fill `list` items, `table` rows, `repeatable_block` blocks matching current content
+B3 [IO]: Save filled spec to temp file (e.g., `.temp/{{work_item_id}}-<field>-filled.json`)
 
-Skip empty/missing fields.
+Skip empty/missing fields entirely.
 
-### Step 3 [IO/CLI] – Save & Update
-B1 [IO]: Build JSON payload — `{ "<field_path>": "<reformatted_html>", ... }` for each reformatted field
+### Step 3 [CLI] – Render, Validate & Update
+Per filled field:
+C1 [CLI]: `{{cli.template_render}} --template <template_key> --fill-spec "<filled_spec_file>" --json` → rendered HTML
+C2 [CLI]: `{{cli.template_validate}} --template <template_key> --rendered "<rendered_file>" --json` → confirm no unfilled tokens, gradients intact
+C3 [LOGIC]: If validation fails → review fill spec, fix, re-render. **STOP** after 2 failures.
+
+After all fields rendered and validated:
+C4 [IO]: Build JSON payload — `{ "<field_path>": "<rendered_html>", ... }` for each field
   - Use `{{field_paths.*}}` for ADO field paths (e.g., `{{field_paths.description}}`, `{{field_paths.acceptance_criteria}}`)
-B2 [IO]: Save payload to temp `.json` file
-B3 [CLI]: `{{cli.ado_update}} {{work_item_id}} --fields-file "<temp_file>" --json`
+C5 [IO]: Save payload to temp `.json` file
+C6 [CLI]: `{{cli.ado_update}} {{work_item_id}} --fields-file "<temp_file>" --json`
 
 On error: log error; retry once; **STOP** on second failure.
 
 ### Step 4 [CLI] – Verify
-C1 [CLI]: `{{cli.ado_get}} {{work_item_id}} --fields "System.Description,Microsoft.VSTS.Common.AcceptanceCriteria" --json`
-C2 [LOGIC]: Confirm fields contain the new HTML structure
+D1 [CLI]: `{{cli.ado_get}} {{work_item_id}} --fields "System.Description,Microsoft.VSTS.Common.AcceptanceCriteria" --json`
+D2 [LOGIC]: Confirm fields contain the new HTML structure (gradient headers, styled cards)
 
 ---
 

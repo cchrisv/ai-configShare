@@ -181,51 +181,96 @@ program
         }
       }
 
-      // Context-driven update: read phase output from ticket-context.json
+      // Context-driven update: read filled_slots from ticket-context.json,
+      // auto-render via template engine, validate, then map to ADO fields.
       if (options.fromContext) {
         const ctxContent = readFileSync(options.fromContext, 'utf-8');
         const ctx = JSON.parse(ctxContent);
         const phase = options.phase || 'grooming';
+        const phaseData = ctx?.[phase];
 
-        if (phase === 'grooming') {
-          const applied = ctx?.grooming?.templates_applied?.applied_content;
-          if (!applied) {
-            console.error('Error: --from-context file missing grooming.templates_applied.applied_content');
-            process.exit(1);
-          }
-          // Map friendly names → ADO field paths
-          if (applied.description) fields['System.Description'] = applied.description;
-          if (applied.acceptance_criteria) fields['Microsoft.VSTS.Common.AcceptanceCriteria'] = applied.acceptance_criteria;
-          if (applied.title) fields['System.Title'] = applied.title;
-          if (Array.isArray(applied.tags) && applied.tags.length > 0) {
-            fields['System.Tags'] = applied.tags.join('; ');
-          }
-          if (applied.work_class_type) fields['Custom.WorkClassType'] = applied.work_class_type;
-          if (applied.qa_requirement?.requires_qa) fields['Custom.RequiresQA'] = applied.qa_requirement.requires_qa;
-          // Bug-specific
-          if (applied.repro_steps) fields['Microsoft.VSTS.TCM.ReproSteps'] = applied.repro_steps;
-          if (applied.system_info) fields['Microsoft.VSTS.TCM.SystemInfo'] = applied.system_info;
-          // Feature-specific
-          if (applied.business_value) fields['Custom.BusinessProblemandValueStatement'] = applied.business_value;
-          if (applied.objectives) fields['Custom.BusinessObjectivesandImpact'] = applied.objectives;
-
-        } else if (phase === 'solutioning') {
-          const applied = ctx?.solutioning?.applied_content;
-          if (!applied) {
-            console.error('Error: --from-context file missing solutioning.applied_content');
-            process.exit(1);
-          }
-          // Solutioning updates development summary + tags + story points
-          if (applied.development_summary) fields['Custom.DevelopmentSummary'] = applied.development_summary;
-          if (applied.story_points !== undefined) fields['Microsoft.VSTS.Scheduling.StoryPoints'] = applied.story_points;
-          if (Array.isArray(applied.tags) && applied.tags.length > 0) {
-            fields['System.Tags'] = applied.tags.join('; ');
-          }
-
-        } else {
-          console.error(`Error: unsupported --phase "${phase}". Use "grooming" or "solutioning".`);
+        if (!phaseData) {
+          console.error(`Error: --from-context file missing "${phase}" section`);
           process.exit(1);
         }
+
+        // Require filled_slots (new template-engine flow)
+        const filledSlots = phaseData?.filled_slots;
+        if (!filledSlots || typeof filledSlots !== 'object' || Object.keys(filledSlots).length === 0) {
+          console.error(`Error: ${phase}.filled_slots not found in context file.`);
+          console.error('Run: template-tools scaffold-phase --phase ' + phase + ' ... then fill the slots.');
+          process.exit(1);
+        }
+
+        // Auto-render each template via the template engine
+        const { renderTemplate, validateRendered, getTemplateEntry } = await import('../src/templateEngine.js');
+
+        for (const [templateKey, slots] of Object.entries(filledSlots)) {
+          const renderResult = renderTemplate(templateKey, slots as Record<string, import('../src/types/templateTypes.js').FillSlot>);
+
+          if (!renderResult.success) {
+            console.error(`Warning: template "${templateKey}" has ${renderResult.slots_missing} missing required slot(s): ${renderResult.missing_slots.join(', ')}`);
+          }
+
+          // Validate structural integrity
+          const validation = validateRendered(templateKey, renderResult.html);
+          if (!validation.valid) {
+            const errors = validation.issues.filter((i: { severity: string }) => i.severity === 'error');
+            console.error(`Error: template "${templateKey}" failed validation:`);
+            for (const err of errors) {
+              console.error(`  [${err.code}] ${err.message}`);
+            }
+            process.exit(1);
+          }
+
+          // Map rendered HTML to ADO field
+          const entry = getTemplateEntry(templateKey);
+          if (entry.ado_field) {
+            fields[entry.ado_field] = renderResult.html;
+          }
+        }
+
+        // Also pick up non-template fields from the phase (tags, story points, etc.)
+        const extraFields = phaseData?.extra_fields;
+        if (extraFields && typeof extraFields === 'object') {
+          if (Array.isArray(extraFields.tags) && extraFields.tags.length > 0) {
+            fields['System.Tags'] = extraFields.tags.join('; ');
+          }
+          if (extraFields.title) fields['System.Title'] = extraFields.title;
+          if (extraFields.story_points !== undefined) fields['Microsoft.VSTS.Scheduling.StoryPoints'] = extraFields.story_points;
+          if (extraFields.work_class_type) fields['Custom.WorkClassType'] = extraFields.work_class_type;
+          if (extraFields.requires_qa) fields['Custom.RequiresQA'] = extraFields.requires_qa;
+        }
+
+        // Write rendered applied_content back to context for audit trail
+        if (!phaseData.templates_applied) phaseData.templates_applied = {};
+        const appliedContent: Record<string, string> = {};
+        for (const [adoField, value] of Object.entries(fields)) {
+          if (typeof value === 'string' && value.includes('linear-gradient')) {
+            const contextKey = adoFieldToContextKey(adoField);
+            appliedContent[contextKey] = value;
+          }
+        }
+        phaseData.templates_applied.applied_content = appliedContent;
+        ctx[phase] = phaseData;
+        const { writeFileSync: writeCtx } = await import('fs');
+        writeCtx(options.fromContext, JSON.stringify(ctx, null, 2), 'utf-8');
+      }
+
+      // Helper: map ADO field path to context key name
+      function adoFieldToContextKey(adoField: string): string {
+        const mapping: Record<string, string> = {
+          'System.Description': 'description',
+          'Microsoft.VSTS.Common.AcceptanceCriteria': 'acceptance_criteria',
+          'System.Title': 'title',
+          'Microsoft.VSTS.TCM.ReproSteps': 'repro_steps',
+          'Microsoft.VSTS.TCM.SystemInfo': 'system_info',
+          'Custom.DevelopmentSummary': 'development_summary',
+          'Custom.BusinessProblemandValueStatement': 'business_value',
+          'Custom.BusinessObjectivesandImpact': 'objectives',
+          'Custom.ReleaseNotes': 'release_notes',
+        };
+        return mapping[adoField] ?? adoField.replace(/\./g, '_').toLowerCase();
       }
 
       const workItem = await updateWorkItem(parseInt(id, 10), {

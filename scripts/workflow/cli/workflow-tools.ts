@@ -222,8 +222,8 @@ program
 
       const workItemId = options.workItem;
       const phase = options.phase;
-      const validSections = ['research', 'grooming', 'solutioning', 'wiki', 'finalization', 'dev_updates', 'closeout'];
-      const phaseOrder = ['research', 'grooming', 'solutioning', 'wiki', 'finalization'];
+      const validSections = ['research', 'grooming', 'solutioning', 'test_cases', 'wiki', 'finalization', 'dev_updates', 'closeout'];
+      const phaseOrder = ['research', 'grooming', 'solutioning', 'test_cases', 'wiki', 'finalization'];
       
       // Validate section if provided
       if (phase && !validSections.includes(phase)) {
@@ -250,11 +250,18 @@ program
       if (phase) {
         // Reset specific section in ticket-context.json
         const context = JSON.parse(readFileSync(contextPath, 'utf-8'));
-        const previousData = context[phase];
+        // test_cases data lives under .solutioning.testing, not a top-level key
+        const isTestCases = phase === 'test_cases';
+        const previousData = isTestCases ? context.solutioning?.testing : context[phase];
         const hadData = previousData && typeof previousData === 'object' && Object.keys(previousData).length > 0;
         
         // Clear the section
-        if (phase === 'dev_updates') {
+        if (isTestCases) {
+          // Only clear the testing sub-section, preserve rest of solutioning
+          if (context.solutioning) {
+            delete context.solutioning.testing;
+          }
+        } else if (phase === 'dev_updates') {
           context[phase] = { updates: [] };
         } else {
           context[phase] = {};

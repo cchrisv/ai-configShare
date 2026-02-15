@@ -28,6 +28,7 @@ A2 [IO]: Verify {{context_file}}:
   - `.research.synthesis` exists (unified_truth from grooming research)
   - `.research.team_impact` exists (impacted_roles, coordination_contacts)
   - `.grooming` exists (solutioning_hints from phase-02b)
+  - `.grooming.solutioning_investigation` exists (assumptions, questions, unknowns, scope_risks from phase-02b)
   - `.metadata.phases_completed` includes `"grooming"`
 A3 [CLI]: Verify SF auth: `{{cli.sf_query}} "SELECT Id FROM Organization LIMIT 1" --json`
 A3.5 [CLI]: `{{cli.ado_get}} {{work_item_id}} --comments --json` — **Comment Refresh**
@@ -51,9 +52,11 @@ Add to {{context_file}}.research:
 **Goal:** Discover SF schema, dependencies, automation → {{context_file}}.research.salesforce_metadata + .dependency_discovery
 
 ### Init
-B1 [IO]: Load keywords from `.research.ado_workitem.keywords` + `.research.wiki_search`
+B1 [IO]: Load domain keywords from `.research.ado_workitem.domain_keywords` + `.research.wiki_search`
 B2 [IO]: Load `.grooming.solutioning_hints[]` — these are implementation clues extracted during grooming
-B3 [GEN]: Extract SF object/field names from keywords + hints; deduplicate into investigation list
+B2.5 [IO]: Load `.grooming.solutioning_investigation` — these are deliberate items phase 2 flagged for technical investigation. Log count: assumptions_to_validate, questions_for_solutioning, unknowns, scope_risks. Use these to guide investigation priorities in this stream.
+B3 [GEN]: Extract SF object/field names from domain keywords + hints + solutioning_investigation items; also extract any technical/implementation keywords that phase 02a identified as in-scope but did not investigate (02a focuses on what/why only)
+B3.5 [CLI]: If metadata investigation needed: `{{cli.sf_query}} "{{tooling_query}}" --tooling --json` — tooling API queries live here, not in phase 02a
 
 ### Discovery (batch when multiple objects)
 C1 [CLI]: `{{cli.sf_describe}} {{object}} --json` (batch: `{{obj1}},{{obj2}} --batch --json`)
@@ -95,7 +98,7 @@ E2 [GEN]: Compare discovered patterns against loaded standards; flag non-complia
 **Goal:** Benchmark against industry standards → {{context_file}}.research.web_research
 
 ### Strategy
-F1 [IO]: Load tech context from Stream 1 (SF metadata, dependencies, automation patterns)
+F1 [IO]: Load tech context from Stream 1 (SF metadata, dependencies, automation patterns) + `.research.ado_workitem.scope_context` from phase 02a
 F2 [GEN]: Generate 3–5 targeted search queries based on:
   - Technologies discovered (e.g., "Salesforce platform events best practices")
   - Patterns found (e.g., "Salesforce custom metadata calculation pattern")
@@ -118,6 +121,11 @@ H4 [GEN]: Modernization opportunities — if legacy patterns found, note alterna
 Update {{context_file}}:
 - `research.synthesis.research_phase_complete` = `true`
 - Extend `research.synthesis.unified_truth` with SF metadata + web research findings
+- **Investigation resolution** — for each item in `.grooming.solutioning_investigation`:
+  - Mark as `resolved` (with evidence/answer) or `unresolved` (with reason)
+  - Store resolution status in `research.investigation_resolution[]`:
+    `{ id, original_item, status: "resolved"|"unresolved", evidence: "", resolved_in_stream: "" }`
+  - Unresolved items carry forward as risks for phase 03b to address
 - `metadata.last_updated` = current ISO timestamp
 - Append `{"phase":"research","step":"solutioning_research_complete","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `run_state.completed_steps[]`
 - Save to disk

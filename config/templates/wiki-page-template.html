@@ -635,6 +635,172 @@
   </ul>
 </div>
 
+### � UAT Scripts
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="background: #e0f2f1; border-left: 4px solid #00796b; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 16px;">
+    <div style="font-weight: 600; color: #00796b; margin-bottom: 6px;">💡 Audience</div>
+    <div style="line-height: 1.6;">These scripts are designed for business stakeholders who validate the feature meets their needs. They complement the technical QA test cases above.</div>
+  </div>
+
+  <div style="font-weight: 600; color: #00796b; font-size: 14px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">UAT-001: {{uat_script_1_title}}</div>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
+    <tr><td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6; width: 30%;">Persona</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{uat_script_1_persona}}</td></tr>
+    <tr><td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Covers AC</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{uat_script_1_covers_ac}}</td></tr>
+    <tr><td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Data Requirements</td><td style="padding: 8px; border: 1px solid #dee2e6;">{{uat_script_1_data_reqs}}</td></tr>
+  </table>
+  <div style="font-weight: 600; color: #00796b; margin-bottom: 8px;">Test Steps:</div>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6; width: 8%;">Step</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Action (Business Language)</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">What You Should See</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">1</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{uat_step_1_action}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{uat_step_1_expected}}</td>
+    </tr>
+    <!-- Add more UAT step rows as needed -->
+  </table>
+  <div style="margin-bottom: 8px;">✅ <strong>Pass if:</strong> {{uat_script_1_pass}}</div>
+  <div>❌ <strong>Fail if:</strong> {{uat_script_1_fail}}</div>
+  <!-- Add more UAT scripts as needed -->
+</div>
+
+### 🚀 Smoke Test Pack
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 16px;">
+    <div style="font-weight: 600; color: #e65100; margin-bottom: 6px;">⚠️ Purpose</div>
+    <div style="line-height: 1.6;">Run these checks immediately after deployment to verify basic functionality. The full test suite (P1/P2/P3 above) provides comprehensive coverage.</div>
+  </div>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6; width: 5%;">#</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6; width: 20%;">Check</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">What to Verify</td>
+      <td style="padding: 10px; font-weight: 600; border: 1px solid #dee2e6;">Pass Criteria</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">1</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6; font-weight: 600;">Login + Navigation</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{smoke_1_verify}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{smoke_1_criteria}}</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">2</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6; font-weight: 600;">Create Key Record</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{smoke_2_verify}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{smoke_2_criteria}}</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">3</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6; font-weight: 600;">Automation Sanity</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{smoke_3_verify}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{smoke_3_criteria}}</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">4</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6; font-weight: 600;">Integration Handshake</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{smoke_4_verify}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{smoke_4_criteria}}</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">5</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6; font-weight: 600;">Report/Dashboard</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{smoke_5_verify}}</td>
+      <td style="padding: 10px; border: 1px solid #dee2e6;">{{smoke_5_criteria}}</td>
+    </tr>
+    <!-- Add more smoke check rows as needed -->
+  </table>
+  <div style="background: #f5f5f5; border-radius: 6px; padding: 12px; font-size: 12px; color: #666;">
+    <strong>Principles:</strong> Shallow (basic health, not full coverage) · Fast (&lt;15 min) · Independent (any order) · Repeatable (consistent results)
+  </div>
+</div>
+
+### 📋 Test Data Setup Guide
+<div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #333;">
+  <div style="background: #e0f2f1; border-left: 4px solid #00796b; border-radius: 0 8px 8px 0; padding: 14px; margin-bottom: 16px;">
+    <div style="font-weight: 600; color: #00796b; margin-bottom: 6px;">📋 Purpose</div>
+    <div style="line-height: 1.6;">Follow these steps to prepare all required test data from scratch in a clean sandbox. References the Test Data Matrix personas above.</div>
+  </div>
+
+  <div style="font-weight: 600; color: #00796b; font-size: 14px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">Step 1: Create Test Users</div>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6; width: 5%;">#</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Username</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Profile</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Permission Sets</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Role</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Purpose</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">1</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_user_1_username}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_user_1_profile}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_user_1_permsets}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_user_1_role}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_user_1_purpose}}</td>
+    </tr>
+    <!-- Add more user rows as needed -->
+  </table>
+
+  <div style="font-weight: 600; color: #00796b; font-size: 14px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">Step 2: Create Test Records</div>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6; width: 5%;">#</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Object</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Record Name</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Key Field Values</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Related To</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Purpose</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">1</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_record_1_object}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_record_1_name}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_record_1_fields}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_record_1_related}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_record_1_purpose}}</td>
+    </tr>
+    <!-- Add more record rows as needed -->
+  </table>
+
+  <div style="font-weight: 600; color: #00796b; font-size: 14px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">Step 3: Configure Feature Flags / Settings</div>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+    <tr style="background: #f8f9fa;">
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6; width: 5%;">#</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Setting</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Object/Type</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Value</td>
+      <td style="padding: 8px; font-weight: 600; border: 1px solid #dee2e6;">Purpose</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #dee2e6; text-align: center;">1</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_flag_1_name}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_flag_1_type}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_flag_1_value}}</td>
+      <td style="padding: 8px; border: 1px solid #dee2e6;">{{setup_flag_1_purpose}}</td>
+    </tr>
+    <!-- Add more flag rows as needed -->
+  </table>
+
+  <div style="font-weight: 600; color: #00796b; font-size: 14px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">Step 4: Verify Environment</div>
+  <ul style="margin: 0; padding-left: 20px; line-height: 2;">
+    <li>☐ All test users can log in</li>
+    <li>☐ Required permission sets are assigned</li>
+    <li>☐ Test records are visible to appropriate users</li>
+    <li>☐ Feature flags are set correctly</li>
+    <li>☐ Integration endpoints are available (or mocked)</li>
+  </ul>
+</div>
+
 ### 🔗 Requirements Traceability Matrix
 <div style="height: 4px; background: linear-gradient(135deg, #26a69a 0%, #00796b 100%); border-radius: 2px; margin: 0 0 12px 0;"></div>
 

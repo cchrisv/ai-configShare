@@ -24,7 +24,7 @@ A2 [IO]: Load {{context_file}} → verify:
   - `.research` exists (synthesis, salesforce_metadata, web_research)
   - `.grooming` exists (classification, templates_applied)
   - `.solutioning` exists (option_analysis, solution_design, traceability, testing)
-  - `.metadata.phases_completed` includes `"solutioning"`
+  - `.metadata.phases_completed` includes `"solutioning"` AND `"test_cases"`
 A3: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
 
 ### Resume Check
@@ -125,7 +125,13 @@ P3-H [IO]: Append `{"phase":"wiki","step":"pass_3_solution_decisions","completed
 ## Pass 4 [IO/GEN] – Quality & Validation (Testing)
 
 ### Context to Load
-P4-A [IO]: Read `.solutioning.testing` (test_data_matrix, test_cases, ac_coverage_matrix)
+P4-A [IO]: Read `.solutioning.testing`:
+  - `testing_strategy` (test_objectives, scope, suite_organization, applicable_test_types, entry_points)
+  - `test_data_matrix` (personas, record contexts, feature flags, error injection)
+  - `test_cases` (Playbook-format cases with six-path coverage)
+  - `uat_scripts` (business-friendly UAT scripts)
+  - `smoke_pack` (post-deployment verification checks)
+  - `ac_coverage_matrix` (coverage summary + per-AC detail)
 P4-B [IO]: Read `.solutioning.traceability`
 P4-C [IO]: Read `.grooming.templates_applied.applied_content.acceptance_criteria`
 
@@ -134,28 +140,170 @@ P4-D [IO]: Load Quality & Validation section structure from `{{template_files.wi
 P4-E [IO]: Load Teal (Quality/Testing) formatting guidance and full test case template from `{{template_files.wiki_format}}` (Quality & Validation section onward)
 
 ### Generate
-P4-F [GEN]: Generate the complete Quality & Validation section following the testing structure defined in the loaded templates. This is the largest section — follow the template precisely for each subsection:
+P4-F [GEN]: Generate the **complete** Quality & Validation section. This is the largest section in the wiki — it MUST contain ALL subsections below. Follow the template structure from `{{template_files.wiki_format}}` precisely.
 
-  1. **How We'll Know We're Successful** — user-facing + system requirements from AC
-  2. **Testing Strategy & Coverage** — 2-3 paragraph testing philosophy narrative
-  3. **AC-Centric Test Coverage Matrix** — every AC mapped to happy/unhappy path tests with coverage status (Full/Partial/Gap) and path type legend
-  4. **Test Data Matrix** — personas, profiles, permissions, record contexts, feature flags. Detailed per-persona breakdowns with setup instructions
-  5. **P1 Critical Path Tests** — summary table + detailed per-test-case format: objective, path type, AC coverage, pre-conditions, step-by-step execution table, verification checklist, telemetry/logs, cleanup, Developer Validation (unit test pattern + assertions + mocks), QA Validation (navigation + data query + visual checkpoints + environment)
-  6. **P2 Important Tests** — same detailed format as P1
-  7. **P3 Additional Coverage** — same detailed format as P1
-  8. **Test Data Setup Guide** — actionable setup procedure for testers
-  9. **Requirements Traceability Matrix** — AC-to-test cross-reference
-  10. **Assumptions Resolution Log** — from all phases with status tracking
-  11. **Quality Corrections Applied** — solution bias removed, template fidelity, logical fallacies
-  12. **Open Unknowns** — items requiring human input
+> **⛔ CRITICAL: This section was previously generated with most subsections missing. Every numbered subsection below is MANDATORY. Do NOT collapse, merge, summarize, or skip any subsection. Output length is not a concern — a thorough testing section is the primary value of this wiki.**
 
-**Key requirements for every test case:**
+#### MANDATORY Subsection 1: How We'll Know We're Successful
+- Render `### ✅ How We'll Know We're Successful` heading
+- User-facing success criteria derived from ACs (what the user observes)
+- System requirements (performance, error rates, data integrity)
+- Source: `.grooming.templates_applied.applied_content.acceptance_criteria`
+
+#### MANDATORY Subsection 2: Testing Strategy & Coverage
+- Render `### 🎯 Testing Strategy & Coverage` heading
+- 2–3 paragraph narrative: test philosophy, confidence targets, risk-based approach
+- **Scope table**: in-scope vs. explicitly out-of-scope modules/integrations
+- **Test type applicability table**: Unit / Smoke / Integration / System / UAT / Performance / Security — each with applicable (Y/N), owner, justification
+- **Entry points list**: which channels each test targets
+- **Suite organization**: count by category (smoke / regression / feature / UAT)
+- Source: `testing_strategy`
+
+#### MANDATORY Subsection 3: AC-Centric Test Coverage Matrix
+- Render `### 📋 AC-Centric Test Coverage Matrix` heading
+- Table: AC ID | AC Description | Happy Path Tests | Unhappy Path Tests | Coverage Status (Full/Partial/Gap)
+- Path type legend: ✓ Happy / ✗ Negative / ⚡ Edge / 🔒 Security / ⚙️ Automation / 🔄 Integration
+- Coverage summary line: "X/Y ACs fully covered (Z%)"
+- Source: `ac_coverage_matrix`
+
+#### MANDATORY Subsection 4: Test Data Matrix
+- Render `### 📊 Test Data Matrix` heading
+- Overview table: Row ID | Persona | Profile / Permissions | Record Context | Key Conditions
+- **Then for EACH persona row (D1, D2, D3...)**, render a detailed sub-section:
+  - `#### 👤 D1: [Persona Name]` heading
+  - Attribute table (Role, Profile, Permission Sets, Record Access)
+  - Test User Setup code block (username, profile, perm sets, role)
+  - Required Test Records table (Object, Record Name, Key Fields, Purpose)
+  - Feature Flag Configuration table (if applicable)
+- Source: `test_data_matrix`
+
+#### MANDATORY Subsections 5–7: Detailed Test Cases (P1 / P2 / P3)
+**⛔ This is where previous wikis failed — rendering only a summary table. You MUST render BOTH the summary table AND every individual test case in full.**
+
+For EACH priority tier (P1, P2, P3):
+- Render the tier heading: `### 🔴 P1 Critical Path Tests` / `### 🟡 P2 Important Tests` / `### 🟢 P3 Additional Coverage`
+- Render a **summary table** first: ID | Test Scenario | Path Type | Covers AC | Data Row
+- Then render **EVERY individual test case** as its own subsection. For each TC-XXX:
+
+```
+#### TC-XXX: [Full Test Title]
+
+| | |
+|---|---|
+| **Objective** | [What we're validating] |
+| **Path Type** | [✓ Happy / ✗ Negative / etc.] |
+| **Covers AC** | [AC-X, AC-Y] |
+| **Priority** | [🔴 P1 / 🟡 P2 / 🟢 P3] |
+| **Entry Point** | [Lightning UI / API / etc.] |
+| **Persona** | [Profile + Perm Sets + Role] |
+| **Data Row** | [D1 / D2 / etc.] |
+
+**Pre-conditions & Setup:**
+- [ ] [Specific setup steps]
+
+**Step-by-Step Execution:**
+
+| Step | Action | Input/Data | Expected Result | ✓ |
+|:----:|--------|------------|-----------------|:-:|
+| 1 | [Navigate to...] | [URL/path] | [Page loads] | ☐ |
+| 2 | [Click/Enter...] | [Exact values] | [Expected feedback] | ☐ |
+
+**Verification Checklist:**
+- [ ] **UI:** [specific check]
+- [ ] **Data:** [SOQL or field check]
+- [ ] **Related Records:** [child/junction records]
+
+**Telemetry & Logs:**
+| Log Type | What to Look For | Where |
+|----------|------------------|-------|
+| [Debug/Event/Custom] | [Pattern] | [Location] |
+
+**Cleanup:** [steps to reset]
+
+**👨‍💻 Developer Validation:**
+- Unit test pattern (Apex code block with Arrange/Act/Assert)
+- Assertions to implement
+- Mocks required
+
+**🔍 QA Validation:**
+- Navigation steps
+- Data verification query (SOQL)
+- Visual checkpoints
+- Environment prerequisites
+```
+
+**⛔ The above structure is the MINIMUM for every TC-XXX. Do NOT render any test case as just a table row. Do NOT write "Same format as TC-001." Do NOT say "additional tests follow the same pattern." Every test case gets its own full subsection.**
+
+- Source: `test_cases[]` grouped by `priority`
+
+#### MANDATORY Subsection 7a: UAT Scripts
+- Render `### 🧪 UAT Validation Scripts` heading with Teal styling
+- For EACH UAT-XXX, render as a **structured script** (NOT a paragraph summary):
+  - `#### UAT-XXX: [Title]` heading
+  - Persona: which business role executes this
+  - Covers AC: [list]
+  - Data Requirements: what must exist before starting
+  - **Numbered steps table**: Step | Action (business language) | Expected Result
+  - Pass/Fail Criteria: explicit decision for the script
+- Source: `uat_scripts[]`
+
+#### MANDATORY Subsection 7b: Smoke Test Pack
+- Render `### ✅ Smoke Test Pack` heading with Teal styling
+- Table: Check ID | What to Verify | Pass Criteria
+- Source: `smoke_pack[]`
+
+#### MANDATORY Subsection 8: Test Data Setup Guide
+- Render `### 📋 Test Data Setup Guide` heading
+- Actionable numbered procedure for testers to set up all test data
+- Reference data rows (D1, D2...) and required records from subsection 4
+
+#### MANDATORY Subsection 9: Requirements Traceability Matrix
+- Render `### 🔗 Requirements Traceability Matrix` heading
+- Table: AC ID | AC Description | Test Case IDs | Component IDs | Coverage Status
+
+#### MANDATORY Subsection 10: Assumptions Resolution Log
+- Render `### 📝 Assumptions Resolution Log` heading
+- Table: Assumption | Source Phase | Status (Confirmed/Open/Changed) | Resolution
+
+#### MANDATORY Subsection 11: Quality Corrections Applied
+- Render `### ✨ Quality Corrections Applied` heading
+- List corrections: solution bias removed, template fidelity, logical fallacies
+
+#### MANDATORY Subsection 12: Open Unknowns
+- Render `### ❓ Open Unknowns` heading
+- Items requiring human input before testing can be finalized
+
+---
+
+### Post-Generation Validation (P4-F2)
+**⛔ Before saving, validate the generated wiki content:**
+
+P4-F2 [LOGIC]: Count and verify:
+  - [ ] All 12 subsection headings are present in the output
+  - [ ] Number of `#### TC-XXX` sections == number of test cases in `test_cases[]`
+  - [ ] Each TC-XXX section contains "Step-by-Step Execution" table
+  - [ ] Each TC-XXX section contains "Developer Validation" subsection
+  - [ ] Each TC-XXX section contains "QA Validation" subsection
+  - [ ] Number of `#### UAT-XXX` sections == number of scripts in `uat_scripts[]`
+  - [ ] Each UAT-XXX has a numbered steps table (not a paragraph)
+  - [ ] Smoke pack table has ≥3 rows
+
+If any check fails: fix the output before saving. Do NOT save incomplete wiki content.
+
+---
+
+**Key requirements for every test case (summary):**
 - Step-by-step execution table with Action, Input/Data, Expected Result columns
 - Both Developer Validation AND QA Validation subsections
 - Every AC has at least one happy path AND one unhappy path test for full coverage
 - Test cases are self-contained — no external file references
 - All test case references use IDs (TC-XXX), not file paths
 - No timeline estimates, sprint assignments, or duration estimates in testing content
+- Entry point specified (Lightning UI / Experience Cloud / Mobile / API / Integration User)
+- Test type labeled (Smoke / QA / UAT)
+- Expected results are measurable per step (exact values, not vague descriptions)
+- Pass/fail criteria explicitly stated
+- Persona/security context includes profile, permission sets, role, license
 
 ### Save
 P4-G [IO]: **Append** generated content to `.ai-artifacts/{{work_item_id}}/wiki-content.md`

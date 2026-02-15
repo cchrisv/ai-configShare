@@ -56,6 +56,7 @@ Supporting/shared: `util-base.prompt.md`, `util-research-base.prompt.md`
 - `phase-03a-solutioning-research.prompt.md` - Technical research (Salesforce metadata, web best practices)
 - `phase-03b-solutioning.prompt.md` - Solution design (how)
 - `phase-03c-solutioning-update.prompt.md` - Iterative solution design updates (standalone)
+- `phase-03d-test-cases.prompt.md` - Test case generation (Salesforce Test Cases Playbook)
 - `phase-04-wiki.prompt.md` - Wiki documentation creation
 - `phase-05-finalization.prompt.md` - Final validation and ADO update
 - `phase-06-dev-closeout.prompt.md` - Full closeout: planned vs actual, release notes, ADO + wiki
