@@ -1,6 +1,6 @@
 # Feature Research Phase 03c – Salesforce Architecture & Order of Operations
 Role: Salesforce Technical Architect
-Mission: Map how all discovered automation works together as a system — execution order per object, cross-object cascades, transaction boundaries, and the overall architectural patterns behind **{{scope.feature_area}}**.
+Mission: Document how all discovered automation works together as a system — execution order per object, cross-object cascades, transaction boundaries, and component layering for **{{scope.feature_area}}**.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md` · `#file:.github/prompts/util-research-base.prompt.md`
 Input: Full automation inventory from `{{context_file}}.sf_automation` (triggers, flows, Apex, LWC, Aura, validation rules, dependency graph)
 
@@ -15,7 +15,7 @@ Input: Full automation inventory from `{{context_file}}.sf_automation` (triggers
 
 ## After Each Stream (MANDATORY — do NOT batch)
 **MUST write to disk before starting next stream.** This ensures resumability if context is lost.
-Stream sections: Stream 1 → `sf_architecture.order_of_operations`, Stream 2 → `.execution_chains`, Stream 3 → `.cross_object_cascades`, Stream 4 → `.transaction_analysis`, Stream 5 → `.architecture_patterns` + `.narrative`
+Stream sections: Stream 1 → `sf_architecture.order_of_operations`, Stream 2 → `.execution_chains`, Stream 3 → `.cross_object_cascades`, Stream 4 → `.transaction_analysis`, Stream 5 → `.component_layer_map` + `.narrative`
 1. [IO] Write `{{context_file}}.sf_architecture.[stream_section]` → save to disk
 2. [GEN] Extend `{{context_file}}.synthesis` + `.synthesis.assumptions[]` with new evidence
 3. [IO] Append to `{{context_file}}.run_state.completed_steps[]`
@@ -54,21 +54,21 @@ MA1 [IO]: From `{{context_file}}`, read and internalize:
   - `sf_automation.dependency_graph` — component interconnections
   - `synthesis.unified_truth` — cumulative understanding from prior phases
 
-MA2 [GEN]: State the mission: *"Phase 03b told me WHAT automation exists for **{{scope.feature_area}}**. Now I need to understand HOW it all works together. When a user creates or updates a {{scope.sf_objects[0]}} record, what fires in what order? What cascades to other objects? Where are the transaction boundaries? What is the architectural layering? My goal is to produce a clear picture that an architect can use to understand the execution flow and identify architectural risks."*
+MA2 [GEN]: State the mission: *"Phase 03b told me WHAT automation exists for **{{scope.feature_area}}**. Now I need to document HOW it all works together. When a user creates or updates a {{scope.sf_objects[0]}} record, what fires in what order? What cascades to other objects? Where are the transaction boundaries? What is the component layering? My goal is to produce a factual picture of the execution model."*
 
-MA3: **Think like an architect tracing a transaction.** For every DML event, mentally walk through the Salesforce order of execution and populate each slot with the actual components from Phase 03b. When you find gaps or ambiguities (e.g., a flow and a trigger both fire after-save on the same object), note them as architectural risks.
+MA3: **Think like an architect tracing a transaction.** For every DML event, walk through the Salesforce order of execution and populate each slot with the actual components from Phase 03b. Document what exists — the ordering, the cascades, the transaction boundaries — without assessing quality.
 
 ---
 
 ## Architecture Output Structure
 All outputs to `{{context_file}}.sf_architecture`:
 - `order_of_operations[]` — per object: `{ object, dml_event, execution_slots[] }`
-- `execution_chains[]` — per object+event: `{ object, event, chain_steps[], async_forks[], total_dml_count, total_soql_count, cascade_depth, bulk_assessment{}, governor_risk }`
-- `cross_object_cascades[]` — `{ trigger_object, trigger_event, cascade_path[], depth, re_entrant, transaction_scope, failure_propagation, risk_assessment }`
-- `transaction_analysis` — `{ sync_boundaries[], async_boundaries[], mixed_dml_risks[], governor_risks[] }`
-- `architecture_patterns` — `{ layer_map{}, rule_distribution{}, separation_of_concerns{}, anti_patterns[] }`
-- `execution_complexity` — `{ max_cascade_depth, highest_governor_risk, re_entrant_cascade_count, objects_with_mixed_automation }`
-- `narrative` — `{ system_overview, per_object_summaries[], critical_paths[], recommendations[] }`
+- `execution_chains[]` — per object+event: `{ object, event, chain_steps[], async_forks[], total_dml_count, total_soql_count, cascade_depth }`
+- `cross_object_cascades[]` — `{ trigger_object, trigger_event, cascade_path[], depth, re_entrant, transaction_scope, failure_propagation }`
+- `transaction_analysis` — `{ sync_boundaries[], async_boundaries[], mixed_dml_observations[] }`
+- `component_layer_map` — `{ layers{} }` (factual mapping of discovered components to architectural layers)
+- `execution_summary` — `{ max_cascade_depth, re_entrant_cascade_count, objects_with_mixed_automation }`
+- `narrative` — `{ system_overview, per_object_summaries[] }`
 
 ---
 
@@ -115,7 +115,7 @@ B1 [GEN]: For each in-scope object AND for each relevant DML event (insert, upda
   - Note if auto-response rules apply (Lead/Case)
 
 **Slot 10 — Workflow Rules (Legacy)**
-  - Note any legacy workflow rules discovered (Phase 03b may have flagged these as modernization candidates)
+  - Note any legacy workflow rules discovered in Phase 03b
   - If present, field updates from workflows can re-trigger before/after update triggers (re-evaluation)
 
 **Slot 11 — After-Save Record-Triggered Flows**
@@ -161,11 +161,11 @@ B2 [GEN]: For each object + DML event, store:
 ```
 → `sf_architecture.order_of_operations[]`
 
-B3 [GEN]: Flag **conflicts and risks**:
-  - Multiple before-save flows on the same object (execution order ambiguity)
-  - Both a before trigger AND before-save flow modifying the same fields (last-write-wins risk)
-  - After triggers AND after-save flows both performing DML on the same target object (double-processing risk)
-  - Validation rules that reference fields modified by before triggers/flows (timing dependency)
+B3 [GEN]: Note **execution ordering observations** (document facts, not judgments):
+  - Multiple before-save flows on the same object — note that Salesforce executes them alphabetically by API name
+  - Both a before trigger AND before-save flow exist on the same object — note which slots they occupy
+  - After triggers AND after-save flows both perform DML on the same target object — document both paths
+  - Validation rules that reference fields set by before triggers/flows — note the slot ordering
 
 ---
 
@@ -200,21 +200,9 @@ C3 [GEN]: For each chain, calculate:
   - `total_dml_count` — total DML statements in the synchronous transaction
   - `total_soql_count` — estimated SOQL queries (from Apex `soql_queries[]` in the chain)
   - `cascade_depth` — how many levels of cascaded DML (object A → B → C = depth 3)
-  - `governor_risk` — assess risk of hitting governor limits:
-    - **Low** — <20 DML, <50 SOQL, cascade depth ≤2
-    - **Medium** — 20–80 DML, 50–80 SOQL, cascade depth 3
-    - **High** — 80–130 DML, 80–130 SOQL, cascade depth 4+
-    - **Critical** — near 150 DML or 100 SOQL limits; or unbounded loops detected
-
-### Bulk Operation Assessment
-C4 [GEN]: For each chain, assess bulk behavior:
-  - Does the chain handle 200 records (Trigger.new batch size)?
-  - Are there SOQL/DML inside loops in any Apex class in the chain? (from Phase 03b analysis)
-  - Do flows in the chain have elements inside loops that perform DML?
-  - Calculate: at 200 records, how many total DML / SOQL would fire?
 
 ### Output
-C5 [GEN]: Store each chain:
+C4 [GEN]: Store each chain:
 ```json
 {
   "object": "Journey__c",
@@ -223,9 +211,7 @@ C5 [GEN]: Store each chain:
   "async_forks": [ /* async operations triggered */ ],
   "total_dml_count": 5,
   "total_soql_count": 12,
-  "cascade_depth": 2,
-  "bulk_assessment": { "handles_200": true, "dml_at_200_records": 605, "soql_at_200_records": 412, "governor_risk_at_bulk": "High" },
-  "governor_risk": "Medium"
+  "cascade_depth": 2
 }
 ```
 → `sf_architecture.execution_chains[]`
@@ -245,7 +231,7 @@ D1 [GEN]: From execution chains (Stream 2), extract every DML operation that tar
 D2 [GEN]: For each cross-object DML, trace what happens on the TARGET object:
   - Does the target object have triggers? What fires?
   - Does the target object have flows? What runs?
-  - Does the target object have validation rules? Any risk of cascade failure?
+  - Does the target object have validation rules that would execute?
   - Does the target object's automation cause further DML on a THIRD object?
 
 ### Cascade Path Construction
@@ -263,12 +249,11 @@ D4 [GEN]: For each cascade path, assess:
   - `transaction_scope` — "synchronous" (all in same transaction) or "async_boundary" (breaks at platform event / queueable)
   - `failure_propagation` — if step N fails (e.g., validation rule on target object), does the entire transaction roll back?
 
-### Re-Entrancy Analysis
-D5 [GEN]: For re-entrant paths (cascade loops back to same object):
-  - Does Salesforce's built-in recursion guard handle this? (triggers run max 1 additional time in same transaction)
-  - Does the Apex code have explicit recursion guards? (static boolean patterns, trigger framework bypass)
-  - Is the re-entry intentional (designed cascade) or accidental (side effect)?
-  - Risk level: re-entrant + no guard = **Critical**; re-entrant + guard present = **Medium**
+### Re-Entrancy Documentation
+D5 [GEN]: For re-entrant paths (cascade loops back to same object), document:
+  - Whether Salesforce's built-in recursion guard applies (triggers run max 1 additional time in same transaction)
+  - Whether the Apex code has explicit recursion guards (static boolean patterns, trigger framework bypass)
+  - The re-entry mechanism (rollup summary, explicit DML, etc.)
 
 ### Transaction Boundary Mapping
 D6 [GEN]: Identify where synchronous transaction ends and async begins:
@@ -276,7 +261,7 @@ D6 [GEN]: Identify where synchronous transaction ends and async begins:
   - Queueable enqueue → runs in separate transaction
   - Batch launch → runs in separate transactions per batch
   - Future method → runs in separate transaction
-  - **Mixed DML risk** — does the cascade mix setup objects (User, Group) with non-setup objects in the same synchronous chain?
+  - Note if the cascade mixes setup objects (User, Group) with non-setup objects in the same synchronous chain
 
 ### Output
 D7 [GEN]: Store each cascade:
@@ -292,71 +277,60 @@ D7 [GEN]: Store each cascade:
   "depth": 3,
   "re_entrant": true,
   "transaction_scope": "synchronous",
-  "failure_propagation": "full_rollback",
-  "risk_assessment": "High — re-entrant cascade with rollup trigger"
+  "failure_propagation": "full_rollback"
 }
 ```
 → `sf_architecture.cross_object_cascades[]`
 
 ---
 
-## Stream 4 [GEN] – Transaction & Governor Analysis
-**Goal:** Assess transaction boundaries, governor limit exposure, and mixed DML risks across **{{scope.feature_area}}** → `{{context_file}}.sf_architecture.transaction_analysis`
+## Stream 4 [GEN] – Transaction Boundary Mapping
+**Goal:** Document transaction boundaries, synchronous vs async scoping, and mixed DML observations across **{{scope.feature_area}}** → `{{context_file}}.sf_architecture.transaction_analysis`
 
 ### Synchronous Transaction Boundaries
 E1 [GEN]: For each execution chain (from Stream 2), identify everything that runs in the SAME synchronous transaction:
   - All before/after triggers + all before/after-save flows + all synchronous Apex
-  - Aggregate: total DML count, total SOQL count, total CPU time estimate, total heap size estimate
-  - Classify: `{ chain_id, objects_touched[], total_sync_dml, total_sync_soql, estimated_cpu_ms, governor_headroom }`
+  - Aggregate: total DML count, total SOQL count per chain
+  - Store: `{ chain_id, objects_touched[], total_sync_dml, total_sync_soql }`
 
 ### Async Boundaries
 E2 [GEN]: Map async exit points and what runs in each async context:
-  - Platform events → subscriber flows/triggers (separate transaction, separate governor limits)
+  - Platform events → subscriber flows/triggers (separate transaction)
   - Queueable chains → each execute() is a separate transaction
   - Batch jobs → each execute() batch (up to 200 records) is a separate transaction
   - Scheduled flows → separate transaction
-  - Classify: `{ async_type, source_component, target_component, data_passed, error_handling }`
+  - Store: `{ async_type, source_component, target_component, data_passed }`
 
-### Mixed DML Risk
+### Mixed DML Observations
 E3 [GEN]: Scan all synchronous chains for mixed DML:
   - Setup objects: User, Group, GroupMember, QueueSobject, UserRole, PermissionSet, PermissionSetAssignment
-  - If any chain performs DML on BOTH a setup object and a non-setup object in the same transaction → **Critical risk**
-  - Check if the code handles this via `System.runAs()` or async deferral
+  - Document any chain that performs DML on both a setup object and a non-setup object in the same transaction
+  - Note if the code uses `System.runAs()` or async deferral to separate them
 
-### Governor Limit Exposure
-E4 [GEN]: For each execution chain, calculate worst-case governor usage:
-  - **At 1 record:** baseline DML/SOQL/CPU from chain tracing
-  - **At 200 records:** multiply per-record operations by 200 (unless bulkified)
-  - **At 200 records with cascades:** include cascade DML amplification
-  - Flag chains where worst-case exceeds 80% of any governor limit
-
-### Shared State Risks
-E5 [GEN]: Identify components that share state across the transaction:
-  - Static variables used as recursion guards (fragile — reset on re-entry from different trigger)
+### Shared State Documentation
+E4 [GEN]: Document components that share state across the transaction:
+  - Static variables used as recursion guards
   - Static collections used for cross-trigger communication
   - Custom metadata / custom settings read in multiple components (query vs cached?)
   - Platform cache usage
 
 ### Output
-E6 [GEN]: Store:
+E5 [GEN]: Store:
 ```json
 {
   "sync_boundaries": [ /* per-chain sync transaction summaries */ ],
   "async_boundaries": [ /* async exit points */ ],
-  "mixed_dml_risks": [ /* any mixed DML findings */ ],
-  "governor_risks": [
-    { "chain_id": "Journey__c_insert", "risk_level": "High", "limiting_factor": "DML at 200 records = 605 (limit 150)", "recommendation": "Bulkify JourneyService.createSteps()" }
-  ]
+  "mixed_dml_observations": [ /* any mixed DML findings */ ]
 }
 ```
 → `sf_architecture.transaction_analysis`
 
 ---
 
-## Stream 5 [GEN] – Architecture Synthesis
-**Goal:** Synthesize the execution analysis into an architectural narrative — how does **{{scope.feature_area}}** actually work as a system? → `{{context_file}}.sf_architecture.architecture_patterns` + `.narrative`
+## Stream 5 [GEN] – Component Layer Map & Narrative
+**Goal:** Map discovered components into architectural layers and generate a factual narrative of how **{{scope.feature_area}}** works as a system → `{{context_file}}.sf_architecture.component_layer_map` + `.narrative`
 
-### Architectural Layer Map
+### Component Layer Map
 F1 [GEN]: Map the discovered components into architectural layers:
   - **UI Layer** — LWC components, Aura components, Visualforce pages
   - **Controller Layer** — Apex controllers (LWC controllers, Aura controllers)
@@ -366,59 +340,19 @@ F1 [GEN]: Map the discovered components into architectural layers:
   - **Declarative Layer** — Flows (record-triggered, screen, scheduled), validation rules
   - **Integration Layer** — Callout classes, platform events, named credentials
   - **Data Layer** — Objects, fields, relationships (from Phase 03a)
-  Store → `architecture_patterns.layer_map`
-
-### Business Rule Distribution
-F2 [GEN]: For each business rule from `ado_research.business_context.business_rules[]`:
-  - Where is this rule implemented? (trigger? flow? validation rule? Apex service? multiple places?)
-  - Is the implementation in a single place (good) or spread across multiple components (fragile)?
-  - Are there business rules implemented in automation that are NOT documented in ADO? (undocumented logic)
-  Store → `architecture_patterns.rule_distribution`
-
-### Separation of Concerns Assessment
-F3 [GEN]: Evaluate architectural quality:
-  - **Trigger → Handler separation** — do triggers delegate to handlers, or contain inline logic?
-  - **Handler → Service separation** — do handlers delegate to services, or contain business logic?
-  - **Query encapsulation** — are SOQL queries in selector classes, or scattered across services/handlers?
-  - **DML encapsulation** — are DML operations in unit-of-work patterns, or scattered?
-  - **Flow vs Apex boundaries** — are flows and Apex clearly separated, or do they overlap (same logic in both)?
-  - **UI vs Backend separation** — do LWC controllers contain business logic, or delegate to services?
-  For each concern: score as `clean` | `partial` | `mixed` | `violated`
-  Store → `architecture_patterns.separation_of_concerns`
-
-### Anti-Pattern Detection
-F4 [GEN]: Flag discovered anti-patterns:
-  - **SOQL/DML in loops** — from Apex analysis
-  - **Inline trigger logic** — triggers with business logic instead of handler delegation
-  - **God class** — single Apex class with 500+ LOC touching many objects
-  - **Duplicate logic** — same business rule in both a trigger AND a flow
-  - **Missing error handling** — flows without fault paths, Apex without try/catch on DML/callouts
-  - **Hardcoded IDs/values** — record type IDs, profile IDs in Apex code
-  - **Non-bulkified patterns** — single-record processing in triggers/flows
-  - **Tight coupling** — classes directly instantiating other classes instead of using dependency injection or configuration
-  - **Mixed automation** — same object has BOTH triggers and record-triggered flows modifying fields (unpredictable order)
-  Each: `{ pattern, severity (Critical/High/Medium/Low), components[], description, recommendation }`
-  Store → `architecture_patterns.anti_patterns[]`
+  Store → `sf_architecture.component_layer_map`
 
 ### Narrative Generation
-F5 [GEN]: Generate human-readable architectural narrative:
+F2 [GEN]: Generate a factual, descriptive narrative:
 
 **System Overview** (2–3 paragraphs):
-  - "{{scope.feature_area}} is built on {{N}} objects with {{N}} automation components. The architecture follows a [layered/mixed/flat] pattern..."
+  - "{{scope.feature_area}} is built on {{N}} objects with {{N}} automation components. The components are organized across [N] layers..."
   - Describe the primary execution flows in plain language
-  - Highlight the most complex paths and where risk concentrates
+  - Describe how the layers connect (e.g., "UI components call controller Apex, which delegates to service classes, which query via selectors")
 
 **Per-Object Summaries** (1 paragraph each):
   - For each in-scope object: "When a {{Object}} record is [created/updated], the following sequence executes: ..."
-  - Focus on what matters architecturally, not every minor step
-
-**Critical Paths** (bullet list):
-  - The 3–5 most important/risky execution chains
-  - Why they matter (high cascade depth, governor risk, business-critical)
-
-**Recommendations** (prioritized list):
-  - Architectural improvements based on anti-patterns, governor risks, and separation-of-concerns violations
-  - Each: what to change, why, expected benefit, effort estimate
+  - Focus on documenting what happens, step by step
 
 Store → `sf_architecture.narrative`
 
@@ -429,20 +363,17 @@ Update `{{context_file}}`:
 - `metadata.phases_completed` append `"sf_architecture"`
 - `metadata.current_phase` = `"sf_platform"`
 - `metadata.last_updated` = ISO timestamp
-- Write `sf_architecture.execution_complexity`:
+- Write `sf_architecture.execution_summary`:
   - `max_cascade_depth` — deepest cascade chain across all objects
-  - `highest_governor_risk` — worst governor risk level (Critical/High/Medium/Low)
   - `re_entrant_cascade_count` — number of re-entrant cascade paths
-  - `objects_with_mixed_automation` — objects with both triggers + record-triggered flows on same event
+  - `objects_with_mixed_automation` — count of objects with both triggers + record-triggered flows on same event
 - Extend `synthesis.unified_truth` with:
-  - `architecture_summary` — layer map summary, separation-of-concerns scores, anti-pattern count by severity
-  - `execution_complexity` — same data as `sf_architecture.execution_complexity` (convenience copy in synthesis)
-  - `critical_chains` — top 3 riskiest execution chains (object, event, risk level, reason)
-  - `automation_conflicts` — count of objects with overlapping triggers + flows, duplicate logic instances
+  - `architecture_summary` — component layer map summary, execution chain count, cascade depth
+  - `execution_summary` — same data as `sf_architecture.execution_summary` (convenience copy in synthesis)
 - Append `{"phase":"sf_architecture","step":"complete","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `run_state.completed_steps[]`
 - Save to disk
 
-Tell user: **"Architecture analysis for {{scope.feature_area}} complete. Mapped order of operations for {{object_count}} objects across {{chain_count}} execution chains. Max cascade depth: {{max_depth}}. Governor risk: {{highest_risk}}. Found {{anti_pattern_count}} anti-patterns ({{critical_count}} critical). The system follows a {{architecture_style}} pattern. Use `/feature-research-phase-03d` for platform discovery."**
+Tell user: **"Execution model for {{scope.feature_area}} complete. Mapped order of operations for {{object_count}} objects across {{chain_count}} execution chains. Max cascade depth: {{max_depth}}. {{re_entrant_count}} re-entrant cascades. Components mapped across {{layer_count}} architectural layers. Use `/feature-research-phase-03d` for platform discovery."**
 
 ---
 
@@ -453,8 +384,8 @@ Tell user: **"Architecture analysis for {{scope.feature_area}} complete. Mapped 
 | Context file missing | **STOP** — "Run `/feature-research-phase-01` first" |
 | Phase 03b not completed | **STOP** — "Run `/feature-research-phase-03b` first" |
 | No triggers or flows found for an object | Object has no custom automation; note as "data-only object" in narrative |
-| Cannot determine execution order (ambiguous metadata) | Log assumption with reasoning; note confidence level in synthesis |
-| Cascade depth exceeds 5 levels | Stop tracing at depth 5; flag as "deep cascade — requires manual verification" |
-| Cannot determine if Apex is bulkified (no source available) | Log assumption; flag as "bulk behavior unverified" in governor risk |
-| Mixed automation (trigger + flow on same event) | Flag as architectural risk; note Salesforce's documented order but warn about field update conflicts |
-| Circular cascade detected | Document the cycle; assess if recursion guards exist; flag severity based on guard presence |
+| Cannot determine execution order (ambiguous metadata) | Log assumption with reasoning; note in synthesis |
+| Cascade depth exceeds 5 levels | Stop tracing at depth 5; note "deep cascade — traced to depth 5" |
+| Cannot determine if Apex is bulkified (no source available) | Log assumption; note "bulk behavior not verified" |
+| Mixed automation (trigger + flow on same event) | Document both; note Salesforce's documented execution order |
+| Circular cascade detected | Document the cycle; note whether recursion guards exist |

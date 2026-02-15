@@ -152,7 +152,7 @@ D2 [GEN]: Update `synthesis.unified_truth`:
   - `what_exists` — summary of the feature area as documented in ADO + wiki
   - `business_purpose` — why this feature exists, who it serves
   - `known_history` — key decisions, requirement changes, evolution over time
-  - `documentation_coverage` — what is well-documented vs gaps identified
+  - `documentation_coverage` — summary of existing documentation found in ADO and wiki
   - `scope_expansion_candidates[]` — additional SF objects found in wiki that may need investigation
 
 D3 [GEN]: Update `synthesis.assumptions[]`:

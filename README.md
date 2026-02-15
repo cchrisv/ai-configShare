@@ -70,21 +70,22 @@ Use `util-repeat-phase.prompt.md` to re-run any individual phase.
 
 ### Feature Research Workflow
 
-A standalone multi-phase workflow for architects to comprehensively research and document existing Salesforce functionality. Not tied to the ticket lifecycle -- accepts a Salesforce object name, an ADO work item ID, or both as input. Outputs a local research artifact and publishes a wiki page.
+A standalone multi-phase workflow to comprehensively research and document existing Salesforce functionality as a factual current-state reference. Not tied to the ticket lifecycle -- accepts a Salesforce object name, an ADO work item ID, or both as input. Outputs a local research artifact and publishes a wiki page.
+
+All output is strictly factual -- the pipeline documents what exists and how it works without opinions, quality assessments, risk ratings, compliance scores, or recommendations.
 
 ```
-Phase 01 → Phase 02 → Phase 03a → Phase 03b → Phase 03c → Phase 03d → Phase 04 → Phase 05
-Initialize   ADO        SF Schema   SF Auto     Architecture  SF Platform  Analysis   Documentation
+Phase 01 → Phase 02 → Phase 03a → Phase 03b → Phase 03c → Phase 03d → Phase 05
+Initialize   ADO        SF Schema   SF Auto     Execution     SF Platform  Documentation
 ```
 
 - `feature-research-phase-01-initialize.prompt.md` - Resolve input (SF object names or ADO ID), validate auth, establish research scope and mission anchor
 - `feature-research-phase-02-ado-discovery.prompt.md` - Discover related ADO work items, mine comments, search wiki for existing documentation
 - `feature-research-phase-03a-sf-schema.prompt.md` - Document object model: fields, relationships, record types, PII detection, field-level metadata
 - `feature-research-phase-03b-sf-automation.prompt.md` - Broad discovery of triggers, flows, Apex, LWC, Aura with relevance filtering; build dependency graph
-- `feature-research-phase-03c-sf-architecture.prompt.md` - Map order of operations, execution chains, cross-object cascades, governor risks, anti-patterns
+- `feature-research-phase-03c-sf-architecture.prompt.md` - Map order of operations, execution chains, cross-object cascades, transaction boundaries, component layer map
 - `feature-research-phase-03d-sf-platform.prompt.md` - Document security model, integrations, platform events, data volumes
-- `feature-research-phase-04-analysis.prompt.md` - Web research, standards compliance scorecard, risk register, gap analysis
-- `feature-research-phase-05-documentation.prompt.md` - Generate 12-section research report with mermaid diagrams; publish to ADO Wiki
+- `feature-research-phase-05-documentation.prompt.md` - Generate 10-section factual research report with mermaid diagrams; publish to ADO Wiki
 
 Artifacts are stored in `.ai-artifacts/sf-research/<feature-name>/` with a shared `research-context.json` (Context7 pattern) across all phases.
 

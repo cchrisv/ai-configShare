@@ -39,12 +39,11 @@ Input: `{{sf_entry}}` (SF object API names or feature area) and/or `{{work_item_
   "sf_automation": {},
   "sf_architecture": {},
   "sf_platform": {},
-  "analysis": {},
   "synthesis": { "unified_truth": {}, "assumptions": [], "conflict_log": [] },
   "documentation": { "wiki_path": "", "published_at": "" }
 }
 ```
-**Valid `current_phase` values:** `initialize` · `ado_discovery` · `sf_schema` · `sf_automation` · `sf_architecture` · `sf_platform` · `analysis` · `documentation` · `complete`
+**Valid `current_phase` values:** `initialize` · `ado_discovery` · `sf_schema` · `sf_automation` · `sf_architecture` · `sf_platform` · `documentation` · `complete`
 
 ---
 
@@ -102,7 +101,7 @@ E3 [GEN]: Merge and deduplicate scope from both modes; cross-validate SF objects
 This step establishes the **mission anchor** — the grounding context that all subsequent phases will load to stay focused on what is being researched.
 
 F1 [GEN]: Generate `scope.feature_area` — a clear, human-readable name for this research (e.g., "Journey Pipeline", "Case Management"). This name will appear in every phase's mission recall.
-F2 [GEN]: Generate `scope.research_purpose` — a 1–2 sentence statement explaining **what** we are documenting and **why** (e.g., "Document the Journey Pipeline feature to understand current automation, data model, and integrations before architectural redesign"). This becomes the north star for all phases.
+F2 [GEN]: Generate `scope.research_purpose` — a 1–2 sentence statement explaining **what** we are documenting and **why** (e.g., "Document the Journey Pipeline feature's current implementation, data model, automation, and integrations"). This becomes the north star for all phases.
 F3 [GEN]: Deduplicate `scope.sf_objects[]`, `scope.related_ado_items[]`, `scope.domain_keywords[]`
 F4 [GEN]: Ensure `scope.domain_keywords[]` includes both technical terms (API names) and business terms (feature labels, business process names) — later phases use these for relevance filtering
 F5 [LOGIC]: Validate scope is non-empty:

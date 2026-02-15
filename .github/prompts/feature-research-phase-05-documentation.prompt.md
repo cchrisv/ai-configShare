@@ -1,6 +1,6 @@
 # Feature Research Phase 05 – Documentation
 Role: Technical Writer / Documentation Architect
-Mission: Generate a comprehensive research report from all prior phases and publish to ADO Wiki + local artifact.
+Mission: Generate a factual current-state reference document from all prior discovery phases and publish to ADO Wiki + local artifact.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md`
 Input: Full context from `{{context_file}}`
 
@@ -10,10 +10,9 @@ Input: Full context from `{{context_file}}`
 - **Markdown output** – generate wiki-compatible markdown (ADO Wiki flavor)
 - **No raw HTML in report** – use markdown tables, headings, mermaid diagrams
 - **Mermaid diagrams** – use `graph TD` for relationships, `erDiagram` for object model; no spaces in node IDs
-- **Evidence-cited** – every finding links back to source (phase, component, standard)
-- **Dual audience** – executive summary for leaders; technical sections for architects
+- **Factual only** – document what exists and how it works; do NOT include opinions, quality assessments, risk ratings, compliance scores, or recommendations
 - **ADO Wiki compatible** – use `[[_TOC_]]` for table of contents; standard markdown formatting
-- **Narrative coherence** – the report should tell a story: what {{scope.feature_area}} is, how it's built, how well it's built, and what should change
+- **Narrative coherence** – the report should tell a factual story: what {{scope.feature_area}} is and how it is currently built
 
 ## Context Paths
 `{{research_root}}` = `{{paths.artifacts_root}}/sf-research/{{sanitized_name}}`
@@ -22,9 +21,7 @@ Input: Full context from `{{context_file}}`
 
 ## Prerequisites [IO]
 A1 [IO]: Load `{{context_file}}`; verify:
-  - `"analysis"` in `metadata.phases_completed`
-  - `analysis.executive_summary_data` is populated
-  - `analysis.compliance_scorecard` is populated
+  - `"sf_platform"` in `metadata.phases_completed`
   - `sf_schema`, `sf_automation`, `sf_architecture`, `sf_platform` sections populated
 A2: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
 
@@ -37,12 +34,11 @@ MA1 [IO]: From `{{context_file}}`, read and internalize the full research contex
   - `ado_research.business_context.feature_purpose` — what the business says this feature does
   - `synthesis.unified_truth` — the accumulated knowledge from ALL prior phases
   - `synthesis.assumptions[]` — open questions and unresolved items
-  - `analysis.executive_summary_data` — pre-computed statistics and findings
 
 MA2 [GEN]: Before writing Section 1, compose a **mental model** of {{scope.feature_area}}:
-  *"{{scope.feature_area}} is a Salesforce feature that {{ado_research.business_context.feature_purpose}}. It is built on {{sf_schema.objects | length}} objects with {{sf_automation.dependency_graph.stats.total_nodes}} automation components. Its compliance score is {{analysis.executive_summary_data.compliance_score}}% with {{analysis.risk_register | length}} identified risks. The report I write must help an architect who has never seen this feature understand it completely — and know exactly what needs attention."*
+  *"{{scope.feature_area}} is a Salesforce feature that {{ado_research.business_context.feature_purpose}}. It is built on {{sf_schema.objects | length}} objects with {{sf_automation.dependency_graph.stats.total_nodes}} automation components. The report I write must help someone who has never seen this feature understand how it currently works — factually and completely."*
 
-MA3: **Thread the mission through every section.** Don't write generic tables — add narrative context that explains *why* each finding matters for {{scope.feature_area}}. Section transitions should connect: "Now that we've seen the object model, let's look at the automation that operates on it..."
+MA3: **Thread the mission through every section.** Add narrative context that connects sections: "Now that we've seen the object model, let's look at the automation that operates on it..." Keep all content factual — describe what exists and how it works, not how good or bad it is.
 
 ---
 
@@ -53,9 +49,8 @@ B2 [IO]: Extract key data sets:
   - `ado_research` — business context, wiki pages, decisions
   - `sf_schema` — objects, fields, relationships, record types, PII
   - `sf_automation` — triggers, flows, Apex classes, LWC, Aura, validation rules, dependency graph
-  - `sf_architecture` — order of operations, execution chains, cross-object cascades, anti-patterns, narrative
+  - `sf_architecture` — order of operations, execution chains, cross-object cascades, component layer map, narrative
   - `sf_platform` — security, integrations, data landscape
-  - `analysis` — web research, compliance scorecard, risk register, gap analysis, executive summary data
   - `synthesis` — unified truth, assumptions
 
 ---
@@ -73,10 +68,10 @@ B2 [IO]: Extract key data sets:
 ```
 
 ### Section 2: Executive Summary
-C1 [GEN]: Generate from `analysis.executive_summary_data`:
+C1 [GEN]: Generate from discovery phase data:
 - **Purpose** — 2–3 sentences: what this feature area does (from `synthesis.unified_truth`)
 - **Scope** — objects researched, automation components discovered, integrations found
-- **Key Statistics** — table from `key_stats{}`:
+- **Key Statistics** — table compiled from all discovery phases:
 
 | Metric | Count |
 |--------|-------|
@@ -93,12 +88,20 @@ C1 [GEN]: Generate from `analysis.executive_summary_data`:
 | Total Records | N |
 | PII Fields | N |
 
-- **Compliance Score** — overall percentage + category breakdown
-- **Top Findings** — bullet list of `critical_findings[]` (max 5)
-- **Top Recommendations** — numbered list from `recommendations_priority[]` (max 5)
+### Section 3: Business Context
+C2 [GEN]: Generate from `ado_research`:
+- **Feature Purpose** — narrative from `ado_research.business_context.feature_purpose`
+- **Related Work Items** — table:
 
-### Section 3: Object Model
-C2 [GEN]: Generate from `sf_schema`:
+| ID | Title | Type | State | SF References |
+|----|-------|------|-------|--------------|
+
+  - Each ID linked: `[#{{id}}](https://dev.azure.com/{{ado_defaults.organization_name}}/{{ado_defaults.project}}/_workitems/edit/{{id}})`
+- **Key Decisions** — bullet list from `ado_research.business_context.decisions[]`
+- **Wiki References** — list of related wiki pages with paths
+
+### Section 4: Object Model
+C3 [GEN]: Generate from `sf_schema`:
 - **Entity Relationship Diagram** — mermaid `erDiagram` from `sf_schema.relationships[]`:
   - Show all in-scope objects with key fields
   - Show relationship types (master-detail as `||--o{`, lookup as `}o--o{`)
@@ -121,14 +124,14 @@ C2 [GEN]: Generate from `sf_schema`:
 | Object | Field | Type | Sensitivity |
 |--------|-------|------|-------------|
 
-### Section 4: Automation Inventory
-C3 [GEN]: Generate from `sf_automation`:
+### Section 5: Automation Inventory
+C4 [GEN]: Generate from `sf_automation`:
 - **Discovery Summary** — brief note: "Broad discovery found {{discovery_pool.total_candidates}} candidates; {{relevance_filter.stats.direct + relevance_filter.stats.supporting}} confirmed feature-relevant."
 - **Automation Summary** — mermaid `graph TD` showing trigger → handler → service chains, flow → subflow dependencies, and LWC → Apex controller connections
 - **Triggers** — table from `sf_automation.triggers[]`:
 
-| Object | Trigger | Events | Handler | Framework Compliant | Relevance |
-|--------|---------|--------|---------|-------------------|-----------|
+| Object | Trigger | Events | Handler | Trigger Pattern | Relevance |
+|--------|---------|--------|---------|----------------|-----------|
 
 - **Flows** — table from `sf_automation.flows[]`:
 
@@ -156,15 +159,15 @@ C3 [GEN]: Generate from `sf_automation`:
   - Show LWC → Apex and Aura → Apex connections
   - Show component counts in graph stats
 
-### Section 5: Architecture & Order of Operations
-C3b [GEN]: Generate from `sf_architecture`:
-- **System Overview** — narrative from `sf_architecture.narrative.system_overview` (the plain-language description of how the feature works as a system)
+### Section 6: Execution Model
+C5 [GEN]: Generate from `sf_architecture`:
+- **System Overview** — narrative from `sf_architecture.narrative.system_overview` (plain-language description of how the feature works as a system)
 - **Order of Operations** — for each primary object, generate a visual execution timeline:
 
 | Slot | Phase | Components | Notes |
 |------|-------|-----------|-------|
 | 2 | Before-Save Flows | Flow_Name_1 | Sets defaults |
-| 3 | Before Triggers | TriggerName → Handler → Service | Validates rules |
+| 3 | Before Triggers | TriggerName → Handler → Service | Field validation |
 | 5 | Validation Rules | VR_Name_1, VR_Name_2 | Cross-object ref |
 | 7 | After Triggers | TriggerName → Handler → Service | DML on ChildObj |
 | 11 | After-Save Flows | Flow_Name_2 | Publishes event |
@@ -173,23 +176,17 @@ C3b [GEN]: Generate from `sf_architecture`:
 - **Cross-Object Cascade Diagram** — mermaid `graph TD` from `sf_architecture.cross_object_cascades[]`:
   - Show each object as a node
   - Directed edges for each cascade DML (labeled with component name)
-  - Highlight re-entrant cascades with red dashed lines
+  - Mark re-entrant cascades with dashed lines
   - Show async boundaries with dotted lines
-- **Transaction & Governor Analysis** — summary table:
+- **Transaction Summary** — table:
 
-| Chain | Objects Touched | Sync DML | Sync SOQL | Cascade Depth | Governor Risk |
-|-------|----------------|----------|-----------|---------------|--------------|
+| Chain | Objects Touched | Sync DML | Sync SOQL | Cascade Depth |
+|-------|----------------|----------|-----------|---------------|
 
-- **Anti-Patterns** — table from `sf_architecture.architecture_patterns.anti_patterns[]`:
+- **Component Layer Map** — diagram from `sf_architecture.component_layer_map` showing UI → Controller → Service → Domain → Selector → Data layers with actual component names mapped to each layer
 
-| Pattern | Severity | Components | Recommendation |
-|---------|----------|-----------|---------------|
-
-- **Architectural Layer Map** — diagram showing UI → Controller → Service → Domain → Selector → Data layers with actual component names mapped to each layer
-- **Critical Paths** — from `sf_architecture.narrative.critical_paths[]`: the 3–5 most important/risky execution chains with explanation
-
-### Section 6: Integration Map
-C4 [GEN]: Generate from `sf_platform.integrations`:
+### Section 7: Integration Map
+C6 [GEN]: Generate from `sf_platform.integrations`:
 - **Integration Diagram** — mermaid `graph LR` showing:
   - In-scope objects → Platform Events → Subscribers
   - Apex Classes → Named Credentials → External Endpoints
@@ -209,86 +206,34 @@ C4 [GEN]: Generate from `sf_platform.integrations`:
 | Apex Class | Type | Named Credential | Direction |
 |-----------|------|-----------------|-----------|
 
-### Section 7: Security Model
-C5 [GEN]: Generate from `sf_platform.security`:
+### Section 8: Security Model
+C7 [GEN]: Generate from `sf_platform.security`:
 - **Organization-Wide Defaults** — table:
 
 | Object | Internal OWD | External OWD |
 |--------|-------------|-------------|
 
 - **Profile/Permission Set Access Matrix** — table showing CRUD per profile for each object
-- **Field-Level Security Highlights** — PII field access summary:
-  - Which profiles can read/edit PII fields
-  - Recommendations for restriction
+- **PII Field Access** — table showing which profiles/permission sets can read and edit each PII field
 - **Sharing Rules** — summary of any identified sharing rules
 
-### Section 8: Data Landscape
-C6 [GEN]: Generate from `sf_platform.data_landscape`:
+### Section 9: Data Landscape
+C8 [GEN]: Generate from `sf_platform.data_landscape`:
 - **Record Volumes** — table:
 
-| Object | Record Count | Freshness Status |
-|--------|-------------|-----------------|
+| Object | Record Count | Last Modified | Last Created |
+|--------|-------------|---------------|-------------|
 
 - **Record Type Distribution** — per object with record types:
 
 | Object | Record Type | Count | % |
 |--------|------------|-------|---|
 
-- **Data Quality Indicators** — highlight fields with low population rates
+- **Field Population Rates** — table of population rates for queried fields
 - **Deployment History** — recent changes summary from SetupAuditTrail
 
-### Section 9: ADO Traceability
-C7 [GEN]: Generate from `ado_research`:
-- **Related Work Items** — table:
-
-| ID | Title | Type | State | SF References |
-|----|-------|------|-------|--------------|
-
-  - Each ID linked: `[#{{id}}](https://dev.azure.com/{{ado_defaults.organization_name}}/{{ado_defaults.project}}/_workitems/edit/{{id}})`
-- **Key Decisions** — bullet list from `ado_research.business_context.decisions[]`
-- **Wiki References** — list of related wiki pages with paths
-- **Business Context** — narrative from `ado_research.business_context.feature_purpose`
-
-### Section 10: Standards Compliance
-C8 [GEN]: Generate from `analysis.compliance_scorecard`:
-- **Compliance Summary** — overall score + category breakdown:
-
-| Category | Checked | Compliant | Score |
-|----------|---------|-----------|-------|
-
-- **Non-Compliant Findings** — table sorted by severity:
-
-| Severity | Component | Standard | Finding | Recommendation |
-|----------|-----------|----------|---------|---------------|
-
-- **Modernization Opportunities** — from `analysis.modernization_opportunities[]`:
-
-| Current Pattern | Recommended | Effort | Benefit | Affected Components |
-|----------------|-------------|--------|---------|-------------------|
-
-### Section 11: Risk Register
-C9 [GEN]: Generate from `analysis.risk_register`:
-- **Risk Summary** — count by severity:
-
-| Severity | Count |
-|----------|-------|
-| Critical | N |
-| High | N |
-| Medium | N |
-| Low | N |
-
-- **Risk Details** — table sorted by severity:
-
-| ID | Risk | Category | Severity | Likelihood | Impact | Recommendation |
-|----|------|----------|----------|-----------|--------|---------------|
-
-- **Gap Analysis** — from `analysis.gap_analysis[]`:
-
-| Area | Gap Type | Description | Severity | Recommendation |
-|------|----------|-------------|----------|---------------|
-
-### Section 12: Appendix
-C10 [GEN]: Generate supporting detail:
+### Section 10: Appendix
+C9 [GEN]: Generate supporting detail:
 - **Full Dependency Graph** — expanded mermaid diagram with all nodes/edges
 - **Assumptions** — from `synthesis.assumptions[]`:
 
@@ -338,11 +283,12 @@ Tell user:
 - **Local Report:** {{report_file}}
 - **Wiki Page:** [{{wiki_path}}](https://dev.azure.com/{{ado_defaults.organization_name}}/{{ado_defaults.project}}/_wiki/wikis/{{ado_defaults.wiki}}?pagePath=/Salesforce-Research/{{sanitized_name}})
 
-### Key Metrics
-- **Compliance Score:** {{compliance_score}}%
-- **Critical Risks:** {{critical_risk_count}}
-- **Total Components:** {{total_component_count}} (triggers, flows, Apex, LWC, Aura, validation rules)
-- **Recommendations:** {{recommendation_count}} prioritized items
+### Summary
+- **Objects:** {{object_count}}
+- **Total Fields:** {{field_count}}
+- **Automation Components:** {{total_component_count}} (triggers, flows, Apex, LWC, Aura, validation rules)
+- **Integrations:** {{integration_count}}
+- **Total Records:** {{total_records}}
 
 All research data saved to {{context_file}} for future reference.
 ```
@@ -354,7 +300,7 @@ All research data saved to {{context_file}} for future reference.
 | Scenario | Action |
 |----------|--------|
 | Context file missing | **STOP** — "Run `/feature-research-phase-01` first" |
-| Phase 04 not completed | **STOP** — "Run `/feature-research-phase-04` first" |
+| Phase 03d not completed | **STOP** — "Run `/feature-research-phase-03d` first" |
 | Wiki create fails | Save local report; warn user; report local path as primary deliverable |
 | Wiki update fails (conflict) | Retry once; if still fails, save local report and inform user |
 | Report generation incomplete | Save partial report; note incomplete sections; continue with wiki publish |

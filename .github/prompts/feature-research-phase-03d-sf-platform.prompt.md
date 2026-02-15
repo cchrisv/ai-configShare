@@ -46,12 +46,12 @@ MA1 [IO]: From `{{context_file}}`, read and internalize:
   - `sf_schema.pii_fields[]` — sensitive data context from Phase 03a
   - `sf_automation.dependency_graph` — automation complexity context from Phase 03b
   - `sf_architecture.narrative.system_overview` — how the automation works together from Phase 03c
-  - `sf_architecture.transaction_analysis` — governor risks and transaction boundaries from Phase 03c
+  - `sf_architecture.transaction_analysis` — transaction boundaries from Phase 03c
   - `synthesis.unified_truth` — cumulative understanding from all prior phases
 
-MA2 [GEN]: State the mission: *"I am documenting the platform landscape for **{{scope.feature_area}}** — security model, integrations, data volumes, and deployment history for {{scope.sf_objects | join(", ")}}. Business context: {{ado_research.business_context.feature_purpose | truncate(100)}}. Schema has {{sf_schema.objects | length}} objects with {{sf_schema.pii_fields | length}} PII fields. Automation has {{sf_automation.dependency_graph.stats.total_nodes}} components with max cascade depth of {{sf_architecture.execution_complexity.max_cascade_depth}}. I need to understand who can access this data, how it connects to external systems, and the operational health of this feature."*
+MA2 [GEN]: State the mission: *"I am documenting the platform landscape for **{{scope.feature_area}}** — security model, integrations, data volumes, and deployment history for {{scope.sf_objects | join(", ")}}. Business context: {{ado_research.business_context.feature_purpose | truncate(100)}}. Schema has {{sf_schema.objects | length}} objects with {{sf_schema.pii_fields | length}} PII fields. Automation has {{sf_automation.dependency_graph.stats.total_nodes}} components with max cascade depth of {{sf_architecture.execution_summary.max_cascade_depth}}. I need to document who can access this data, how it connects to external systems, and the data landscape of this feature."*
 
-MA3: **Carry this context through every stream.** When analyzing security, consider the PII fields and business sensitivity. When mapping integrations, connect them to the automation and architecture patterns from Phases 03b/03c. When assessing data volumes, relate them to the governor risks identified in Phase 03c.
+MA3: **Carry this context through every stream.** When documenting security, cross-reference with the PII fields from Phase 03a. When mapping integrations, connect them to the automation inventory from Phase 03b. When documenting data volumes, provide the factual record counts and freshness dates.
 
 ---
 
@@ -64,7 +64,7 @@ All outputs to `{{context_file}}.sf_platform`:
 ---
 
 ## Stream 1 [CLI/GEN] – Security and Access
-**Goal:** Document who can access **{{scope.feature_area}}** data and with what permissions — essential for understanding data governance and compliance posture → `{{context_file}}.sf_platform.security`
+**Goal:** Document who can access **{{scope.feature_area}}** data and with what permissions → `{{context_file}}.sf_platform.security`
 
 ### Object Permissions
 B1 [CLI]: For each in-scope object:
@@ -72,7 +72,7 @@ B1 [CLI]: For each in-scope object:
 B2 [GEN]: Parse results into:
   - `object_permissions[]`: `{ object, parent_name, parent_type (Profile|PermissionSet), read, create, edit, delete, view_all, modify_all }`
   - Separate Profile-based permissions from Permission Set-based permissions
-B3 [GEN]: Identify profiles/permission sets with elevated access (ModifyAll, ViewAll, Delete) — flag as security-sensitive
+B3 [GEN]: List profiles/permission sets with elevated access (ModifyAll, ViewAll, Delete)
 
 ### Field-Level Security
 B4 [CLI]: For each in-scope object (prioritize objects with PII fields from `sf_schema.pii_fields[]`):
@@ -80,8 +80,8 @@ B4 [CLI]: For each in-scope object (prioritize objects with PII fields from `sf_
 B5 [GEN]: Parse into `field_permissions[]`:
   - `{ object, field, parent_name, parent_type, read, edit }`
 B6 [GEN]: Cross-reference with `sf_schema.pii_fields[]`:
-  - Flag PII fields that are readable by many profiles (potential exposure risk)
-  - Flag PII fields with edit access beyond expected roles
+  - List which profiles/permission sets can read each PII field
+  - List which profiles/permission sets can edit each PII field
 
 ### Sharing Model
 B7 [CLI]: `{{cli.sf_query}} "SELECT QualifiedApiName, ExternalSharingModel, InternalSharingModel FROM EntityDefinition WHERE QualifiedApiName IN ('{{obj1}}','{{obj2}}')" --tooling --json`
@@ -136,7 +136,7 @@ C13 [GEN]: Identify objects with CDC enabled → `cdc_subscriptions[]`
 ---
 
 ## Stream 3 [CLI/GEN] – Data Landscape
-**Goal:** Assess the operational data profile of **{{scope.feature_area}}** — volumes, quality, freshness, and recent deployment activity → `{{context_file}}.sf_platform.data_landscape`
+**Goal:** Document the operational data profile of **{{scope.feature_area}}** — volumes, field population, freshness, and recent deployment activity → `{{context_file}}.sf_platform.data_landscape`
 
 ### Record Volumes
 D1 [CLI]: For each in-scope object:
@@ -155,8 +155,7 @@ D5 [CLI]: For key fields (required fields, commonly used fields — max 10 queri
 D6 [GEN]: Calculate population rate: `(non_null_count / total_count) * 100`
 D7 [GEN]: Build `data_quality{}`:
   - `field_population[]`: `{ object, field, population_rate, total_records, populated_records }`
-  - Flag fields with <50% population as potential quality concerns
-  - Cross-reference with `sf_schema.field_inventory[]` required fields — required fields with <100% population indicate data integrity issues
+  - Note population rates for all queried fields including required fields
 
 ### Data Freshness
 D8 [CLI]: For each in-scope object:
@@ -180,17 +179,17 @@ D11 [GEN]: Store `deployment_history[]`:
 ## Completion [IO/GEN]
 Update `{{context_file}}`:
 - `metadata.phases_completed` append `"sf_platform"`
-- `metadata.current_phase` = `"analysis"`
+- `metadata.current_phase` = `"documentation"`
 - `metadata.last_updated` = ISO timestamp
 - Extend `synthesis.unified_truth` with:
-  - `security_summary` — profile/permission set count with access, OWD overview, PII exposure flags
+  - `security_summary` — profile/permission set count with access, OWD overview, PII field access counts
   - `integration_summary` — platform event count, named credential count, callout pattern count
-  - `data_summary` — total record count across objects, freshness status distribution, quality concerns
+  - `data_summary` — total record count across objects, freshness status distribution, field population rates
   - `deployment_activity` — summary of recent deployment history
 - Append `{"phase":"sf_platform","step":"complete","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `run_state.completed_steps[]`
 - Save to disk
 
-Tell user: **"Platform discovery for {{scope.feature_area}} complete. Security model ({{profile_count}} profiles with access), {{event_count}} integrations/events, and data landscape ({{total_records}} total records) documented. All Salesforce discovery phases (03a–03d) done — use `/feature-research-phase-04` for standards analysis."**
+Tell user: **"Platform discovery for {{scope.feature_area}} complete. Security model ({{profile_count}} profiles with access), {{event_count}} integrations/events, and data landscape ({{total_records}} total records) documented. All Salesforce discovery phases (03a–03d) done — use `/feature-research-phase-05` to generate the documentation report."**
 
 ---
 

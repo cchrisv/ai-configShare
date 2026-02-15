@@ -16,7 +16,7 @@ Input: Scope from `{{context_file}}.scope.sf_objects[]`, schema context from `{{
 
 ## After Each Stream (MANDATORY — do NOT batch)
 **MUST write to disk before starting next stream.** This ensures resumability if context is lost.
-Stream sections: Stream 1 → `sf_automation.discovery_pool`, Stream 2 → `.relevance_filter`, Stream 3 → `.triggers`, Stream 4 → `.flows`, Stream 5 → `.apex_classes`, Stream 6 → `.lwc_components` + `.aura_components`, Stream 7 → `.validation_rules`, Stream 8 → `.dependency_graph` + `.risk_assessment`
+Stream sections: Stream 1 → `sf_automation.discovery_pool`, Stream 2 → `.relevance_filter`, Stream 3 → `.triggers`, Stream 4 → `.flows`, Stream 5 → `.apex_classes`, Stream 6 → `.lwc_components` + `.aura_components`, Stream 7 → `.validation_rules`, Stream 8 → `.dependency_graph`
 1. [IO] Write `{{context_file}}.sf_automation.[stream_section]` → save to disk
 2. [GEN] Extend `{{context_file}}.synthesis` + `.synthesis.assumptions[]` with new evidence
 3. [IO] Append to `{{context_file}}.run_state.completed_steps[]`
@@ -57,14 +57,13 @@ MA3: **Carry this context through every stream.** The broad discovery (Stream 1)
 All outputs to `{{context_file}}.sf_automation`:
 - `discovery_pool` — `{ triggers[], flows[], apex_classes[], lwc_components[], aura_components[], total_candidates, search_strategies_used[] }`
 - `relevance_filter` — `{ classified[], stats: { direct, supporting, peripheral, noise, total } }`
-- `triggers[]` — `{ object, name, events[], is_active, handler_class, handler_chain[], framework_compliant, relevance, business_rules_implemented[] }`
+- `triggers[]` — `{ object, name, events[], is_active, handler_class, handler_chain[], trigger_pattern, relevance }`
 - `flows[]` — `{ object, name, type, process_type, description, is_active, dml_operations[], subflow_calls[], apex_actions[], error_handling, relevance }`
 - `apex_classes[]` — `{ name, category, referenced_objects[], soql_queries[], dml_statements[], callout_references[], event_publishes[], aura_enabled_methods[], test_class, lines_of_code, relevance }`
 - `lwc_components[]` — `{ name, label, description, api_version, targets[], object_filters[], wire_adapters[], apex_imports[], object_references[], message_channels[], relevance }`
 - `aura_components[]` — `{ name, description, controller_class, helper_references[], object_references[], event_references[], relevance }`
 - `validation_rules[]` — `{ object, name, is_active, formula, error_message, error_field, cross_object_refs[] }`
 - `dependency_graph` — `{ nodes[], edges[], circular_dependencies[], stats }`
-- `risk_assessment[]` — `{ component, risk_level, downstream_count, description }`
 
 ---
 
@@ -206,7 +205,7 @@ C10 [GEN]: Report to synthesis: "Broad discovery found {{total}} candidates; {{d
 ---
 
 ## Stream 3 [CLI/GEN] – Trigger Deep Analysis
-**Goal:** Analyze all `direct` and `supporting` triggers for **{{scope.feature_area}}** — trace handler chains and assess framework compliance → `{{context_file}}.sf_automation.triggers`
+**Goal:** Analyze all `direct` and `supporting` triggers for **{{scope.feature_area}}** — trace handler chains and document trigger patterns → `{{context_file}}.sf_automation.triggers`
 
 **Input:** Triggers from `relevance_filter.classified[]` where `type = "trigger"` AND `relevance IN ("direct", "supporting")`
 
@@ -214,27 +213,26 @@ C10 [GEN]: Report to synthesis: "Broad discovery found {{total}} candidates; {{d
 D1 [GEN]: For each trigger, extract body and identify handler invocation pattern:
   - **Metadata-driven (TAF)** — look for `TriggerActionFlowBypass`, `MetadataTriggerHandler`, or custom metadata references
   - **Direct handler** — look for `new {{ClassName}}().run()` or similar patterns
-  - **Inline logic** — trigger body contains direct SOQL/DML (anti-pattern)
+  - **Inline logic** — trigger body contains direct SOQL/DML without delegating to a handler
 D2 [CLI]: For each identified handler class (if not already in candidate pool):
   - `{{cli.sf_apex}} --pattern "%{{handler_class}}%" --json`
 D3 [GEN]: Trace the full chain: trigger → handler → service class → selector/domain layer
   - Extract class names at each layer
   - Note if handler delegates to service classes or contains logic directly
-  - Cross-reference with `ado_research.business_context.business_rules[]` — which business rules does this chain implement?
-D4 [GEN]: Assess trigger framework compliance:
-  - `framework_compliant` = true if metadata-driven (TAF pattern)
-  - `framework_compliant` = false if direct handler or inline logic
-  - Note specific non-compliance details
+D4 [GEN]: Identify the trigger pattern in use:
+  - `trigger_pattern` = `metadata_driven` if TAF / MetadataTriggerHandler / custom metadata references
+  - `trigger_pattern` = `direct_handler` if trigger invokes a handler class directly (e.g., `new ClassName().run()`)
+  - `trigger_pattern` = `inline_logic` if trigger body contains direct SOQL/DML without delegating to a handler
 
 ### Output
 D5 [GEN]: Store each trigger:
-  `{ object, name, events[], is_active, handler_class, handler_chain[], framework_compliant, relevance, business_rules_implemented[] }`
+  `{ object, name, events[], is_active, handler_class, handler_chain[], trigger_pattern, relevance }`
   → `sf_automation.triggers[]`
 
 ---
 
 ## Stream 4 [CLI/GEN] – Flow Deep Analysis
-**Goal:** Analyze all `direct` and `supporting` flows for **{{scope.feature_area}}** — understand what they do and how well they do it → `{{context_file}}.sf_automation.flows`
+**Goal:** Analyze all `direct` and `supporting` flows for **{{scope.feature_area}}** — document what they do → `{{context_file}}.sf_automation.flows`
 
 **Input:** Flows from `relevance_filter.classified[]` where `type = "flow"` AND `relevance IN ("direct", "supporting")`
 
@@ -253,7 +251,7 @@ E2 [GEN]: For each flow, analyze available metadata:
   - `dml_operations[]` — Record Create, Record Update, Record Delete elements (target objects)
   - `subflow_calls[]` — Subflow elements with referenced flow names
   - `apex_actions[]` — Apex Action elements with class/method names
-  - `error_handling` — presence of Fault connectors (true/false); note flows without error handling as risk
+  - `error_handling` — presence of Fault connectors (true/false)
 
 ### Subflow Chain Tracing
 E3 [GEN]: For flows with `subflow_calls[]`:
@@ -381,7 +379,7 @@ H4 [GEN]: Store each rule:
 ---
 
 ## Stream 8 [GEN/CLI] – Dependency Graph
-**Goal:** Build the full automation dependency graph for **{{scope.feature_area}}** — understand how ALL component types interconnect and where risk concentrates → `{{context_file}}.sf_automation.dependency_graph` + `.risk_assessment`
+**Goal:** Build the full automation dependency graph for **{{scope.feature_area}}** — document how all component types interconnect → `{{context_file}}.sf_automation.dependency_graph`
 
 ### Graph Construction
 I1 [CLI]: For key Apex classes (handlers, services, LWC controllers, batch — max 15):
@@ -407,26 +405,9 @@ I4 [GEN]: Walk the graph to identify cycles:
   - Flow recursion chains (subflow calls that eventually circle back)
   - Store cycles → `dependency_graph.circular_dependencies[]`
 
-### Impact Assessment
-I5 [GEN]: Count downstream dependencies per component:
-  - **Low** — <5 downstream dependents
-  - **Medium** — 5–15 downstream dependents
-  - **High** — 15–50 downstream dependents
-  - **Critical** — >50 downstream dependents
-I6 [GEN]: Identify high-risk regression candidates:
-  - Components with Critical/High impact + multiple objects affected
-  - Components involved in circular dependencies
-  - Active triggers without test classes identified
-  - Flows without error handling (fault paths)
-  - LWC/Aura components with many Apex dependencies (fragile UI layer)
-  - Apex classes referenced by both automation (triggers/flows) AND UI (LWC/Aura) — high blast radius
-
 ### Output
-I7 [GEN]: Store graph: `{ nodes[], edges[], circular_dependencies[], stats: { total_nodes, total_edges, max_depth, component_counts_by_type } }`
+I5 [GEN]: Store graph: `{ nodes[], edges[], circular_dependencies[], stats: { total_nodes, total_edges, max_depth, component_counts_by_type } }`
   → `sf_automation.dependency_graph`
-I8 [GEN]: Store risk assessment:
-  `{ component, component_type, risk_level (Critical/High/Medium/Low), downstream_count, description }`
-  → `sf_automation.risk_assessment[]`
 
 ---
 
@@ -438,14 +419,13 @@ Update `{{context_file}}`:
 - Extend `synthesis.unified_truth` with:
   - `automation_summary` — total triggers, flows, Apex classes, LWC, Aura, validation rules; active vs inactive counts
   - `discovery_coverage` — candidates found: {{total}}, feature-relevant: {{direct + supporting}}, peripheral: {{peripheral}}, noise discarded: {{noise}}
-  - `key_risks` — top 3 high/critical risk components
-  - `framework_compliance` — % of triggers using TAF; % of flows with error handling
+  - `trigger_patterns` — count of triggers by pattern (metadata_driven, direct_handler, inline_logic)
   - `ui_layer` — LWC count, Aura count, Apex controllers shared between automation and UI
-  - `dependency_complexity` — graph stats, circular dependency count
+  - `dependency_graph_stats` — total nodes, total edges, circular dependency count
 - Append `{"phase":"sf_automation","step":"complete","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `run_state.completed_steps[]`
 - Save to disk
 
-Tell user: **"Automation discovery for {{scope.feature_area}} complete. Broad search found {{total_candidates}} candidates; {{relevant_count}} confirmed feature-relevant ({{direct_count}} direct, {{supporting_count}} supporting). Cataloged: {{trigger_count}} triggers, {{flow_count}} flows, {{apex_count}} Apex classes, {{lwc_count}} LWC, {{aura_count}} Aura, {{vr_count}} validation rules. Framework compliance: {{framework_compliance_pct}}%. {{circular_dep_count}} circular dependencies. Use `/feature-research-phase-03c` for architecture & order of operations analysis."**
+Tell user: **"Automation discovery for {{scope.feature_area}} complete. Broad search found {{total_candidates}} candidates; {{relevant_count}} confirmed feature-relevant ({{direct_count}} direct, {{supporting_count}} supporting). Cataloged: {{trigger_count}} triggers, {{flow_count}} flows, {{apex_count}} Apex classes, {{lwc_count}} LWC, {{aura_count}} Aura, {{vr_count}} validation rules. Use `/feature-research-phase-03c` for execution model mapping."**
 
 ---
 
@@ -464,6 +444,6 @@ Tell user: **"Automation discovery for {{scope.feature_area}} complete. Broad se
 | LightningComponentResource query fails | Log; analyze LWC by metadata only (name, targets); skip source analysis |
 | sf_validation fails for batch | Retry individually per object; log failures |
 | sf_discover fails for a class | Log error; build partial graph from other streams |
-| Handler class not found in apex search | Log; may be in managed package or deleted; note in risk_assessment |
+| Handler class not found in apex search | Log; may be in managed package or deleted; note in synthesis |
 | Very large candidate pool (200+ candidates) | Run relevance filter immediately; prioritize direct + supporting; note if pool was trimmed |
 | Dependency search returns 100+ Apex classes | Batch into groups; apply relevance filter aggressively; this indicates a shared/core object |

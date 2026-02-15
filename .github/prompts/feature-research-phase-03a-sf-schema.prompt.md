@@ -57,7 +57,7 @@ All outputs to `{{context_file}}.sf_schema`:
 - `relationships[]` — `{ from_object, to_object, field_name, relationship_type, relationship_name, is_cascade_delete, is_restricted_delete, is_polymorphic, write_requires_master_read }`
 - `record_types[]` — `{ object, api_name, label, description, is_active, is_default }`
 - `pii_fields[]` — `{ object, field, type, sensitivity_reason, is_encrypted, has_field_level_security_note }`
-- `field_analysis` — `{ by_category: {}, formula_dependencies[], cross_object_formulas[], unused_candidates[] }`
+- `field_analysis` — `{ by_category: {}, formula_dependencies[], cross_object_formulas[], field_population_rates[] }`
 
 ---
 
@@ -251,11 +251,11 @@ D6 [GEN]: Store → `sf_schema.field_analysis.formula_dependencies[]`:
 D7 [GEN]: Store cross-object formulas separately → `sf_schema.field_analysis.cross_object_formulas[]`:
   - `{ object, formula_field, referenced_object, referenced_field, relationship_path }`
 
-### Unused Field Candidates
+### Field Population Rates
 D8 [CLI]: For objects with high field counts (>50 custom fields):
-  - `{{cli.sf_query}} "SELECT COUNT(Id) FROM {{object}} WHERE {{field}} != null" --json` for suspicious fields (max 10 queries per object)
-D9 [GEN]: Flag fields with 0% or very low population as unused candidates → `sf_schema.field_analysis.unused_candidates[]`:
-  - `{ object, field, population_rate, recommendation }`
+  - `{{cli.sf_query}} "SELECT COUNT(Id) FROM {{object}} WHERE {{field}} != null" --json` for custom fields (max 10 queries per object)
+D9 [GEN]: Record population rate for each queried field → `sf_schema.field_analysis.field_population_rates[]`:
+  - `{ object, field, population_rate }`
 
 ---
 
@@ -266,10 +266,9 @@ Update `{{context_file}}`:
 - `metadata.last_updated` = ISO timestamp
 - Extend `synthesis.unified_truth` with:
   - `object_model_summary` — count of objects, total fields, total custom fields, total formula fields, total relationships, record types
-  - `documentation_coverage` — % of fields with descriptions, % with help text (flags gaps for architects)
-  - `key_relationships` — critical master-detail and high-cardinality lookups, polymorphic relationships
+  - `documentation_coverage` — % of fields with descriptions, % with help text
+  - `key_relationships` — master-detail relationships, polymorphic lookups, relationship counts per object
   - `data_sensitivity` — PII field count, encrypted field count, objects with sensitive data
-  - `complexity_indicators` — objects with 50+ custom fields, deep formula chains, dependent picklist networks
 - Append `{"phase":"sf_schema","step":"complete","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `run_state.completed_steps[]`
 - Save to disk
 
@@ -287,4 +286,4 @@ Tell user: **"Schema discovery for {{scope.feature_area}} complete. {{object_cou
 | sf_describe fails for an object | Log to `run_state.errors[]`; continue with remaining objects |
 | sf_discover fails | Log error; rely on describe data for relationships; note limitation |
 | Object has 0 fields returned | Log warning; likely permissions issue; note in synthesis |
-| Very large object (500+ fields) | Process all fields; note high field count as potential complexity indicator |
+| Very large object (500+ fields) | Process all fields; note field count in object summary |
