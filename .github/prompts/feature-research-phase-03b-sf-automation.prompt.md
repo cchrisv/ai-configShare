@@ -81,10 +81,14 @@ B3 [CLI]: **Apex by name** — for each in-scope object:
 B4 [CLI]: **Validation rules** — batch:
   - `{{cli.sf_validation}} {{obj1}},{{obj2}},{{objN}} --batch --json`
 
-### Strategy B — Body/Content Search (catches non-obvious names)
-B5 [CLI]: **Apex body search** — for each in-scope object, search class bodies:
-  - `{{cli.sf_query}} "SELECT Id, Name FROM ApexClass WHERE Body LIKE '%{{object}}%' AND NamespacePrefix = null" --tooling --json`
+### Strategy B — Dependency & Reference Search (catches non-obvious names)
+B5 [CLI]: **Apex dependency search** — for each in-scope object, find ALL components that reference it via MetadataComponentDependency:
+  - `{{cli.sf_query}} "SELECT MetadataComponentName, MetadataComponentType FROM MetadataComponentDependency WHERE RefMetadataComponentName = '{{object}}' AND MetadataComponentType = 'ApexClass'" --tooling --json`
   - This catches Apex classes that reference in-scope objects in their code but DON'T have the object name in their class name (e.g., a `DataSyncService` that queries `Journey__c`)
+  - **Note:** MetadataComponentDependency is Beta — if the query fails, fall back to expanded name-pattern searches in Strategy C (add more keyword variations)
+B5b [CLI]: **Flow dependency search** — find flows referencing in-scope objects:
+  - `{{cli.sf_query}} "SELECT MetadataComponentName, MetadataComponentType FROM MetadataComponentDependency WHERE RefMetadataComponentName = '{{object}}' AND MetadataComponentType IN ('Flow', 'FlowDefinition')" --tooling --json`
+  - Catches scheduled, autolaunched, and platform event flows that touch in-scope objects but aren't object-triggered
 B6 [CLI]: **Global flow scan** — find ALL active flows, then filter:
   - `{{cli.sf_flows}} --all --json`
 B7 [GEN]: From B6 results, identify flows that reference in-scope objects but are NOT object-triggered:
@@ -120,8 +124,8 @@ B14 [CLI]: For master-detail parent/child objects NOT in scope (max 3):
 ### Pool Assembly
 B15 [GEN]: Deduplicate ALL results from Strategies A–E into a single candidate pool:
   - **Triggers**: merge B1 + B14 trigger results
-  - **Flows**: merge B2 + B6/B7 + B14 flow results
-  - **Apex classes**: merge B3 + B5 + B8 + B11 + B12 results
+  - **Flows**: merge B2 + B5b + B6/B7 + B14 flow results
+  - **Apex classes**: merge B3 + B5 + B8 + B11 + B12 results (B5 = dependency search, B8 = keyword search)
   - **LWC components**: from B9
   - **Aura components**: from B10
   - Tag each candidate with `discovery_strategy` (which strategy found it)
@@ -454,7 +458,7 @@ Tell user: **"Automation discovery for {{scope.feature_area}} complete. Broad se
 | sf_triggers returns 0 for an object | Log; object may not have triggers; continue |
 | sf_flows returns 0 for an object | Log; object may not have flows; continue |
 | sf_apex returns 0 for an object | Log; note no Apex references; continue |
-| Tooling API body search fails | Fall back to name-pattern-only discovery; note limited coverage in synthesis |
+| MetadataComponentDependency query fails (Beta) | Fall back to expanded name-pattern searches in Strategy C (add object name variations: full API name, base name without `__c`, abbreviated forms); note limited coverage in synthesis |
 | LWC query returns 0 | Log; feature may not have UI components; continue |
 | Aura query returns 0 | Log; feature may not use legacy Aura; continue |
 | LightningComponentResource query fails | Log; analyze LWC by metadata only (name, targets); skip source analysis |
@@ -462,4 +466,4 @@ Tell user: **"Automation discovery for {{scope.feature_area}} complete. Broad se
 | sf_discover fails for a class | Log error; build partial graph from other streams |
 | Handler class not found in apex search | Log; may be in managed package or deleted; note in risk_assessment |
 | Very large candidate pool (200+ candidates) | Run relevance filter immediately; prioritize direct + supporting; note if pool was trimmed |
-| Body search returns 100+ Apex classes | Batch into groups; apply relevance filter aggressively; this indicates a shared utility object |
+| Dependency search returns 100+ Apex classes | Batch into groups; apply relevance filter aggressively; this indicates a shared/core object |
