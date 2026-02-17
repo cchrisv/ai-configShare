@@ -1,17 +1,19 @@
-# Phase 03d – Test Cases
+# Phase 04 – Test Cases (Wiki Integration)
 Role: Test Engineer
-Mission: Generate high-quality test cases following the Salesforce Test Cases Playbook.
-Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md`
+Mission: Generate high-quality test cases and fill the Quality & Validation wiki section via section markers.
+Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md` · `#file:.github/prompts/util-wiki-base.prompt.md`
 Input: `{{work_item_id}}`
 
 ## Constraints
+- **Post-solutioning** – runs AFTER Phase 03b; requires `page_id` in `.wiki.creation_audit`
 - **Playbook-driven** – all test cases follow `{{paths.standards}}/test-cases-playbook.md`
 - **AC-centric** – every test traces to ≥1 acceptance criterion
 - **Measurable** – expected results use exact values, never vague language ("works correctly")
 - **No timelines** – do not produce duration estimates, sprint assignments, or schedule commitments
 - **Re-runnable** – safe to re-run after solution updates; overwrites previous test data
+- **Wiki-rendered** – test cases are rendered and filled into the `how_quality` wiki section via `<!-- SECTION:how_quality -->` markers
 - **CLI-only** – per util-base guardrails
-- **Outputs to** {{context_file}}.solutioning.testing
+- **Outputs to** `{{context_file}}.solutioning.testing`, `{{root}}/wiki-test-cases.md`, and updates live wiki page
 
 ## ⛔ Completeness Guardrails — NEVER Reduce Test Coverage
 > **This phase produces the FULL test suite. Do NOT abbreviate, summarize, or reduce output due to length or effort.**
@@ -28,7 +30,7 @@ Input: `{{work_item_id}}`
   - ≥1 UAT script per user-facing AC
   - ≥3 smoke checks
   - Every applicable path type from the six-path model
-- **Output length is not a concern** — this artifact is consumed by Phase 04 (wiki) which renders it in full. A thorough test suite is the primary deliverable of this phase. Prefer 40 detailed test cases over 10 abbreviated ones.
+- **Output length is not a concern** — this artifact is rendered directly into the wiki. A thorough test suite is the primary deliverable of this phase. Prefer 40 detailed test cases over 10 abbreviated ones.
 
 ## Prerequisites [IO]
 A1 [IO]: Load `#file:config/shared.json` → extract `paths.*`, `cli_commands.*`, `template_files.*`
@@ -36,13 +38,18 @@ A2 [IO]: Load {{context_file}} → verify:
   - `.solutioning.solution_design` exists (components, architecture_decisions, integration_points)
   - `.solutioning.traceability` exists (acceptance_criteria mappings, gaps, orphans)
   - `.grooming.templates_applied.applied_content.acceptance_criteria` exists
+  - `.wiki.creation_audit.page_id` exists and is not null (wiki must be published)
+  - `.wiki.creation_audit.path` exists (wiki path for update)
   - `.metadata.phases_completed` includes `"solutioning"`
   - NOTE: `"test_cases"` MAY already be in `phases_completed` — this is a re-run, not an error
 A3: **STOP** if any prerequisite missing (except `"test_cases"` in phases_completed). Log to `run_state.errors[]` and save.
 
 ## Templates & Standards
 Load from `{{paths.templates}}/` and `{{paths.standards}}/`:
-- `{{template_files.test_case}}` — test case structure (markdown)
+- `{{template_files.test_case}}` — test case structure reference (markdown)
+- `{{template_files.wiki_page_template}}` — reference How → Quality & Validation section structure
+- `{{template_files.wiki_format}}` — Teal (Quality/Testing) formatting guidance
+- `#file:.github/prompts/util-wiki-base.prompt.md` — section marker fill workflow
 - `{{paths.standards}}/test-cases-playbook.md` — Salesforce Test Cases Playbook methodology
 
 ---
@@ -53,7 +60,8 @@ B2 [IO]: Read `.solutioning.traceability` — AC → component mappings, gaps, o
 B3 [IO]: Read `.grooming.templates_applied.applied_content.acceptance_criteria` — what we must trace to
 B4 [IO]: Read `.grooming.classification` — work_class, effort, risk, quality_gates
 B5 [IO]: Read `.solutioning.level_of_effort` — complexity, risk surface, uncertainty flags
-B6 [IO]: If `.solutioning.testing` already exists (re-run):
+B6 [IO]: Read `.wiki.creation_audit` — wiki path, page_id, url for update
+B7 [IO]: If `.solutioning.testing` already exists (re-run):
   - Snapshot previous stats into `run_state`: `{ "previous_test_count": N, "previous_coverage_pct": N }`
   - Log: `"Re-running test case generation — previous data will be overwritten"`
   - Continue — do NOT stop
@@ -216,8 +224,8 @@ Run ALL gates before saving. **⛔ Do NOT weaken or skip gates to reduce output 
 
 **⛔ BLOCKER gates cannot be bypassed.** If a BLOCKER gate fails after 3 iterations, STOP and report the specific failures to the user. Do not save a partial suite that fails BLOCKER gates.
 
-## Step 10 [IO] – Save Artifact
-**GATE: write to disk before proceeding.**
+## Step 10 [IO] – Save Test Data Artifact
+**GATE: write to disk before proceeding to wiki rendering.**
 
 Save → {{context_file}}.solutioning.testing (overwrite entire block):
 ```json
@@ -303,12 +311,180 @@ Update `run_state`:
 
 **Save {{context_file}} to disk — GATE: do not proceed until confirmed written.**
 
+---
+
+## Step 11 [GEN] – Render Test Cases to Wiki Format
+
+This step transforms the structured test data into rich wiki HTML content for the `how_quality` section.
+
+### Template to Reference
+K1 [IO]: Load `{{template_files.wiki_page_template}}` — reference the How → Quality & Validation section structure
+K2 [IO]: Load Teal (Quality/Testing) formatting guidance from `{{template_files.wiki_format}}` (Quality & Validation section onward)
+
+### Generate Wiki Content
+K3 [GEN]: Generate the **complete** Quality & Validation section as wiki-ready HTML/markdown. This is the largest section in the wiki — it MUST contain ALL subsections below. Follow the How → Quality & Validation section structure from `{{template_files.wiki_page_template}}` and formatting from `{{template_files.wiki_format}}`.
+
+> **⛔ CRITICAL: Every numbered subsection below is MANDATORY. Do NOT collapse, merge, summarize, or skip any subsection. Output length is not a concern — a thorough testing section is the primary value of this wiki.**
+
+#### MANDATORY Subsection 1: How We'll Know We're Successful
+- Render `### ✅ How We'll Know We're Successful` heading
+- User-facing success criteria derived from ACs (what the user observes)
+- System requirements (performance, error rates, data integrity)
+- Source: `.grooming.templates_applied.applied_content.acceptance_criteria`
+
+#### MANDATORY Subsection 2: Testing Strategy & Coverage
+- Render `### 🎯 Testing Strategy & Coverage` heading
+- 2–3 paragraph narrative: test philosophy, confidence targets, risk-based approach
+- **Scope table**: in-scope vs. explicitly out-of-scope modules/integrations
+- **Test type applicability table**: Unit / Smoke / Integration / System / UAT / Performance / Security — each with applicable (Y/N), owner, justification
+- **Entry points list**: which channels each test targets
+- **Suite organization**: count by category (smoke / regression / feature / UAT)
+- Source: `testing_strategy`
+
+#### MANDATORY Subsection 3: AC-Centric Test Coverage Matrix
+- Render `### 📋 AC-Centric Test Coverage Matrix` heading
+- Table: AC ID | AC Description | Happy Path Tests | Unhappy Path Tests | Coverage Status (Full/Partial/Gap)
+- Path type legend: ✓ Happy / ✗ Negative / ⚡ Edge / 🔒 Security / ⚙️ Automation / 🔄 Integration
+- Coverage summary line: "X/Y ACs fully covered (Z%)"
+- Source: `ac_coverage_matrix`
+
+#### MANDATORY Subsection 4: Test Data Matrix
+- Render `### 📊 Test Data Matrix` heading
+- Overview table: Row ID | Persona | Profile / Permissions | Record Context | Key Conditions
+- **Then for EACH persona row (D1, D2, D3...)**, render a detailed sub-section:
+  - `#### 👤 D1: [Persona Name]` heading
+  - Attribute table (Role, Profile, Permission Sets, Record Access)
+  - Test User Setup code block (username, profile, perm sets, role)
+  - Required Test Records table (Object, Record Name, Key Fields, Purpose)
+  - Feature Flag Configuration table (if applicable)
+- Source: `test_data_matrix`
+
+#### MANDATORY Subsections 5–7: Detailed Test Cases (P1 / P2 / P3)
+**⛔ This is the core deliverable. You MUST render BOTH the summary table AND every individual test case in full.**
+
+For EACH priority tier (P1, P2, P3):
+- Render the tier heading: `### 🔴 P1 Critical Path Tests` / `### 🟡 P2 Important Tests` / `### 🟢 P3 Additional Coverage`
+- Render a **summary table** first: ID | Test Scenario | Path Type | Covers AC | Data Row
+- Then render **EVERY individual test case** as its own subsection using white bordered card format (see `{{template_files.wiki_format}}`). For each TC-XXX:
+
+```
+#### TC-XXX: [Full Test Title]
+
+<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; ...">
+  [Objective/Path Type/AC/Priority/Entry Point/Persona/Data Row metadata table]
+
+  [Pre-conditions & Setup checklist]
+
+  [Step-by-Step Execution HTML table with Action, Input/Data, Expected Result, ✓ columns]
+
+  [Verification Checklist — UI, Data, Related Records, Notifications]
+
+  [Telemetry & Logs table]
+
+  [Cleanup steps]
+
+  [Developer Validation callout card — unit test pattern, assertions, mocks, integration points]
+
+  [QA Validation callout card — navigation, SOQL query, visual checkpoints, environment prereqs]
+</div>
+```
+
+**⛔ The above structure is the MINIMUM for every TC-XXX. Do NOT render any test case as just a table row. Do NOT write "Same format as TC-001." Do NOT say "additional tests follow the same pattern." Every test case gets its own full subsection.**
+
+- Source: `test_cases[]` grouped by `priority`
+
+#### MANDATORY Subsection 7a: UAT Scripts
+- Render `### 🧪 UAT Validation Scripts` heading with Teal styling
+- For EACH UAT-XXX, render as a **structured script** (NOT a paragraph summary):
+  - `#### UAT-XXX: [Title]` heading
+  - Persona: which business role executes this
+  - Covers AC: [list]
+  - Data Requirements: what must exist before starting
+  - **Numbered steps table**: Step | Action (business language) | Expected Result
+  - Pass/Fail Criteria: explicit decision for the script
+- Source: `uat_scripts[]`
+
+#### MANDATORY Subsection 7b: Smoke Test Pack
+- Render `### 🚀 Smoke Test Pack` heading with Teal styling
+- Table: Check # | Check | What to Verify | Pass Criteria
+- Source: `smoke_pack[]`
+
+#### MANDATORY Subsection 8: Test Data Setup Guide
+- Render `### 📋 Test Data Setup Guide` heading
+- Actionable numbered procedure for testers to set up all test data
+- Step 1: Create Test Users (table)
+- Step 2: Create Test Records (table)
+- Step 3: Configure Feature Flags / Settings (table)
+- Step 4: Verify Environment (checklist)
+- Reference data rows (D1, D2...) and required records from subsection 4
+
+#### MANDATORY Subsection 9: Requirements Traceability Matrix
+- Render `### 🔗 Requirements Traceability Matrix` heading
+- Table: AC ID | AC Description | Test Case IDs | Component IDs | Coverage Status
+
+#### MANDATORY Subsection 10: Assumptions Resolution Log
+- Render `### 📝 Assumptions Resolution Log` heading
+- Table: Assumption | Source Phase | Status (Confirmed/Open/Changed) | Resolution
+
+#### MANDATORY Subsection 11: Quality Corrections Applied
+- Render `### ✨ Quality Corrections Applied` heading
+- List corrections: solution bias removed, template fidelity, logical fallacies
+
+#### MANDATORY Subsection 12: Open Unknowns
+- Render `### ❓ Open Unknowns` heading
+- Items requiring human input before testing can be finalized
+
+---
+
+### Post-Generation Validation (K4)
+**⛔ Before saving, validate the generated wiki content:**
+
+K4 [LOGIC]: Count and verify:
+  - [ ] All 12 subsection headings are present in the output
+  - [ ] Number of `#### TC-XXX` sections == number of test cases in `test_cases[]`
+  - [ ] Each TC-XXX section contains "Step-by-Step Execution" table
+  - [ ] Each TC-XXX section contains "Developer Validation" subsection
+  - [ ] Each TC-XXX section contains "QA Validation" subsection
+  - [ ] Number of `#### UAT-XXX` sections == number of scripts in `uat_scripts[]`
+  - [ ] Each UAT-XXX has a numbered steps table (not a paragraph)
+  - [ ] Smoke pack table has ≥3 rows
+
+If any check fails: fix the output before saving. Do NOT save incomplete wiki content.
+
+### Save Wiki Content
+K5 [IO]: Write generated Q&V content to `.ai-artifacts/{{work_item_id}}/wiki-test-cases.md` (create/overwrite)
+K6 [IO]: Append `{"phase":"test_cases","step":"wiki_content_rendered","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
+
+**Save to disk — GATE: do not proceed until confirmed written.**
+
+---
+
+## Step 12 [IO/CLI] – Fill Wiki Quality Section
+Ref: `#file:.github/prompts/util-wiki-base.prompt.md`
+
+Fill section `how_quality` using the 7-step fill workflow:
+
+L1 [IO]: Read `{{root}}/wiki-content.md`
+L2 [IO]: Read `.ai-artifacts/{{work_item_id}}/wiki-test-cases.md`
+L3 [GEN]: Replace content between `<!-- SECTION:how_quality -->` and `<!-- /SECTION:how_quality -->` with the rendered test cases content
+L4 [IO]: Update status banner: **Grooming** ✅ | **Research** ✅ | **Solutioning** ✅ | **Testing** ✅
+L5 [IO]: Write updated `{{root}}/wiki-content.md`
+L6 [CLI]: `{{cli.wiki_update}} --path "{{wiki_path}}" --content "{{root}}/wiki-content.md" --json`
+L7 [IO]: Set `{{context_file}}.wiki.creation_audit.sections_generated.how_quality` = `true`
+L8 [IO]: Append `{"phase":"test_cases","step":"wiki_updated","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
+
+On error: log to `run_state.errors[]`; save to disk; retry once; **STOP** on second failure.
+
+**Save {{context_file}} to disk — GATE: do not proceed until confirmed written.**
+
+---
+
 ## Completion [IO/GEN]
 Update {{context_file}}:
 - `metadata.phases_completed` append `"test_cases"` (if not already present)
-- `metadata.current_phase` = `"wiki"`
+- `metadata.current_phase` = `"finalization"`
 - `metadata.last_updated` = current ISO timestamp
 - Append `{"phase":"test_cases","step":"complete","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
 - Save to disk
 
-Tell user: **"Test case generation complete. Use /phase-04-wiki."**
+Tell user: **"Test cases generated and added to wiki. Use /phase-05-finalization."**

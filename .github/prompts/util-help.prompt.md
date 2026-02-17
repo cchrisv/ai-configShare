@@ -14,18 +14,17 @@ New users → `/util-setup`. Full workflow → `/phase-01-initialize` with work 
 
 **Grooming (02):**
 - `phase-02a-grooming-research` — business research → context.research
-- `phase-02b-grooming` — refine requirements → context.grooming
-- `phase-02c-grooming-update` — iterative updates → context.dev_updates
+- `phase-02b-grooming` — refine requirements (+wiki What) → context.grooming
+- `phase-02c-grooming-update` — iterative updates (+re-fill wiki What) → context.dev_updates
 
 **Solutioning (03):**
-- `phase-03a-solutioning-research` — technical research → context.research
-- `phase-03b-solutioning` — design solution → context.solutioning
+- `phase-03a-solutioning-research` — technical research (+wiki Why discovery) → context.research
+- `phase-03b-solutioning` — design solution (+wiki Why decisions, How solution) → context.solutioning
 - `phase-03c-solutioning-update` — iterative updates → context.dev_updates
-- `phase-03d-test-cases` — test case generation → context.solutioning.testing
 
 **Completion (04–06):**
-- `phase-04-wiki` — wiki documentation → context.wiki
-- `phase-05-finalization` — WSJF scoring → context.finalization
+- `phase-04-test-cases` — test case generation (+wiki How quality) → context.solutioning.testing
+- `phase-05-finalization` — WSJF scoring (+wiki footer) → context.finalization
 - `phase-06-dev-closeout` — planned vs actual → context.closeout
 
 **Feature/Epic:** `util-feature-solution-design` — aggregate children → context.solution_design

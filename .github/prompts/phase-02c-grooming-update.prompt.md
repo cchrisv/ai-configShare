@@ -69,5 +69,14 @@ E3 [IO]: Append to {{context_file}}.dev_updates.updates[]:
 F1 [IO]: Extract changed fields; save to temp file
 F2 [CLI]: If changes exist: `{{cli.ado_update}} {{work_item_id}} --fields-file "<temp_payload>" --json`
 
+### Step 7 [IO/GEN/CLI] – Wiki: Re-fill What Sections
+Ref: `#file:.github/prompts/util-wiki-base.prompt.md`
+
+If grooming fields changed, re-fill the affected wiki sections:
+- `what_business_context`, `what_requirements`, `what_success_criteria`, `why_business_value` — only sections whose source data was modified
+- `executive_summary` — refresh challenge + discoveries if changed
+
+Execute the 7-step fill workflow from util-wiki-base (idempotent — replaces content between markers).
+
 ## Completion [GEN]
 Tell user: **"Grooming update complete. For solutioning updates, use /phase-03c-solutioning-update."**

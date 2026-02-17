@@ -26,14 +26,14 @@
         },
         "current_phase": {
           "type": "string",
-          "enum": ["research", "grooming", "solutioning", "test_cases", "wiki", "finalization", "complete"],
+          "enum": ["research", "grooming", "solutioning_research", "solutioning", "test_cases", "finalization", "complete"],
           "description": "Current workflow phase"
         },
         "phases_completed": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["research", "grooming", "solutioning", "test_cases", "wiki", "finalization"]
+            "enum": ["research", "grooming", "solutioning_research", "solutioning", "test_cases", "finalization"]
           },
           "description": "List of completed phases"
         },
@@ -652,7 +652,22 @@
                 "parent_path": { "type": "string" }
               }
             },
-            "sections_generated": { "type": "object" },
+            "sections_generated": {
+              "type": "object",
+              "description": "Boolean per wiki_sections key — true when content has been filled",
+              "properties": {
+                "executive_summary": { "type": "boolean" },
+                "what_business_context": { "type": "boolean" },
+                "what_requirements": { "type": "boolean" },
+                "what_success_criteria": { "type": "boolean" },
+                "why_business_value": { "type": "boolean" },
+                "why_discovery": { "type": "boolean" },
+                "why_investigation": { "type": "boolean" },
+                "why_decisions": { "type": "boolean" },
+                "how_solution": { "type": "boolean" },
+                "how_quality": { "type": "boolean" }
+              }
+            },
             "ado_compatibility": { "type": "object" }
           }
         },

@@ -8,8 +8,8 @@ Input: `{{work_item_id}}`
 - **Single ADO update** – one `ado_update --from-context` call at the end
 - **CLI-only** – per util-base guardrails
 - **Solution-neutral** – move "How" to solutioning hints; keep "What/Why" only
-- **Template-engine only** – NEVER generate raw HTML. Use `template-tools scaffold-phase` to get a fill spec, fill the JSON slot values, then save to context. The CLI renders and validates automatically.
-- **Fill slots, not HTML** – AI produces structured JSON slot values only. No HTML generation.
+- **Template-engine only** – NEVER generate raw HTML. Run `template-tools scaffold-phase` [CLI] to get a fill spec, then fill slot values in the JSON [GEN] (there is NO `fill-slots` CLI command — this is AI reasoning), then save to context [IO]. The `--from-context` flag auto-renders and validates.
+- **Fill slots, not HTML** – AI produces structured JSON slot values only. No HTML generation. No CLI command for filling — the AI writes the JSON directly.
 - **Outputs to** {{context_file}}.grooming.*
 
 ## Prerequisites [IO]
@@ -82,8 +82,18 @@ Save → {{context_file}}.grooming:
     "strategic_goals": []
   },
   "filled_slots": {
-    "field-user-story-description": { "summary_text": { "value": "..." }, "...": "..." },
-    "field-user-story-acceptance-criteria": { "scenarios": { "blocks": [] }, "...": "..." }
+    "field-user-story-description": {
+      "summary_text": { "variable": "summary_text", "type": "text", "required": true, "hint": "Brief summary", "value": "As a registrar, I need...", "items": [], "rows": [] },
+      "goals": { "variable": "goals", "type": "list", "required": true, "hint": "Business goals", "value": null, "items": ["Reduce processing time", "Improve accuracy"], "rows": [] },
+      "assumptions": { "variable": "assumptions", "type": "table", "required": true, "hint": "Key assumptions", "value": null, "items": [], "rows": [{"id": "A1", "assumption": "...", "status": "Confirmed"}] }
+    },
+    "field-user-story-acceptance-criteria": {
+      "scenarios": { "variable": "scenarios", "type": "repeatable_block", "required": true, "hint": "GWT scenario cards (min 3)", "value": null, "items": [], "rows": [], "blocks": [
+        { "title": "Happy path enrollment", "given": "a student is eligible", "when": "they submit the form", "then": "enrollment is confirmed" },
+        { "title": "Validation failure", "given": "required fields are empty", "when": "they submit the form", "then": "validation errors display" },
+        { "title": "Duplicate detection", "given": "student is already enrolled", "when": "they attempt re-enrollment", "then": "a duplicate warning appears" }
+      ]}
+    }
   },
   "extra_fields": {
     "title": "",
@@ -101,7 +111,7 @@ Save → {{context_file}}.grooming:
   "triage_summary_narrative": ""
 }
 ```
-**Note:** `filled_slots` contains the exact FillSlot objects from the scaffold spec with `value`, `items`, `rows`, or `blocks` filled in. The keys are template registry keys (e.g., `field-user-story-description`).
+**CRITICAL — `filled_slots` structure:** Each slot MUST be a full FillSlot object with ALL fields (`variable`, `type`, `required`, `hint`, `value`, `items`, `rows`). For `repeatable_block` slots, also include `blocks` array. Copy the scaffold output and fill in the values — do NOT abbreviate or restructure. The template engine matches slots by variable name and reads `value`/`items`/`rows`/`blocks` depending on type.
 
 Update `run_state`:
 - Append `{"phase":"grooming","step":"analysis","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `completed_steps[]`
@@ -124,10 +134,22 @@ The CLI automatically:
 
 On error: log to `run_state.errors[]`; save to disk; retry once; **STOP** on second failure.
 
+## Step 7 [IO/GEN/CLI] – Wiki: Fill What
+Ref: `#file:.github/prompts/util-wiki-base.prompt.md`
+
+Fill sections where `filled_by_phase == "grooming"`:
+- `executive_summary` (partial — challenge + discoveries only; no solution yet)
+- `what_business_context` — from `research.ado_workitem.business_summary`, `research.business_context`, `grooming.organizational_context_match`, `research.journey_maps`
+- `what_requirements` — from `grooming.templates_applied.applied_content` (description filled_slots), `research.synthesis.unified_truth.technical_requirements`
+- `what_success_criteria` — from `grooming.templates_applied.applied_content` (AC filled_slots), `grooming.classification.quality_gates`
+- `why_business_value` — from `grooming.organizational_context_match.strategic_goals`, `research.synthesis.unified_truth.business_goals`, `research.synthesis.swot_analysis`
+
+Execute the 7-step fill workflow from util-wiki-base. Update status banner: **Grooming** ✅ | **Research** ⏸️ | **Solutioning** ⏸️ | **Testing** ⏸️
+
 ## Completion [IO/GEN]
 Update {{context_file}}:
 - `metadata.phases_completed` append `"grooming"`
-- `metadata.current_phase` = `"solutioning"`
+- `metadata.current_phase` = `"solutioning_research"`
 - `metadata.last_updated` = current ISO timestamp
 - Save to disk
 

@@ -469,33 +469,30 @@
 
     "wiki-page-template": {
       "file": "wiki-page-template.html",
-      "phase": "wiki",
+      "phase": "initialize",
       "work_item_types": ["User Story", "Bug", "Defect"],
       "ado_field": null,
-      "description": "Full wiki page template for work items (rendered as markdown for ADO wiki)",
+      "description": "Scaffolded wiki page template (What/Why/How). Published in Phase 01; sections filled incrementally by subsequent phases.",
       "variables": {
         "work_item_id": { "type": "text", "required": true, "description": "Work item ID" },
-        "title": { "type": "text", "required": true, "description": "Work item title" },
-        "executive_summary": { "type": "html", "required": true, "description": "Executive summary content" },
-        "understanding_request": { "type": "html", "required": true, "description": "Understanding the request content" },
-        "discovery_research": { "type": "html", "required": true, "description": "Discovery and research content" },
-        "investigation_trail": { "type": "html", "required": true, "description": "Investigation trail content" },
-        "stakeholders_impact": { "type": "html", "required": true, "description": "Stakeholders and impact content" },
-        "solution_design": { "type": "html", "required": true, "description": "Solution design content" },
-        "decision_rationale": { "type": "html", "required": true, "description": "Decision rationale content" },
-        "quality_validation": { "type": "html", "required": true, "description": "Quality and validation (testing) content" }
+        "work_item_title": { "type": "text", "required": true, "description": "Work item title" },
+        "timestamp": { "type": "text", "required": true, "description": "ISO 8601 creation timestamp" }
       },
       "sections": [
+        { "id": "status_banner", "name": "Status Banner", "required": true },
         { "id": "executive_summary", "name": "Executive Summary", "required": true },
-        { "id": "understanding_request", "name": "Understanding the Request", "required": true },
-        { "id": "discovery_research", "name": "Discovery & Research", "required": true },
-        { "id": "investigation_trail", "name": "Investigation & Discovery Trail", "required": true },
-        { "id": "stakeholders_impact", "name": "Stakeholders & Impact", "required": true },
-        { "id": "solution_design", "name": "Solution Design", "required": true },
-        { "id": "decision_rationale", "name": "Decision Rationale", "required": true },
-        { "id": "quality_validation", "name": "Quality & Validation", "required": true }
+        { "id": "what_business_context", "name": "Business Context", "required": true },
+        { "id": "what_requirements", "name": "Requirements & Scope", "required": true },
+        { "id": "what_success_criteria", "name": "Success Criteria", "required": true },
+        { "id": "why_business_value", "name": "Business Value & Impact", "required": true },
+        { "id": "why_discovery", "name": "Discovery & Research", "required": true },
+        { "id": "why_investigation", "name": "Investigation Trail", "required": true },
+        { "id": "why_decisions", "name": "Decision Rationale", "required": true },
+        { "id": "how_solution", "name": "Solution Design", "required": true },
+        { "id": "how_quality", "name": "Quality & Validation", "required": true },
+        { "id": "footer", "name": "Footer", "required": true }
       ],
-      "has_repeatable_regions": true
+      "has_repeatable_regions": false
     },
 
     "feature-solution-design-wiki": {

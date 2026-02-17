@@ -11,7 +11,7 @@ Load `#file:config/shared.json`. Extract: `paths.*` · `cli_commands.*` (use as 
 4. **Config read-only** – NEVER modify shared.json or CLI scripts unless asked
 5. **Load config first** – always load shared.json before execution
 6. **Context7 only** – ALWAYS use {{root}}/ticket-context.json; NO separate artifacts
-7. **Template-engine only** – NEVER generate raw HTML. Use `template-tools scaffold-phase` to get a fill spec, fill the JSON slot values, then `template-tools render-phase` to produce final HTML. The AI only produces structured JSON, never HTML.
+7. **Template-engine only** – NEVER generate raw HTML. Run `template-tools scaffold-phase` [CLI] to get a fill spec, then the AI fills slot values in the JSON [GEN] (there is NO `fill-slots` CLI command), saves to context [IO], then `ado-tools update --from-context` [CLI] auto-renders, validates, and pushes. The AI only produces structured JSON, never HTML.
 8. **Fill slots, not HTML** – When populating ADO fields that have templates, write filled slot values to `{{context_file}}.{{phase}}.filled_slots`, then let the CLI render and validate.
 
 ## Step Types
@@ -26,7 +26,6 @@ Load `#file:config/shared.json`. Extract: `paths.*` · `cli_commands.*` (use as 
 | Research | `.research` |
 | Grooming | `.grooming` |
 | Solutioning | `.solutioning` |
-| Wiki | `.wiki` |
 | Finalization | `.finalization` |
 | Dev Updates | `.dev_updates` |
 | Closeout | `.closeout` |
@@ -36,7 +35,7 @@ Load `#file:config/shared.json`. Extract: `paths.*` · `cli_commands.*` (use as 
 {
   "metadata": {
     "work_item_id": "", "created_at": "", "last_updated": "",
-    "current_phase": "research|grooming|solutioning|test_cases|wiki|finalization|complete",
+    "current_phase": "research|grooming|solutioning_research|solutioning|test_cases|finalization|complete",
     "phases_completed": [], "version": "1.0"
   },
   "run_state": {
@@ -48,8 +47,8 @@ Load `#file:config/shared.json`. Extract: `paths.*` · `cli_commands.*` (use as 
   "closeout": {}
 }
 ```
-**Valid `current_phase` values:** `research` · `grooming` · `solutioning` · `test_cases` · `wiki` · `finalization` · `complete`
-**Valid `phases_completed` values:** `research` · `grooming` · `solutioning` · `test_cases` · `wiki` · `finalization`
+**Valid `current_phase` values:** `research` · `grooming` · `solutioning_research` · `solutioning` · `test_cases` · `finalization` · `complete`
+**Valid `phases_completed` values:** `research` · `grooming` · `solutioning_research` · `solutioning` · `test_cases` · `finalization`
 Full schema: `#file:config/templates/ticket-context-schema.json`
 
 ## CLI Quick Reference
@@ -67,14 +66,15 @@ Full schema: `#file:config/templates/ticket-context-schema.json`
 | Validate template | `{{cli.template_validate}} --template {{key}} --rendered {{file}} --json` |
 | Template info | `{{cli.template_info}} --template {{key}} --json` |
 
-## Template-Engine Workflow (scaffold → fill → render → push)
+## Template-Engine Workflow (scaffold → fill → push)
 ```
 1. [CLI]  template-tools scaffold-phase → JSON fill spec (slot shapes the AI must fill)
 2. [GEN]  AI fills slot values in JSON (text, lists, tables, blocks) — NO raw HTML
+         ⚠ There is NO "fill-slots" CLI command — this is AI reasoning, not a tool call.
 3. [IO]   Save filled slots to {{context_file}}.{{phase}}.filled_slots
-4. [CLI]  template-tools render-phase → final HTML from template + filled values
-5. [CLI]  ado-tools update --from-context → auto-renders, validates, pushes to ADO
+4. [CLI]  ado-tools update --from-context → auto-renders, validates, pushes to ADO
 ```
+Note: `template-tools render-phase` exists for standalone rendering but is NOT needed when using `--from-context` (which auto-renders internally).
 
 ## Context7 Operations
 - Load: `[IO]` read {{context_file}}

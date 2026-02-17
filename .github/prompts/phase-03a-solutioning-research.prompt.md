@@ -1,16 +1,15 @@
 # Phase 03a – Solutioning Research
 Role: Technical Research Coordinator
-Mission: Gather technical depth — SF metadata, dependencies, best practices.
+Mission: Gather technical depth — SF metadata, dependencies, standards compliance.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md` · `#file:.github/prompts/util-research-base.prompt.md`
 Input: `{{work_item_id}}`
 
 ## Constraints
 - **Read-only** – NO ADO/wiki modifications
 - **CLI-only** – per util-base guardrails (SF operations use `{{cli.*}}` commands only)
-- **Outputs to** {{context_file}}.research.salesforce_metadata + .dependency_discovery + .web_research
+- **Outputs to** {{context_file}}.research.salesforce_metadata + .dependency_discovery
 - **Rolling synthesis** – extend research.synthesis with new findings
-- **Both streams mandatory** – batch SF operations when beneficial
-- **Feedback loops** – max 3 iterations/stream
+- **Feedback loops** – max 3 iterations
 
 ## After Each Stream (MANDATORY — do NOT batch)
 **MUST write to disk before starting next stream.** This ensures resumability if context is lost.
@@ -43,7 +42,6 @@ A4: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
 Add to {{context_file}}.research:
 - `salesforce_metadata` — schema (objects, fields, record_types), graph, logic, integration, investigation_trail, pii_stats
 - `dependency_discovery` — usage_tree, dependency_tree, stats, object_describe, high_risk_components, regression_candidates, role_impact_analysis
-- `web_research` — search_queries, industry_standards, modernization_opportunities, identified_risks, unknowns
 - Extend existing `synthesis` + `assumptions`
 
 ---
@@ -62,7 +60,7 @@ B3.5 [CLI]: If metadata investigation needed: `{{cli.sf_query}} "{{tooling_query
 C1 [CLI]: `{{cli.sf_describe}} {{object}} --json` (batch: `{{obj1}},{{obj2}} --batch --json`)
 C2 [CLI]: `{{cli.sf_discover}} --type CustomObject --name {{object}} --depth 3 --json`
 C3 [CLI]: `{{cli.sf_apex}} --pattern "%{{object}}%" --json`
-C4 [CLI]: `{{cli.sf_triggers}} --object {{object}} --json`
+C4 [CLI]: `{{cli.sf_apex_triggers}} --object {{object}} --json`
 C5 [CLI]: `{{cli.sf_flows}} --object {{object}} --json`
 C6 [CLI]: `{{cli.sf_validation}} {{object}} --json` (batch: `{{obj1}},{{obj2}} --batch --json`)
 
@@ -94,42 +92,28 @@ E2 [GEN]: Compare discovered patterns against loaded standards; flag non-complia
 
 ---
 
-## Stream 2 [GEN/API] – Web Research & Best Practices
-**Goal:** Benchmark against industry standards → {{context_file}}.research.web_research
+## Wiki [IO/GEN/CLI] – Fill Why Discovery
+Ref: `#file:.github/prompts/util-wiki-base.prompt.md`
 
-### Strategy
-F1 [IO]: Load tech context from Stream 1 (SF metadata, dependencies, automation patterns) + `.research.ado_workitem.scope_context` from phase 02a
-F2 [GEN]: Generate 3–5 targeted search queries based on:
-  - Technologies discovered (e.g., "Salesforce platform events best practices")
-  - Patterns found (e.g., "Salesforce custom metadata calculation pattern")
-  - Anti-patterns detected (e.g., "Salesforce trigger recursion prevention")
+Fill sections where `filled_by_phase == "solutioning_research"`:
+- `why_discovery` — from `research.salesforce_metadata`, `research.dependency_discovery`, `research.code_search`, `research.wiki_search`, `research.web_research`
+- `why_investigation` — from `research.assumptions`, `research.synthesis.conflict_log`, `research.synthesis.research_gaps_investigated`, `research.synthesis.reusable_assets`
 
-### Research (use web search / fetch capabilities)
-G1 [API]: Execute searches — prioritize Salesforce developer docs, Trailhead, architect guides
-G2 [API]: Fetch top 2–3 relevant results per query for detailed review
-G3 [GEN]: Extract actionable guidance, version-specific considerations
-
-### Analysis
-H1 [GEN]: Gap analysis — compare internal implementation vs external best practices
-H2 [GEN]: Anti-pattern detection with severity (Critical / High / Medium / Low)
-H3 [GEN]: Identify unknowns → add to `.research.assumptions[]`
-H4 [GEN]: Modernization opportunities — if legacy patterns found, note alternatives
-
----
+Execute the 7-step fill workflow from util-wiki-base. Update status banner: **Grooming** ✅ | **Research** ✅ | **Solutioning** ⏸️ | **Testing** ⏸️
 
 ## Completion [IO/GEN]
 Update {{context_file}}:
 - `research.synthesis.research_phase_complete` = `true`
-- Extend `research.synthesis.unified_truth` with SF metadata + web research findings
+- Extend `research.synthesis.unified_truth` with SF metadata + standards comparison findings
 - **Investigation resolution** — for each item in `.grooming.solutioning_investigation`:
   - Mark as `resolved` (with evidence/answer) or `unresolved` (with reason)
   - Store resolution status in `research.investigation_resolution[]`:
     `{ id, original_item, status: "resolved"|"unresolved", evidence: "", resolved_in_stream: "" }`
   - Unresolved items carry forward as risks for phase 03b to address
+- `metadata.phases_completed` append `"solutioning_research"`
+- `metadata.current_phase` = `"solutioning"`
 - `metadata.last_updated` = current ISO timestamp
-- Append `{"phase":"research","step":"solutioning_research_complete","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `run_state.completed_steps[]`
+- Append `{"phase":"solutioning_research","step":"solutioning_research_complete","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `run_state.completed_steps[]`
 - Save to disk
-
-**Note:** `metadata.current_phase` remains `"solutioning"` (already set by phase-02b). Phase 03a does NOT modify `phases_completed` — the "research" value was already appended by phase-02a.
 
 Tell user: **"Solutioning research complete. Use /phase-03b-solutioning."**

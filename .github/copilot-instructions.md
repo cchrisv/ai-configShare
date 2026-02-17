@@ -28,8 +28,7 @@ Schema: `#file:config/templates/ticket-context-schema.json`
 | Solutioning research | `#file:.github/prompts/phase-03a-solutioning-research.prompt.md` |
 | Solutioning | `#file:.github/prompts/phase-03b-solutioning.prompt.md` |
 | Solutioning update (dev) | `#file:.github/prompts/phase-03c-solutioning-update.prompt.md` |
-| Test cases | `#file:.github/prompts/phase-03d-test-cases.prompt.md` |
-| Wiki | `#file:.github/prompts/phase-04-wiki.prompt.md` |
+| Test cases | `#file:.github/prompts/phase-04-test-cases.prompt.md` |
 | Finalization | `#file:.github/prompts/phase-05-finalization.prompt.md` |
 | Dev closeout | `#file:.github/prompts/phase-06-dev-closeout.prompt.md` |
 | Feature/Epic solution design | `#file:.github/prompts/util-feature-solution-design.prompt.md` |
@@ -43,9 +42,10 @@ Schema: `#file:config/templates/ticket-context-schema.json`
 | Setup | `#file:.github/prompts/util-setup.prompt.md` |
 
 ## Phases (Context7)
-**Grooming (02):** 02a research → 02b grooming → 02c update (iterative)
-**Solutioning (03):** 03a research → 03b solutioning → 03c update (iterative)
-**Completion:** 04 wiki → 05 finalization → 06 dev closeout
+**Grooming (02):** 02a research → 02b grooming (+wiki What) → 02c update (iterative)
+**Solutioning (03):** 03a research (+wiki Why discovery) → 03b solutioning (+wiki Why decisions, How solution) → 03c update (iterative)
+**Completion:** 04 test-cases (+wiki How quality) → 05 finalization (+wiki footer) → 06 dev closeout
+**Wiki:** Scaffolded in Phase 01; sections filled incrementally by each phase above. No discrete wiki phase.
 **Feature/Epic:** `util-feature-solution-design` — aggregate children into solution design
 **Utilities:** `util-apply-template` · `util-sequence-tickets` · `util-activity-report` · `util-team-members` · `util-update-feature-progress` · `util-repeat-phase` · `util-help` · `util-setup`
 
@@ -65,7 +65,7 @@ All commands: `npx --prefix scripts/workflow <tool> <command>`. All support `--j
 | status | `{{cli.workflow_status}} -w <id> --json` |
 | reset | `workflow-tools reset -w <id> [--phase <phase>] --force --json` |
 
-Reset sections: `research`, `grooming`, `solutioning`, `wiki`, `finalization`, `dev_updates`, `closeout` (clears section in ticket-context.json + rewinds metadata)
+Reset sections: `research`, `grooming`, `solutioning`, `finalization`, `dev_updates`, `closeout` (clears section in ticket-context.json + rewinds metadata)
 
 ### ado-tools
 | Command | Syntax |
@@ -90,7 +90,7 @@ Reset sections: `research`, `grooming`, `solutioning`, `wiki`, `finalization`, `
 | describe | `{{cli.sf_describe}} <objectName> [--field <name>] [--fields-only] [--batch] --json` |
 | discover | `{{cli.sf_discover}} --type <metadataType> --name <name> [--depth <n>] [--include-standard] [--batch] --json` |
 | apex-classes | `{{cli.sf_apex}} [--pattern <pattern>] --json` |
-| apex-triggers | `{{cli.sf_triggers}} [--object <name>] --json` |
+| apex-triggers | `{{cli.sf_apex_triggers}} [--object <name>] --json` |
 | validation-rules | `{{cli.sf_validation}} <objectName> [--all] [--batch] --json` |
 | flows | `{{cli.sf_flows}} [--object <name>] [--all] --json` |
 | custom-objects | `sf-tools custom-objects --json` |

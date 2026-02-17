@@ -10,7 +10,7 @@ Input: `{{work_item_id}}`
 - **No timelines** – do not produce sprint estimates, delivery dates, schedule commitments, or task-level duration estimates. Capture high-level LOE only (component `complexity_estimate` as Simple/Medium/Complex) for Phase 5 WSJF scoring. Story points are derived exclusively in Phase 5 finalization.
 - **Single ADO update** – one `ado_update --from-context` call at the end
 - **CLI-only** – per util-base guardrails
-- **Template-engine only** – NEVER generate raw HTML. Use `template-tools scaffold` for Development Summary fill spec, fill JSON slots, save to context. The CLI renders and validates.
+- **Template-engine only** – NEVER generate raw HTML. Run `template-tools scaffold` [CLI] for Development Summary fill spec, then fill JSON slot values [GEN] (there is NO `fill-slots` CLI command — this is AI reasoning), save to context [IO]. The `--from-context` flag auto-renders and validates.
 - **Outputs to** {{context_file}}.solutioning.*
 
 ## Prerequisites [IO]
@@ -19,16 +19,17 @@ A2 [IO]: Load {{context_file}} → verify:
   - `.research.synthesis` exists with `research_phase_complete = true`
   - `.research.salesforce_metadata` exists (schema, logic, dependencies)
   - `.research.dependency_discovery` exists (high_risk_components, regression_candidates)
-  - `.research.web_research` exists (industry_standards, identified_risks)
   - `.grooming` exists (classification, templates_applied, solutioning_hints)
   - `.metadata.phases_completed` includes `"research"` AND `"grooming"`
 A3: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
 
 ## Templates
 Templates are managed by the template engine. The CLI scaffolds fill specs, AI fills slots, CLI renders:
-- `field-solution-design` — ADO Development Summary HTML (rendered by template engine)
-- `{{template_files.solution_design}}` — solution design structure (markdown, manual)
-- `{{template_files.solution_design_document}}` — feature solution design document (markdown, manual)
+- `field-solution-design` — ADO Development Summary HTML (rendered by template engine via `--from-context`)
+
+Reference docs (not engine-rendered — used for guidance only):
+- `{{template_files.solution_design}}` — solution design structure reference
+- `{{template_files.solution_design_document}}` — feature-level solution design document (used in Phase 04, not here)
 
 ---
 
@@ -36,10 +37,9 @@ Templates are managed by the template engine. The CLI scaffolds fill specs, AI f
 B1 [IO]: Read `.research.synthesis.unified_truth` — consolidated understanding
 B2 [IO]: Read `.research.salesforce_metadata` — schema, triggers, flows, platform events
 B3 [IO]: Read `.research.dependency_discovery` — high_risk_components, regression_candidates
-B4 [IO]: Read `.research.web_research` — industry_standards, identified_risks
-B5 [IO]: Read `.grooming.classification` — work_class, effort, risk, quality_gates
-B6 [IO]: Read `.grooming.solutioning_hints[]` — extracted implementation clues from grooming
-B7 [IO]: Read `.grooming.templates_applied.applied_content.acceptance_criteria` — what we must trace to
+B4 [IO]: Read `.grooming.classification` — work_class, effort, risk, quality_gates
+B5 [IO]: Read `.grooming.solutioning_hints[]` — extracted implementation clues from grooming
+B6 [IO]: Read `.grooming.templates_applied.applied_content.acceptance_criteria` — what we must trace to
 
 ## Step 2 [GEN/CLI] – Option Analysis
 C0 [GEN]: **Refine preliminary classifications** — load `.grooming.classification` (effort, complexity, feasibility are marked `"preliminary"` from phase 02b). Using technical evidence from 03a research, produce evidence-based values to replace the preliminaries.
@@ -126,11 +126,14 @@ Save → {{context_file}}.solutioning:
   },
   "filled_slots": {
     "field-solution-design": {
-      "business_problem_statement": { "value": "..." },
-      "solution_approach_narrative": { "value": "..." },
-      "technical_narrative": { "value": "..." },
-      "components": { "rows": [{ "name": "", "type": "", "responsibility": "" }] },
-      "integration_points_brief": { "value": "..." }
+      "business_problem_statement": { "variable": "business_problem_statement", "type": "text", "required": true, "hint": "The business problem being solved", "value": "Current manual process causes...", "items": [], "rows": [] },
+      "solution_approach_narrative": { "variable": "solution_approach_narrative", "type": "text", "required": true, "hint": "High-level solution approach", "value": "Extend existing trigger action to...", "items": [], "rows": [] },
+      "technical_narrative": { "variable": "technical_narrative", "type": "text", "required": true, "hint": "Technical implementation narrative", "value": "The solution modifies the existing...", "items": [], "rows": [] },
+      "components": { "variable": "components", "type": "table", "required": true, "hint": "Key components of the solution", "value": null, "items": [], "rows": [
+        { "name": "AccountTriggerAction", "type": "Apex Trigger Action", "responsibility": "Validates enrollment eligibility" },
+        { "name": "EnrollmentService", "type": "Apex Service", "responsibility": "Processes enrollment records" }
+      ]},
+      "integration_points_brief": { "variable": "integration_points_brief", "type": "text", "required": false, "hint": "Brief integration points summary", "value": "Integrates with Student API via platform events", "items": [], "rows": [] }
     }
   },
   "extra_fields": {
@@ -139,8 +142,6 @@ Save → {{context_file}}.solutioning:
   }
 }
 ```
-
-Save technical spec → {{context_file}}.solutioning.technical_spec (markdown from `{{template_files.solution_design}}`)
 
 Update `run_state`:
 - Append `{"phase":"solutioning","step":"solution_design","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `completed_steps[]`
@@ -163,6 +164,16 @@ The CLI automatically:
 
 On error: log to `run_state.errors[]`; save to disk; retry once; **STOP** on second failure.
 
+## Step 8 [IO/GEN/CLI] – Wiki: Fill Why Decisions + How Solution
+Ref: `#file:.github/prompts/util-wiki-base.prompt.md`
+
+Fill sections where `filled_by_phase == "solutioning"`:
+- `why_decisions` — from `solutioning.option_analysis`, `solutioning.solution_design.applied_standards`, `research.synthesis.unified_truth.risks`
+- `how_solution` — from `solutioning.solution_design`, `solutioning.traceability`
+- `executive_summary` (finalize — add recommended approach + path forward from `solutioning.option_analysis.decision_summary`)
+
+Execute the 7-step fill workflow from util-wiki-base. Update status banner: **Grooming** ✅ | **Research** ✅ | **Solutioning** ✅ | **Testing** ⏸️
+
 ## Completion [IO/GEN]
 Update {{context_file}}:
 - `metadata.phases_completed` append `"solutioning"`
@@ -171,4 +182,4 @@ Update {{context_file}}:
 - Append `{"phase":"solutioning","step":"ado_update","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
 - Save to disk
 
-Tell user: **"Solutioning complete. Use /phase-03d-test-cases."**
+Tell user: **"Solutioning complete. Use /phase-04-test-cases."**

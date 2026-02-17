@@ -74,5 +74,15 @@ E3 [IO]: Append to {{context_file}}.dev_updates.updates[]:
 F1 [IO]: Extract changed fields; save to temp file
 F2 [CLI]: If changes exist: `{{cli.ado_update}} {{work_item_id}} --fields-file "<temp_payload>" --json`
 
+### Step 7 [IO/GEN/CLI] – Wiki: Re-fill Solutioning Sections
+Ref: `#file:.github/prompts/util-wiki-base.prompt.md`
+
+If solutioning fields changed, re-fill the affected wiki sections:
+- `why_decisions` — if option analysis or standards changed
+- `how_solution` — if solution design or components changed
+- `executive_summary` — refresh recommended approach + path forward if changed
+
+Execute the 7-step fill workflow from util-wiki-base (idempotent — replaces content between markers).
+
 ## Completion [GEN]
 Tell user: **"Solutioning update complete. For grooming updates, use /phase-02c-grooming-update."**

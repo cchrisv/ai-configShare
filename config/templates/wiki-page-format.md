@@ -8,8 +8,8 @@ Three wiki templates are available, each serving a different purpose:
 
 | Template | Purpose | When to Use |
 |----------|---------|-------------|
-| `wiki-page-template.html` | Work item ticket preparation pages | Path contains `/WorkItems/` or header contains "Autonomous Ticket Preparation" |
-| `feature-solution-design-wiki.html` | Feature solution design pages | Path contains `/Features/` or header contains "Feature Solution Design" |
+| `wiki-page-template.html` | Work item ticket preparation pages | Header contains "Autonomous Ticket Preparation" or page title starts with work item ID |
+| `feature-solution-design-wiki.html` | Feature solution design pages | Header contains "Feature Solution Design" or work item type is Feature/Epic |
 | `wiki-general-template.html` | Any wiki page (content-agnostic pattern reference) | Fallback — any page not matching the above patterns |
 
 All templates share a unified design system:
@@ -32,14 +32,13 @@ All templates share a unified design system:
 
 Colors are assigned by semantic meaning of each section heading:
 
-- 🟢 **Green** (`#2e7d32 → #1b5e20`): Summary, Overview, Executive Summary, Introduction, Goals
-- 🔵 **Blue** (`#1565c0 → #0d47a1`): Architecture, Design, Information, Current State
-- 🟣 **Purple** (`#7b1fa2 → #4a148c`): Analysis, Research, Investigation, Discovery
-- 🟠 **Orange** (`#e65100 → #bf360c`): Issues, Warnings, Considerations, Recommendations
-- 🔴 **Red** (`#c62828 → #b71c1c`): Critical, Risks, Security, Blockers
-- 🔷 **Indigo** (`#303f9f → #1a237e`): Solution, Implementation, Components, Technical
-- 🩵 **Teal** (`#00796b → #004d40`): Testing, Quality, Validation, Metrics
-- 🟤 **Brown** (`#5d4037 → #3e2723`): Appendix, References, History, Changelog
+- 🟢 **Green** (`#2e7d32 → #1b5e20`): Executive Summary
+- 🔵 **Blue** (`#1565c0 → #0d47a1`): Page header, What — The Request (subsections: `#42a5f5 → #1565c0`)
+- 🟣 **Purple** (`#7b1fa2 → #4a148c`): Why — Rationale & Evidence (subsections: `#ab47bc → #7b1fa2`)
+- 🔷 **Indigo** (`#303f9f → #1a237e`): How — Solution & Validation → Solution Design (subsection: `#5c6bc0 → #303f9f`)
+- 🩵 **Teal** (`#00796b → #004d40`): How — Solution & Validation → Quality & Validation
+
+Colors are defined in `shared.json` → `wiki_sections`. Subsection accent bars use the lighter shade specified in each section's `color_from`/`color_to`.
 
 ### Critical Design Rules
 
@@ -207,24 +206,36 @@ graph TD
 :::
 ```
 
-> compass **Diagram cadence:** Provide at least one diagram in each major section (Research, Solutioning, Implementation) to reinforce comprehension.
-# 📋 Autonomous Ticket Preparation - #{{runtime.work_item_id}}
+> **Diagram cadence:** Provide at least one diagram in each major section (What, Why, How) to reinforce comprehension.
 
-> **Work Item:** #{{runtime.work_item_id}} - [Work Item Title]
->
-> **Generated:** [ISO 8601 timestamp]
->
-> **Status:** ✅ Complete - Ready for Development
+## Page Structure — What / Why / How
 
----
+The wiki uses a scaffolded structure. Phase 01 publishes the full skeleton; subsequent phases fill in sections by replacing placeholder content between `<!-- SECTION:id -->` markers. Section IDs and metadata are defined in `shared.json` → `wiki_sections`.
 
-[View Ticket in ADO →](https://dev.azure.com/{{config.organization}}/{{config.project}}/_workitems/edit/{{runtime.work_item_id}})
-
----
-
-## 📑 Table of Contents
-
+```
+Page Header (#work_item_id — title)
 [[_TOC_]]
+Status Banner (phase progress: ✅/⏳/⏸️)
+
+## Executive Summary
+
+## What — The Request
+### Business Context
+### Requirements & Scope
+### Success Criteria
+
+## Why — Rationale & Evidence
+### Business Value & Impact
+### Discovery & Research
+### Investigation Trail
+### Decision Rationale
+
+## How — Solution & Validation
+### Solution Design
+### Quality & Validation
+
+Footer (timestamp, attribution)
+```
 
 ---
 
@@ -244,9 +255,11 @@ graph TD
 **The Path Forward:**
 [Set expectations: complexity level, key dependencies, and any important considerations for planning.]
 
+> **Note:** This section is initially populated during Grooming (Phase 02b) with challenge + discoveries, then finalized during Solutioning (Phase 03b) with the recommended approach and path forward.
+
 ---
 
-## 📋 Understanding the Request
+## 📋 What — The Request
 
 ### 🎯 Business Context
 
@@ -261,7 +274,7 @@ graph TD
 **What Success Looks Like:**
 [Paint a picture of the future state in terms the stakeholders would use. How will their experience be different? What will they be able to do that they can't do today?]
 
-### 📊 What We Need to Deliver
+### 📊 Requirements & Scope
 
 [Transition into requirements with context: "Based on what we learned about the team's needs, here's what the solution must accomplish..."]
 
@@ -271,251 +284,108 @@ graph TD
 **Quality Attributes:**
 [Explain why these matter: "Given the volume of records involved, performance is critical because..." not just "Response time < 2 seconds"]
 
+**Out of Scope:**
+[Explicitly call out what is NOT included in this work item to set clear boundaries.]
+
+### 🏆 Success Criteria
+
+[Link acceptance criteria to measurable outcomes. Each criterion should be testable and trace back to a business need.]
+
+**Acceptance Criteria Scenarios:**
+[List the AC scenarios from the groomed work item, framed in Given/When/Then or equivalent format.]
+
+**Definition of Done:**
+[Quality gates that must pass before this work is considered complete.]
+
 ---
 
-## 🔍 Discovery & Research
+## 💡 Why — Rationale & Evidence
 
-### 📚 Learning from Existing Knowledge
+### 📈 Business Value & Impact
+
+[Explain why this work matters — not just what it does, but the strategic value it delivers.]
+
+**Strategic Alignment:**
+[How does this connect to organizational goals? What initiative or OKR does it support?]
+
+**Stakeholder Impact:**
+[Who benefits and how? What changes for them?]
+
+**SWOT Summary:**
+[If available, summarize strengths/weaknesses/opportunities/threats from the research synthesis.]
+
+### � Discovery & Research
+
+[Tell the story of what was discovered during technical research. What existing components, patterns, and documentation were found?]
 
 **What We Found in Our Documentation:**
 - [Relevant wiki pages and documentation found]
 - [Prior solutions and approaches]
 - [Design patterns and best practices]
 
-**Key Discoveries:**
-- [Important discoveries from existing knowledge]
-- [Reusable components or patterns]
-- [Integration points identified]
+**Technical Environment:**
 
-### 🏗️ Understanding Our Technical Environment
-
-**What Already Exists:**
-- [Existing components and their roles]
-- [Data flows and dependencies]
-- [Technical constraints and considerations]
-
-**Metadata Dependencies Discovered:**
-
-**Components Using This Metadata:**
 | Type | Component Name | Impact Level | Notes |
 |------|---------------|--------------|-------|
-| [ApexClass/Flow/Trigger] | [Component Name] | [High/Medium/Low] | [Brief description of how it's used] |
+| [ApexClass/Flow/Trigger] | [Component Name] | [High/Medium/Low] | [Brief description] |
 
-**Usage Statistics:**
-- **Apex Classes:** [Count] components reference this metadata
-- **Flows:** [Count] flows use this metadata
-- **Triggers:** [Count] triggers depend on this metadata
-- **Pages:** [Count] Visualforce/Lightning pages include this metadata
+**Codebase Analysis:**
 
-**What This Metadata Depends On:**
-| Type | Component Name | Dependency Reason |
-|------|---------------|-------------------|
-| [Type] | [Name] | [Why the dependency exists] |
-
-> **Note:** Dependency analysis performed using MetadataComponentDependency Tooling API. For CustomField dependencies, results show object-level relationships as the API tracks field dependencies at the parent object level.
-
-**Systems We Need to Work With:**
-- [Third-party systems and APIs]
-- [Service integrations required]
-- [External data sources]
-
-### 💻 Examining the Codebase
-
-**Helpful Components We Discovered:**
 | Component | Purpose | Relevance | Reusability |
 |-----------|---------|-----------|-------------|
 | [Component 1] | [Function] | [How it relates] | [Can we reuse?] |
-| [Component 2] | [Function] | [How it relates] | [Can we reuse?] |
 
-**Patterns We Can Follow:**
-- [Existing patterns to follow]
-- [Code conventions and standards]
-- [Testing approaches used]
+**External Dependencies:**
+- [Third-party systems and APIs]
+- [Service integrations required]
 
-### 🔗 Related Work Items
+### 🔬 Investigation Trail
 
-**Work Items Related to This Ticket:**
-
-| Work Item | Title | Why It's Related |
-|-----------|-------|------------------|
-| [#12345](https://dev.azure.com/{{config.organization}}/{{config.project}}/_workitems/edit/12345) | [Title] | [Relationship reason - same functional area, dependencies, similar business context] |
-| [#12346](https://dev.azure.com/{{config.organization}}/{{config.project}}/_workitems/edit/12346) | [Title] | [Relationship reason] |
-
-> **Note:** Related work items are linked in Azure DevOps. Check the work item's **Links tab** to view all related items and navigate between them.
-
-### 🔍 Potential Duplicates
-
-**Work Items That May Be Duplicates:**
-
-| Work Item | Title | Why It's a Duplicate | Similarity Assessment |
-|-----------|-------|---------------------|----------------------|
-| [#12347](https://dev.azure.com/{{config.organization}}/{{config.project}}/_workitems/edit/12347) | [Title] | [Duplicate reason - same business ask, similar user story intent, overlapping acceptance criteria] | [Similarity score/assessment] |
-| [#12348](https://dev.azure.com/{{config.organization}}/{{config.project}}/_workitems/edit/12348) | [Title] | [Duplicate reason] | [Similarity score/assessment] |
-
-> **⚠️ Action Required:** These work items have been identified as potential duplicates based on similarity analysis. Please review these work items to determine if they should be consolidated or if they address distinct requirements.
-
----
-
-## 🔬 Investigation & Discovery Trail
-
-This section tells the story of how we investigated this work item - not just what we found, but how our understanding evolved along the way. Think of it as a research journal that helps future readers understand the reasoning behind our conclusions.
-
-### 🕵️ The Investigation Journey
-
-[Write 2-3 paragraphs describing the investigation as a narrative. What questions did we start with? What did we look at first and why? How did early findings shape where we looked next?]
+This section tells the story of how understanding evolved — not just what was found, but how findings built on each other.
 
 **Where We Started:**
-[Explain the initial questions or assumptions that guided the research. What were we trying to understand?]
+[Explain the initial questions or assumptions that guided the research.]
 
 **How Our Understanding Evolved:**
-[Describe how findings built on each other. Did anything surprise us? Did we need to change direction based on what we learned?]
+[Describe how findings built on each other. Did anything surprise us?]
 
-**Key Turning Points:**
-[Highlight 2-3 moments where a discovery significantly shaped our understanding or approach]
-
-### 🧪 Testing Our Assumptions
-
-As we researched, we formed hypotheses and tested them against evidence. Here's what held up and what didn't:
-
-[Write a brief narrative about the most important hypothesis - what made us think it, how we tested it, and what we learned]
+**Assumptions Tested:**
 
 | What We Thought | Why We Thought It | What We Found | Verdict |
 |-----------------|-------------------|---------------|---------|
-| [Initial hypothesis] | [Source or reasoning] | [Evidence discovered] | ✅ Confirmed / ❌ Disproven / ⚠️ Partially True |
+| [Hypothesis] | [Source or reasoning] | [Evidence] | ✅ Confirmed / ❌ Refuted / ⚠️ Open |
 
-### 🔄 When We Had to Rethink
+**Confidence Assessment:**
 
-[If applicable, describe in narrative form any moments where later findings made us revisit earlier conclusions. What triggered the rethink? What did we learn the second time?]
+| Area | Confidence | Evidence | Remaining Questions |
+|------|-----------|----------|-------------------|
+| [Technical approach] | High/Medium/Low | [What supports this] | [What's uncertain] |
 
-> **Why This Matters:** Documenting when we changed our minds helps future readers understand that our conclusions came from rigorous investigation, not initial assumptions.
+### ⚖️ Decision Rationale
 
-### ⚔️ Resolving Conflicting Information
-
-[If sources disagreed, tell the story: what conflicted, why it mattered, and how we determined the truth. Explain the resolution in terms readers can follow.]
-
-When we encountered conflicting information, we used this priority order: what's actually in the live system (metadata) > what the code does > what documentation says > what comments suggest.
-
-| The Conflict | What One Source Said | What Another Said | What We Concluded | Our Reasoning |
-|--------------|---------------------|-------------------|-------------------|---------------|
-| [Topic] | [Source A] | [Source B] | [Resolution] | [Why this makes sense] |
-
-### 📊 How Confident Are We?
-
-[Summarize overall confidence in a few sentences. Where do we feel solid? Where should implementers verify or dig deeper?]
-
-| Area | Our Confidence | What Gives Us Confidence | What We're Less Sure About |
-|------|----------------|-------------------------|---------------------------|
-| [Technical approach] | High/Medium/Low | [Evidence] | [Remaining questions] |
-
----
-
-## 🎨 Solution Design
-
-[Open with a brief narrative that orients the reader: what's the overall shape of this solution? Help both business and technical readers understand the approach before diving into details.]
-
-### 🏛️ The Architectural Approach
-
-**Why We Designed It This Way:**
-[Tell the story of the design philosophy. What principles guided our decisions? What did we optimize for and why?]
-
-**The Key Technology Choices:**
-[Explain each major technology decision in terms of the value it provides. "We're using X because it gives us Y, which matters because Z..."]
-
-### 🧩 How the Pieces Fit Together
-
-[Provide a narrative overview before the component table. Help readers understand the "shape" of the solution before the details.]
-
-**The Components at a Glance:**
-
-| Component | What It Does | Why It's Needed | How Complex |
-|-----------|--------------|-----------------|-------------|
-| [Name] | [Plain-language responsibility] | [Why this piece matters] | [Effort level with context] |
-
-**How Information Flows:**
-[Describe the data flow as a story: "When a user does X, the system responds by... This triggers... which ultimately results in..."]
-
-### 🔌 Integration Points
-
-**Working with Other Systems:**
-[Explain each integration in terms of what it enables, not just what it connects to. "To keep student records synchronized, we connect with Banner, which means..."]
-
-**Security Considerations:**
-[Frame security in terms of what we're protecting and why it matters, not just technical controls.]
-
----
-
-## 💭 Decision Rationale
-
-Every technical decision involves weighing alternatives. This section walks you through how we evaluated our options and why we landed where we did. Our goal is transparency - if circumstances change, this documentation should help future teams understand whether our reasoning still applies.
-
-### 🎯 The Options We Weighed
-
-[Write 2-3 paragraphs telling the story of the decision. What approaches did we consider? What made this decision non-trivial? What were the key factors that ultimately drove our recommendation?]
+Every technical decision involves weighing alternatives. This section provides transparency on how options were evaluated.
 
 **The Short Version:**
-[One paragraph summary of why we chose what we chose - accessible to any reader]
+[One paragraph summary of why we chose what we chose — accessible to any reader]
 
-**For Those Who Want the Details:**
+**Options Evaluated:**
 
-We evaluated each option against three criteria from the Salesforce Well-Architected Framework:
-- **Trusted** - Will this be reliable and secure?
-- **Easy** - Can the team maintain and extend this confidently?
-- **Adaptable** - Will this flex gracefully as requirements evolve?
-
-| Option | The Approach | What's Good About It | What Gave Us Pause | Our Assessment |
-|--------|--------------|---------------------|-------------------|----------------|
-| Option 1 | [Approach] | [Strengths in plain language] | [Concerns] | ✅ **Recommended** |
+| Option | Approach | Strengths | Concerns | Assessment |
+|--------|----------|-----------|----------|-----------|
+| Option 1 | [Approach] | [Strengths] | [Concerns] | ✅ **Recommended** |
 | Option 2 | [Approach] | [Strengths] | [Concerns] | ❌ Not this time |
-| Option 3 | [Approach] | [Strengths] | [Concerns] | ❌ Not this time |
 
-### ❌ Why We Passed on the Alternatives
+**Standards That Guided Us:**
 
-[For each eliminated option, write a brief narrative explanation. Focus on helping readers understand the reasoning, not just listing rejection criteria.]
+| Standard | Guidance | How It Applied |
+|----------|---------|---------------|
+| [Standard name] | [Rule] | [Impact on decision] |
 
-**💡 Option 2: [Option Name] - Why we didn't go this route**
+**Trade-offs We're Making:**
 
-[Write 2-3 sentences explaining the reasoning in conversational terms]
-
-**The key concerns were:**
-- [Reason 1 - explain why this matters, not just what it is]
-- [Reason 2]
-
-**When this might be the right choice:**
-[Help future readers know when to reconsider this option]
-
-**💡 Option 3: [Option Name] - Why we didn't go this route**
-
-[Same narrative approach]
-
-### 📏 How Our Standards Guided Us
-
-Our organization has established standards for good reason - they encode lessons learned. Here's how those standards influenced this decision:
-
-[Write a brief narrative connecting the standards to this specific situation]
-
-| Standard | The Relevant Guidance | How It Applied Here |
-|----------|----------------------|---------------------|
-| [Standard name] | [Rule in plain language] | [Specific impact on our decision] |
-
-### ⚖️ The Trade-offs We're Making
-
-No solution is perfect. Here's what we're consciously accepting and why we think it's the right call:
-
-[Write a narrative about the most significant trade-off - what we're giving up and why it's worth it]
-
-| We're Choosing | Instead Of | Because | The Risk We're Accepting |
-|----------------|-----------|---------|-------------------------|
-| [Choice] | [Alternative] | [Reasoning that a peer would find compelling] | [Honest assessment of downside] |
-
-### 🚫 Roads Not Taken
-
-For the record, here are approaches we explicitly decided against. This isn't to say they're bad - just not right for this situation:
-
-[Brief narrative about why these didn't fit]
-
-| Approach We Avoided | Why It Wasn't Right Here | When It Might Be Right |
-|--------------------|------------------------|----------------------|
-| [Approach] | [Reasoning in plain language] | [Future scenarios] |
+| We're Choosing | Instead Of | Because | Risk Accepted |
+|----------------|-----------|---------|--------------|
+| [Choice] | [Alternative] | [Reasoning] | [Downside] |
 
 ---
 
@@ -1297,35 +1167,35 @@ Every section should **lead with narrative context** before presenting structure
 3. **Supporting detail** - Tables, lists, or callout cards for depth
 4. **Transition** - Connect to what comes next
 
-### Research Sections
-- **Lead with** what we learned and why it matters
-- **Support with** tables for metadata/components found
-- **Tone:** Curious colleague sharing discoveries - "When we dug into the codebase, we found something interesting..."
-
-### Investigation Trail Sections
-- **Lead with** the narrative of how our understanding evolved
-- **Support with** hypothesis tables (✅/❌/⚠️ outcomes)
-- **Tone:** Research journal - "We started by asking... which led us to discover..."
-
-### Understanding Sections
+### What — The Request Sections
 - **Lead with** who benefits and why this work matters to them
 - **Support with** requirements tables and criteria lists
-- **Tone:** Advocate for the user - "The team currently struggles with... and this impacts..."
+- **Tone:** Advocate for the user — "The team currently struggles with… and this impacts…"
 
-### Design Sections
+### Why — Business Value & Discovery Sections
+- **Lead with** what we learned and why it matters
+- **Support with** tables for metadata/components found
+- **Tone:** Curious colleague sharing discoveries — "When we dug into the codebase, we found something interesting…"
+
+### Why — Investigation Trail Sections
+- **Lead with** the narrative of how our understanding evolved
+- **Support with** hypothesis tables (✅/❌/⚠️ outcomes)
+- **Tone:** Research journal — "We started by asking… which led us to discover…"
+
+### Why — Decision Rationale Sections
+- **Lead with** the story of evaluation — what made this decision interesting
+- **Support with** options comparison tables and callout cards for detail
+- **Tone:** Transparent decision-maker — "We had three viable paths. Here's why we went with…"
+
+### How — Solution Design Sections
 - **Lead with** the "why" behind architectural choices
 - **Support with** component tables and diagrams
-- **Tone:** Experienced mentor - "We chose this approach because... here's how the pieces fit together..."
+- **Tone:** Experienced mentor — "We chose this approach because… here's how the pieces fit together…"
 
-### Decision Rationale Sections
-- **Lead with** the story of evaluation - what made this decision interesting
-- **Support with** options comparison tables and callout cards for detail
-- **Tone:** Transparent decision-maker - "We had three viable paths. Here's why we went with..."
-
-### Quality Sections
+### How — Quality & Validation Sections
 - **Lead with** what success looks like in business terms
-- **Support with** acceptance criteria, assumptions logs, corrections made
-- **Tone:** Quality advocate - "We'll know this works when... and we've already addressed these concerns..."
+- **Support with** acceptance criteria, test coverage matrices, test cases
+- **Tone:** Quality advocate — "We'll know this works when… and we've already addressed these concerns…"
 
 ### Bridging Business and Technical Audiences
 
@@ -1423,14 +1293,11 @@ Before creating the wiki page, verify:
 
 ## 📯 Content Guidelines
 
-### Section Organization
-- **Executive Summary** - Problem statement and solution overview
-- **Understanding the Request** - Business context and requirements analysis
-- **Discovery & Research** - Knowledge base search and technical landscape analysis
-- **Investigation & Discovery Trail** - Hypotheses tested, evidence gathered, conflicts resolved, reasoning documented
-- **Solution Design** - Architecture approach and component design
-- **Decision Rationale** - Options considered, why alternatives were eliminated, standards that influenced decisions
-- **Quality & Validation** - Acceptance criteria, testing strategy, test data, test cases, traceability matrix, assumptions resolution
+### Section Organization (What / Why / How)
+- **Executive Summary** — Problem statement + solution overview (partial at grooming, finalized at solutioning)
+- **What — The Request** — Business context, requirements & scope, success criteria
+- **Why — Rationale & Evidence** — Business value, discovery & research, investigation trail, decision rationale
+- **How — Solution & Validation** — Solution design, quality & validation (test cases, coverage matrix, test data)
 
 ### Navigation
 - Table of contents at top for easy navigation
@@ -1461,132 +1328,92 @@ Use blockquotes for important notes (no HTML, use markdown bold):
 
 ## Page Footer Template
 
-Every page must end with this footer:
+Every page must end with this footer (wrapped in `<!-- SECTION:footer -->` markers):
 
 ```markdown
 ---
 
-## 🔄 Related Work Items
-
-- [#12300](https://dev.azure.com/UMGC/Digital%20Platforms/_workitems/edit/12300) - Contact Sync Enhancement
-- [#12350](https://dev.azure.com/UMGC/Digital%20Platforms/_workitems/edit/12350) - Affiliation Filtering
-
----
-
-*📅 Last Updated: [Timestamp]*  
-*🤖 Generated by AI Autonomous Ticket Preparation*
+📅 **Last Updated:** [ISO 8601 timestamp]
+Documentation generated by AI-assisted workflow.
 ```
 
 ## Example: Well-Formatted Wiki Page
 
 ```markdown
-# 📋 Autonomous Ticket Preparation - #12345
-
-> **Work Item:** #12345 - Add Contact Filtering UI
->
-> **Generated:** 2025-10-31T14:30:00Z
->
-> **Status:** ✅ Complete - Ready for Development
-
----
-
-[View Ticket in ADO →](https://dev.azure.com/{{config.organization}}/{{config.project}}/_workitems/edit/{{runtime.work_item_id}})
-
----
-
-## 📑 Table of Contents
+<!-- Page header gradient bar with work item ID + title -->
 
 [[_TOC_]]
+
+<!-- Status Banner -->
+📊 **Grooming** ✅ | **Research** ✅ | **Solutioning** ✅ | **Testing** ✅
 
 ---
 
 ## 🎯 Executive Summary
 
-**Understanding the Challenge:** Users need to filter Contacts by status and affiliation to improve data quality and user experience.
+**The Challenge:** Users need to filter Contacts by status and affiliation to improve data quality and user experience.
 
-**Our Approach:** Build a reusable filtering component with configurable criteria and performance optimization.
+**What We Learned:** Existing ContactTriggerHandler already has filtering logic we can extend.
 
-**Why This Matters:** Improves data accuracy, reduces manual effort, and provides foundation for future filtering needs.
+**Our Approach:** Build a reusable filtering component leveraging existing patterns with performance optimization.
 
-**What to Expect:** Moderate complexity with reusable components for future projects.
+**The Path Forward:** Moderate complexity with reusable components for future projects.
 
 ---
 
-## 📋 Understanding the Request
+## 📋 What — The Request
 
 ### 🎯 Business Context
 
-**Who We're Helping:**
-- Student Services team needs better contact data management
-- Business objective: Improve data quality by 40%
-- Success metric: Reduced manual data cleanup time
+Student Services advisors currently export contacts to Excel for filtering — a time-consuming process that delays enrollment outreach. With enrollment season approaching, improving data quality by 40% is critical.
 
-**Where We Are Today:**
-- Current system shows all contacts without filtering
-- Users export to Excel for filtering (time-consuming)
-- Change needed now for upcoming enrollment season
+### 📊 Requirements & Scope
+
+- Filter contacts by status with instant results
+- Save filter preferences for future sessions
+- Export filtered data to CSV format
+
+### 🏆 Success Criteria
+
+AC scenarios traced to quality gates and definition of done.
 
 ---
 
-## 🔍 Discovery & Research
+## � Why — Rationale & Evidence
 
-### 📚 Learning from Existing Knowledge
+### � Business Value & Impact
 
-**What We Found in Our Documentation:**
+Strategic alignment with enrollment efficiency initiative. Reduces manual effort for 15+ advisors.
+
+### 🔍 Discovery & Research
+
 - Prior filtering implementations in Student module
-- Performance patterns for large datasets
-- UI component library with filtering controls
-
-**Key Discoveries:**
-- Existing ContactTriggerHandler has filtering logic
 - Reusable status picker component available
 - Integration with Banner system for data sync
 
----
+### 🔬 Investigation Trail
 
-## 🎨 Solution Design
+Assumptions tested: ContactTriggerHandler supports extension (✅ Confirmed). Confidence: High.
 
-### 🏛️ How We'll Build It
+### ⚖️ Decision Rationale
 
-**Our Design Philosophy:**
-- Build reusable filtering framework
-- Leverage existing Salesforce patterns
-- Optimize for large dataset performance
-
-**Technology Choices We Made:**
-- Apex for backend filtering logic
-- Lightning Web Components for UI
-- Platform Events for real-time updates
+Chose to extend existing Apex + LWC patterns over building net-new. TEA score: 8.5/10.
 
 ---
 
-## ✅ Quality & Validation
+## 🛠️ How — Solution & Validation
 
-### 📋 How We'll Know We're Successful
+### 🏛️ Solution Design
 
-**What Users Should Experience:**
-1. Filter contacts by status with instant results
-2. Save filter preferences for future sessions
-3. Export filtered data to CSV format
+Apex backend + Lightning Web Components UI + Platform Events for real-time updates.
 
-**What the System Must Do:**
-4. Handle datasets up to 10,000 records
-5. Maintain sub-second response times
-6. Provide audit trail for filter usage
+### ✅ Quality & Validation
+
+P1/P2/P3 test cases, AC coverage matrix, UAT scripts, smoke pack — all embedded.
 
 ---
 
-## 🔄 Related Work Items
-
-Related work items are linked to this ticket. Check the work item's **Links tab** to view:
-- Predecessor work items (completed work that influenced this design)
-- Related work items (similar or connected functionality)
-- Child tasks (audit trail and tracking tasks)
-
----
-
-*📅 Last Updated: 2025-10-31T14:30:00Z*  
-*🤖 Generated by AI Autonomous Ticket Preparation*
+📅 **Last Updated:** 2025-10-31T14:30:00Z
 ```
 
 
