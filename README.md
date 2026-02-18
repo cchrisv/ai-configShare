@@ -51,7 +51,7 @@ Runtime artifacts are stored in `.ai-artifacts/<work_item_id>/ticket-context.jso
 
 Supporting/shared: `util-base.prompt.md`, `util-research-base.prompt.md`
 
-### Phase Prompts
+### Ticket Grooming Process
 
 - `ticket-grooming-phase-01-research.prompt.md` - Initialize workflow + business research (org dictionary, ADO, wiki, business context)
 - `ticket-grooming-phase-02-grooming.prompt.md` - Requirements refinement (what & why), template-driven ADO field updates
@@ -65,7 +65,7 @@ Use `util-repeat-phase.prompt.md` to re-run any individual phase.
 
 **Standalone utilities:** `util-grooming-update` and `util-solutioning-update` run independently — they fetch the current ticket directly from ADO and do not require local artifacts from prior phases. Grooming update handles requirements (what & why), solutioning update handles solution design (how). Phase 06 (dev closeout) also runs independently to reconcile planned vs actual with release notes.
 
-### Feature Research Workflow
+### Feature Grooming Process
 
 A standalone multi-phase workflow to comprehensively research and document existing Salesforce functionality as a factual current-state reference. Not tied to the ticket lifecycle -- accepts a Salesforce object name, an ADO work item ID, or both as input. Outputs a local research artifact and publishes a wiki page.
 
