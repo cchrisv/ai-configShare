@@ -72,7 +72,7 @@ All outputs to `{{context_file}}.sf_automation`:
 
 ### Strategy A — Object-Direct Discovery (highest confidence)
 B1 [CLI]: **Triggers** — for each in-scope object:
-  - `{{cli.sf_triggers}} --object {{object}} --json`
+  - `{{cli.sf_apex_triggers}} --object {{object}} --json`
 B2 [CLI]: **Object-triggered flows** — for each in-scope object:
   - `{{cli.sf_flows}} --object {{object}} --json`
 B3 [CLI]: **Apex by name** — for each in-scope object:
@@ -116,7 +116,7 @@ B12 [GEN]: From B11 handler classes, extract service/selector class references f
 ### Strategy E — Related Object Discovery (catches cross-object automation)
 B13 [IO]: Load `sf_schema.relationships[]` — identify objects with master-detail relationships to in-scope objects
 B14 [CLI]: For master-detail parent/child objects NOT in scope (max 3):
-  - `{{cli.sf_triggers}} --object {{related_object}} --json`
+  - `{{cli.sf_apex_triggers}} --object {{related_object}} --json`
   - `{{cli.sf_flows}} --object {{related_object}} --json`
   - These may cascade into in-scope object logic
 
@@ -435,7 +435,7 @@ Tell user: **"Automation discovery for {{scope.feature_area}} complete. Broad se
 |----------|--------|
 | Context file missing | **STOP** — "Run `/feature-research-phase-01` first" |
 | Phase 03a not completed | **STOP** — "Run `/feature-research-phase-03a` first" |
-| sf_triggers returns 0 for an object | Log; object may not have triggers; continue |
+| sf_apex_triggers returns 0 for an object | Log; object may not have triggers; continue |
 | sf_flows returns 0 for an object | Log; object may not have flows; continue |
 | sf_apex returns 0 for an object | Log; note no Apex references; continue |
 | MetadataComponentDependency query fails (Beta) | Fall back to expanded name-pattern searches in Strategy C (add object name variations: full API name, base name without `__c`, abbreviated forms); note limited coverage in synthesis |

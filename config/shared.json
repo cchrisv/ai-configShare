@@ -218,68 +218,12 @@
     },
     "solution_design": {
       "collected_data": "collected-data.json",
-      "solution_design_doc": "solution-design.md",
-      "wiki_content": "wiki-content.md"
+      "solution_design_doc": "solution-design.md"
     },
     "sequencing": {
       "collected_tickets": "collected-tickets.json",
       "sequence_plan": "sequence-plan.json",
       "report": "sequencing-report.md"
-    }
-  },
-  "wiki_sections": {
-    "executive_summary": {
-      "heading": "Executive Summary", "emoji": "🎯", "level": 2,
-      "color_from": "#2e7d32", "color_to": "#1b5e20",
-      "filled_by_phase": "grooming", "finalized_by_phase": "solutioning"
-    },
-    "what": {
-      "heading": "What — The Request", "emoji": "📋", "level": 2,
-      "color_from": "#1565c0", "color_to": "#0d47a1"
-    },
-    "what_business_context": {
-      "heading": "Business Context", "emoji": "🎯", "level": 3, "parent": "what",
-      "color_from": "#42a5f5", "color_to": "#1565c0", "filled_by_phase": "grooming"
-    },
-    "what_requirements": {
-      "heading": "Requirements & Scope", "emoji": "📊", "level": 3, "parent": "what",
-      "color_from": "#42a5f5", "color_to": "#1565c0", "filled_by_phase": "grooming"
-    },
-    "what_success_criteria": {
-      "heading": "Success Criteria", "emoji": "🏆", "level": 3, "parent": "what",
-      "color_from": "#42a5f5", "color_to": "#1565c0", "filled_by_phase": "grooming"
-    },
-    "why": {
-      "heading": "Why — Rationale & Evidence", "emoji": "💡", "level": 2,
-      "color_from": "#7b1fa2", "color_to": "#4a148c"
-    },
-    "why_business_value": {
-      "heading": "Business Value & Impact", "emoji": "📈", "level": 3, "parent": "why",
-      "color_from": "#ab47bc", "color_to": "#7b1fa2", "filled_by_phase": "grooming"
-    },
-    "why_discovery": {
-      "heading": "Discovery & Research", "emoji": "🔍", "level": 3, "parent": "why",
-      "color_from": "#ab47bc", "color_to": "#7b1fa2", "filled_by_phase": "solutioning_research"
-    },
-    "why_investigation": {
-      "heading": "Investigation Trail", "emoji": "🔬", "level": 3, "parent": "why",
-      "color_from": "#ab47bc", "color_to": "#7b1fa2", "filled_by_phase": "solutioning_research"
-    },
-    "why_decisions": {
-      "heading": "Decision Rationale", "emoji": "⚖️", "level": 3, "parent": "why",
-      "color_from": "#ab47bc", "color_to": "#7b1fa2", "filled_by_phase": "solutioning"
-    },
-    "how": {
-      "heading": "How — Solution & Validation", "emoji": "🛠️", "level": 2,
-      "color_from": "#303f9f", "color_to": "#1a237e"
-    },
-    "how_solution": {
-      "heading": "Solution Design", "emoji": "🏛️", "level": 3, "parent": "how",
-      "color_from": "#5c6bc0", "color_to": "#303f9f", "filled_by_phase": "solutioning"
-    },
-    "how_quality": {
-      "heading": "Quality & Validation", "emoji": "✅", "level": 3, "parent": "how",
-      "color_from": "#00796b", "color_to": "#004d40", "filled_by_phase": "test_cases"
     }
   },
   "retry_settings": {

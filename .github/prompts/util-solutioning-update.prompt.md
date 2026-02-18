@@ -1,7 +1,7 @@
-# Phase 03c – Solutioning Update (Context7)
+# Util – Solutioning Update (Context7)
 Role: Developer Assistant — Solution Reconciliation
 Mission: Capture development-time changes to architecture/components (how only).
-Config: `#file:.github/prompts/util-base.prompt.md`
+Config: `#file:util-base.prompt.md`
 Input: `{{work_item_id}}`
 
 ## Constraints
@@ -12,7 +12,7 @@ Input: `{{work_item_id}}`
 - **Template-engine only** – NEVER generate raw HTML. Use `template-tools scaffold` for `field-solution-design` fill spec, fill JSON slots, save to context. The CLI renders and validates.
 - **Re-runnable** – each run appends to {{context_file}}.dev_updates.updates[]
 - **Graceful degradation** – proceed with reduced evidence if needed
-- **For "what/why" updates** → use `/phase-02c-grooming-update`
+- **For "what/why" updates** → use `/util-grooming-update`
 
 ## Execution
 
@@ -25,9 +25,7 @@ A2.6 [LOGIC]: **Comment diff** — compare fetched comments against {{context_fi
   - Classify new comments (decision/meeting_transcript/requirement_change/blocker/question/status_update/general)
   - Extract technical decisions, architecture changes, dependency updates from new comments
 A2.7 [IO]: Update {{context_file}}.research.ado_workitem.comments[] with new entries
-A3 [CLI]: Find wiki: `{{cli.wiki_search}} "{{work_item_id}}" --json`
-A4 [LOGIC]: Extract solutioning baseline from ADO + wiki
-A5 [IO]: Count existing dev_updates.updates[]; set update_number
+A3 [IO]: Count existing dev_updates.updates[]; set update_number
 
 ### Step 2 [CLI/GEN] – Evidence Gathering
 B1 [CLI]: `{{cli.ado_relations}} {{work_item_id}} --json` — filter PR links
@@ -36,7 +34,7 @@ B3 [CLI]: For SF components: `{{cli.sf_discover}}` / `{{cli.sf_describe}}` to ge
 B4 [GEN]: Compile evidence: PRs, SF audit, SF metadata
 
 ### Step 3 [GEN] – Technical Assumptions & Unknowns Resolution
-C1 [GEN]: Extract technical assumptions/unknowns from wiki
+C1 [GEN]: Extract technical assumptions/unknowns from context
 C2 [GEN]: Cross-reference against evidence (SF metadata, PRs, audit)
 C3 [GEN]: Present unresolved items to developer
 
@@ -46,7 +44,7 @@ If new comments contain answers to the questionnaire questions below, pre-fill a
 Ask about architecture/implementation:
 1. "PRs found: [list]. Any others? Sandbox-only?"
 2. "SF audit shows: [list]. Related to this work?"
-3. "SF metadata vs wiki plan: built as designed?"
+3. "SF metadata vs solution design: built as designed?"
 4. "New components not in plan?"
 5. "New integration points/dependencies?"
 6. "Standards deviations? Why?"
@@ -74,15 +72,5 @@ E3 [IO]: Append to {{context_file}}.dev_updates.updates[]:
 F1 [IO]: Extract changed fields; save to temp file
 F2 [CLI]: If changes exist: `{{cli.ado_update}} {{work_item_id}} --fields-file "<temp_payload>" --json`
 
-### Step 7 [IO/GEN/CLI] – Wiki: Re-fill Solutioning Sections
-Ref: `#file:.github/prompts/util-wiki-base.prompt.md`
-
-If solutioning fields changed, re-fill the affected wiki sections:
-- `why_decisions` — if option analysis or standards changed
-- `how_solution` — if solution design or components changed
-- `executive_summary` — refresh recommended approach + path forward if changed
-
-Execute the 7-step fill workflow from util-wiki-base (idempotent — replaces content between markers).
-
 ## Completion [GEN]
-Tell user: **"Solutioning update complete. For grooming updates, use /phase-02c-grooming-update."**
+Tell user: **"Solutioning update complete. For grooming updates, use /util-grooming-update."**

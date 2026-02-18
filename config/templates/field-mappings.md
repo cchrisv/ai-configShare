@@ -225,8 +225,8 @@ Wiki pages use a markdown-first design optimized for Azure DevOps Wiki rendering
 
 | Template File | Wiki Page Type | Detection Heuristic |
 |---------------|----------------|---------------------|
-| `wiki-page-template.html` | Work Item Wiki (Autonomous Ticket Prep) | Path contains `/WorkItems/` or header contains "Autonomous Ticket Preparation" |
-| `feature-solution-design-wiki.html` | Feature Solution Design Wiki | Path contains `/Features/` or header contains "Feature Solution Design" |
+| `wiki-page-template.html` | Work Item Wiki (Autonomous Ticket Prep) | Header contains "Autonomous Ticket Preparation" or page title starts with work item ID |
+| `feature-solution-design-wiki.html` | Feature Solution Design Wiki | Header contains "Feature Solution Design" or work item type is Feature/Epic |
 | `wiki-general-template.html` | General Wiki Page (content-agnostic) | Fallback — any page not matching work item or feature design patterns |
 
 ### Wiki Template Design System

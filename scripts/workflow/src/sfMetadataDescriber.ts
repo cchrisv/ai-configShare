@@ -79,13 +79,13 @@ export async function describeObject(
         active: p.active,
         defaultValue: p.defaultValue,
       })),
-      referenceTo: f.referenceTo,
+      referenceTo: f.referenceTo ?? undefined,
       relationshipName: f.relationshipName ?? undefined,
     })),
     recordTypeInfos: result.recordTypeInfos?.map(rt => ({
       recordTypeId: rt.recordTypeId ?? '',
       name: rt.name,
-      developerName: rt.developerName ?? '',
+      developerName: (rt as Record<string, unknown>)['developerName'] as string ?? '',
       available: rt.available,
       master: rt.master,
       defaultRecordTypeMapping: rt.defaultRecordTypeMapping,
@@ -158,7 +158,6 @@ export async function getEntityDefinition(
            IsCustomizable, IsApexTriggerable, IsWorkflowEnabled, IsProcessEnabled,
            IsLayoutable, IsCompactLayoutable, DeploymentStatus, IsSearchable,
            IsQueryable, IsIdEnabled, IsReplicateable, IsRetrieveable,
-           IsCreateable, IsUpdateable, IsDeletable, IsUndeletable, IsMergeable,
            InternalSharingModel, ExternalSharingModel, PublisherId
     FROM EntityDefinition
     WHERE QualifiedApiName = '${objectName}'
@@ -368,7 +367,7 @@ export async function getFlows(
         config
       );
       if (labelResult.records.length > 0) {
-        objectLabel = labelResult.records[0].Label;
+        objectLabel = labelResult.records[0]!.Label;
         logInfo(`Resolved object label: ${objectName} → ${objectLabel}`);
       }
     } catch (error) {

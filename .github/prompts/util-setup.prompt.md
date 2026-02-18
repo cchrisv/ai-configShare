@@ -72,4 +72,4 @@ All tools authenticated and validated. Report results:
 | Wiki | ✅/❌ | Search returned N results, page readable |
 | Workflow | ✅/❌ | Status check succeeded |
 
-Next → `/phase-01-initialize` with a work item ID, then `/phase-02a-grooming-research`.
+Next → `/ticket-grooming-phase-01-research` with a work item ID.

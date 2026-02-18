@@ -252,7 +252,7 @@ D3 [IO]: Verify file saved — **GATE: confirm written**
 ---
 
 ## Step 4 [CLI] – Publish to Wiki
-E1 [LOGIC]: Wiki path = `/Salesforce-Research/{{sanitized_name}}`
+E1 [LOGIC]: Wiki path = `{{ado_defaults.wiki_copilot_root}}/{{sanitized_name}}`
 E2 [CLI]: Check existing: `{{cli.wiki_get}} --path "{{wiki_path}}" --no-content --json`
 E3 [LOGIC]: Route:
   - **New page** → `{{cli.wiki_create}} --path "{{wiki_path}}" --content "{{report_file}}" --comment "Feature research: {{scope.feature_area}}" --json`
@@ -281,7 +281,7 @@ Tell user:
 
 ### Deliverables
 - **Local Report:** {{report_file}}
-- **Wiki Page:** [{{wiki_path}}](https://dev.azure.com/{{ado_defaults.organization_name}}/{{ado_defaults.project}}/_wiki/wikis/{{ado_defaults.wiki}}?pagePath=/Salesforce-Research/{{sanitized_name}})
+- **Wiki Page:** [{{wiki_path}}](https://dev.azure.com/{{ado_defaults.organization_name}}/{{ado_defaults.project}}/_wiki/wikis/{{ado_defaults.wiki}}?pagePath={{ado_defaults.wiki_copilot_root}}/{{sanitized_name}})
 
 ### Summary
 - **Objects:** {{object_count}}

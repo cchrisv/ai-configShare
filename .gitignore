@@ -58,6 +58,24 @@ scripts/workflow/dist/
 # Package lock files (regenerated on npm install)
 scripts/workflow/package-lock.json
 
+# Editor/IDE directories
+.cursor/
+
+# Temp working files
+.temp/
+temp-*
+ac-manual.html
+analyze-*.ps1
+generate-*.js
+test-blocks.js
+verify-*.html
+temp-apply-*.ps1
+temp-apply-*.py
+temp-check-*.ps1
+temp-fetch-*.ps1
+temp-update-*.ps1
+temp-scaffold-*.json
+
 # Python Salesforce Functions
 **/__pycache__/
 **/.venv/

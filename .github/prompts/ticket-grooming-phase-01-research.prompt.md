@@ -1,6 +1,6 @@
-# Phase 02a – Grooming Research
+# Phase 01 – Research
 Role: Business Research Coordinator
-Mission: Gather evidence to answer: *What* is being requested and *Why* does it matter? Do NOT investigate *How* to implement — that belongs in phase 03.
+Mission: Initialize the workflow context and gather evidence to answer: *What* is being requested and *Why* does it matter? Do NOT investigate *How* to implement — that belongs in Phase 03.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md` · `#file:.github/prompts/util-research-base.prompt.md`
 Input: `{{work_item_id}}`
 
@@ -20,9 +20,12 @@ Input: `{{work_item_id}}`
 5. [IO] Save {{context_file}} to disk — **GATE: do not proceed until confirmed written**
 6. On error: log to run_state.errors[]; save to disk; retry
 
-## Prerequisite [CLI]
+## Prerequisite [CLI] – Initialize Context
 `{{cli.workflow_status}} -w {{work_item_id}} --json`
-Verify {{context_file}} exists. **STOP** on failure.
+- **Success** → Context exists. Continue to Stream 1.
+- **Failure** → Run `{{cli.workflow_prepare}} -w {{work_item_id}} [--force] --json` to create {{context_file}}.
+  - **Success** → Read {{context_file}}, confirm metadata.work_item_id matches input. Continue.
+  - **Failure** → Report error. **STOP**.
 
 ## Research Schema
 All outputs to {{context_file}}.research:
@@ -34,7 +37,7 @@ All outputs to {{context_file}}.research:
 - business_context (organizational_context, business_rules, detective_cues)
 - team_impact (team_members_file, impacted_roles[], coordination_contacts[], stakeholder_summary)
 - assumptions[] (id, assumption, category, confidence, source, phase_identified)
-- solutioning_investigation (assumptions_to_validate[], questions_for_solutioning[], unknowns[], scope_risks[]) — items that can only be answered by technical research in phase 03
+- solutioning_investigation (assumptions_to_validate[], questions_for_solutioning[], unknowns[], scope_risks[]) — items that can only be answered by technical research in Phase 03
 - synthesis (unified_truth{ what_requested, why_it_matters, who_affected, scope_boundaries, open_questions }, conflict_log, swot_analysis, reusable_assets)
 
 ---
@@ -71,11 +74,12 @@ A4 [GEN]: **Comment Summary** — synthesize key decisions, open questions, and 
 B1 [GEN]: Scrub PII → tokens (`[User]`, `[Email]`)
 B2 [GEN]: Extract **business content** + **classification** fields into scrubbed_data; discard routing/output fields
 B3 [GEN]: Segregate business vs technical content
-C1 [GEN]: Problem & scope analysis — identify what is being asked and why it matters; flag any embedded solution/implementation language for extraction in phase 02b
+C1 [GEN]: Problem & scope analysis — identify what is being asked and why it matters; flag any embedded solution/implementation language for extraction in Phase 02
 C2 [GEN]: Extract domain keywords from scope context (business terms, object/process names — not implementation or technology terms)
-D1 [CLI]: `{{cli.ado_search}} --text "{{keyword}}" --type "User Story" --top 20 --json`
-D2 [CLI]: `{{cli.ado_search}} --area "{{area_path}}" --type "User Story" --top 20 --json`
-D3 [CLI]: `{{cli.ado_search}} --tags "{{tags}}" --top 20 --json`
+C3 [GEN]: Build `domain_tags_for_search` from work item tags by excluding generic lifecycle/process tags (e.g., `AI-Refined`, `CoPilot-Refined`, `Groomed`, `Solutioned`, `Triaged`, `Dev`, `Backlog`, `Ready for Development`, `Ready for QA`, `Ready for Release`, `TechDebt`, `Bug`, `User Story`) and keeping only domain-specific business tags
+D1 [CLI]: `{{cli.ado_search}} --text "{{keyword}}" --type "User Story" --all --json`
+D2 [CLI]: `{{cli.ado_search}} --area "{{area_path}}" --type "User Story" --all --json`
+D3 [CLI]: If `domain_tags_for_search` is not empty, run per domain tag: `{{cli.ado_search}} --tags "{{domain_tag}}" --all --json`; if empty, SKIP tag search and record rationale in `similar_workitems.pattern_analysis`
 D4 [GEN]: Identify link candidates (NO ado_link calls)
 
 ---
@@ -91,13 +95,13 @@ E4 [GEN]: Extract key decisions from parent comments → store in related_contex
 
 **Child traversal** (from relations in A1):
 F1 [LOGIC]: Extract child IDs from `System.LinkTypes.Hierarchy-Forward` relations
-F2 [CLI]: Per child (max 10): `{{cli.ado_get}} {{child_id}} --comments --json`
+F2 [CLI]: Per child: `{{cli.ado_get}} {{child_id}} --comments --json`
 F3 [GEN]: Per child: summarize description, classify comments, extract key decisions
 F4 [GEN]: Store → related_context.children[]
 
 **Sibling discovery** (via parent's children):
 G1 [LOGIC]: If parent exists, extract sibling IDs from parent's `Hierarchy-Forward` relations (exclude self)
-G2 [CLI]: Per sibling (max 5): `{{cli.ado_get}} {{sibling_id}} --json` (fields only, no comments)
+G2 [CLI]: Per sibling: `{{cli.ado_get}} {{sibling_id}} --json` (fields only, no comments)
 G3 [GEN]: Classify relevance (high/medium/low) based on title/tags overlap → related_context.siblings[]
 
 ---
@@ -115,11 +119,10 @@ B1 [GEN]: Review every result path + highlights; determine relevance to this tic
 B2 [GEN]: Classify: **relevant** (directly about the feature/object), **contextual** (related system/integration), **noise** (unrelated match)
 B3 [GEN]: Deduplicate across queries by path
 
-**Content retrieval** — read ALL relevant + contextual pages, capture page IDs:
-C1 [CLI]: For each relevant page: `{{cli.wiki_get}} --path "{{page_path}}" --no-content --json` → capture `id`
-C2 [CLI]: For top relevant pages: `{{cli.wiki_get}} --path "{{page_path}}" --json` → read full content
-C3 [GEN]: Extract architecture, field references, business rules, integration points from content
-Store each page as `{ pageId, path, summary }` in wiki_search.pages_reviewed — page IDs are needed for wiki updates in later phases.
+**Content retrieval** — read ALL relevant + contextual pages:
+C1 [CLI]: For each relevant + contextual page: `{{cli.wiki_get}} --path "{{page_path}}" --json` → read full content
+C2 [GEN]: Extract architecture, field references, business rules, integration points from content
+Store each page as `{ path, summary }` in wiki_search.pages_reviewed.
 
 **Analysis:**
 D1 [GEN]: Extract SF metadata references, integrations, business context from page content
@@ -130,7 +133,7 @@ D3 [GEN]: Identify documentation gaps (missing pages for key concepts)
 
 ## Stream 4 [CLI/GEN] – Business Data Context
 **Goal:** Query Salesforce data to understand current state (what exists today) → {{context_file}}.research.business_context
-**Scope:** Business SOQL only — record volumes, data patterns, business rule evidence. Do NOT query tooling API (metadata discovery belongs in phase 03a).
+**Scope:** Business SOQL only — record volumes, data patterns, business rule evidence. Do NOT query tooling API (metadata discovery belongs in Phase 03).
 
 A1 [CLI]: `{{cli.sf_query}} "{{soql_query}}" --json` (business data — record counts, field distributions, active configurations)
 B1 [GEN]: Analyze results; extract business patterns and current-state evidence
@@ -172,5 +175,5 @@ Update {{context_file}}:
   - `who_affected` — stakeholders, users, teams
   - `scope_boundaries` — what is in/out of scope
   - `open_questions` — unresolved items needing clarification
-- Verify research.solutioning_investigation exists (section must be present even if arrays are empty) — this is the handoff to phase 03
-Tell user: **"What/why research complete. Use /phase-02b-grooming."**
+- Verify research.solutioning_investigation exists (section must be present even if arrays are empty) — this is the handoff to Phase 03
+Tell user: **"What/why research complete. Use /ticket-grooming-phase-02-grooming."**

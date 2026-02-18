@@ -1,7 +1,7 @@
-# Phase 02c – Grooming Update (Context7)
+# Util – Grooming Update (Context7)
 Role: Developer Assistant — Requirements Reconciliation
 Mission: Capture development-time changes to requirements/scope (what/why only).
-Config: `#file:.github/prompts/util-base.prompt.md`
+Config: `#file:util-base.prompt.md`
 Input: `{{work_item_id}}`
 
 ## Constraints
@@ -10,7 +10,7 @@ Input: `{{work_item_id}}`
 - **CLI-only** – per util-base guardrails
 - **Re-runnable** – each run appends to {{context_file}}.dev_updates.updates[]
 - **Graceful degradation** – proceed with reduced evidence if needed
-- **For "how" updates** → use `/phase-03c-solutioning-update`
+- **For "how" updates** → use `/util-solutioning-update`
 
 ## Execution
 
@@ -23,9 +23,7 @@ A2.6 [LOGIC]: **Comment diff** — compare fetched comments against {{context_fi
   - Classify new comments using context_type taxonomy (decision/meeting_transcript/requirement_change/blocker/question/status_update/general)
   - Extract key decisions, scope changes, requirements discussions from new comments
 A2.7 [IO]: Update {{context_file}}.research.ado_workitem.comments[] with new entries
-A3 [CLI]: Find wiki: `{{cli.wiki_search}} "{{work_item_id}}" --json`
-A4 [LOGIC]: Extract grooming baseline from ADO + wiki
-A5 [IO]: Count existing dev_updates.updates[]; set update_number
+A3 [IO]: Count existing dev_updates.updates[]; set update_number
 
 ### Step 2 [CLI/GEN] – Evidence Gathering
 B1 [CLI]: `{{cli.ado_relations}} {{work_item_id}} --json` — filter PR links
@@ -33,7 +31,7 @@ B2 [LOGIC]: Review ADO change history for grooming fields
 B3 [GEN]: Compile scope-focused evidence summary
 
 ### Step 3 [GEN] – Assumptions & Unknowns Resolution
-C1 [GEN]: Extract requirements assumptions/unknowns from wiki
+C1 [GEN]: Extract requirements assumptions/unknowns from context
 C2 [GEN]: Cross-reference against evidence
 C3 [GEN]: Present unresolved items to developer
 
@@ -69,14 +67,5 @@ E3 [IO]: Append to {{context_file}}.dev_updates.updates[]:
 F1 [IO]: Extract changed fields; save to temp file
 F2 [CLI]: If changes exist: `{{cli.ado_update}} {{work_item_id}} --fields-file "<temp_payload>" --json`
 
-### Step 7 [IO/GEN/CLI] – Wiki: Re-fill What Sections
-Ref: `#file:.github/prompts/util-wiki-base.prompt.md`
-
-If grooming fields changed, re-fill the affected wiki sections:
-- `what_business_context`, `what_requirements`, `what_success_criteria`, `why_business_value` — only sections whose source data was modified
-- `executive_summary` — refresh challenge + discoveries if changed
-
-Execute the 7-step fill workflow from util-wiki-base (idempotent — replaces content between markers).
-
 ## Completion [GEN]
-Tell user: **"Grooming update complete. For solutioning updates, use /phase-03c-solutioning-update."**
+Tell user: **"Grooming update complete. For solutioning updates, use /util-solutioning-update."**

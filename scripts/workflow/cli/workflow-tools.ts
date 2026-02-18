@@ -222,8 +222,8 @@ program
 
       const workItemId = options.workItem;
       const phase = options.phase;
-      const validSections = ['research', 'grooming', 'solutioning', 'test_cases', 'wiki', 'finalization', 'dev_updates', 'closeout'];
-      const phaseOrder = ['research', 'grooming', 'solutioning', 'test_cases', 'wiki', 'finalization'];
+      const validSections = ['research', 'grooming', 'solutioning_research', 'solutioning', 'test_cases', 'wiki', 'finalization', 'dev_updates', 'closeout'];
+      const phaseOrder = ['research', 'grooming', 'solutioning_research', 'solutioning', 'test_cases', 'wiki', 'finalization'];
       
       // Validate section if provided
       if (phase && !validSections.includes(phase)) {

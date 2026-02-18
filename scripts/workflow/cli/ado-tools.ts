@@ -17,6 +17,33 @@ import { configureLogger } from '../src/lib/loggerStructured.js';
 import type { WorkItemType } from '../src/types/adoFieldTypes.js';
 import type { LinkTypeAlias } from '../src/types/adoLinkTypes.js';
 
+function parseTagList(input?: string): string[] | undefined {
+  if (!input) return undefined;
+
+  const normalizedInput = input.trim();
+  if (!normalizedInput) return undefined;
+
+  if (normalizedInput.startsWith('[') && normalizedInput.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(normalizedInput);
+      if (Array.isArray(parsed)) {
+        const tags = parsed
+          .map((tag) => String(tag).trim())
+          .filter((tag) => tag.length > 0);
+        return tags.length > 0 ? tags : undefined;
+      }
+    } catch {
+      // Fall through to delimiter parsing
+    }
+  }
+
+  const tags = input
+    .split(/[;,]/)
+    .map((tag) => tag.trim().replace(/^['"\[]+|['"\]]+$/g, ''))
+    .filter((tag) => tag.length > 0);
+  return tags.length > 0 ? tags : undefined;
+}
+
 const program = new Command();
 
 program
@@ -104,8 +131,12 @@ program
   // Context-driven update (reads phase output from ticket-context.json)
   .option('--from-context <file>', 'Read applied_content from ticket-context.json and map to ADO fields')
   .option('--phase <phase>', 'Phase section to read from context (grooming|solutioning). Default: grooming')
+  // Standalone filled-spec update (render + validate + push without Context7)
+  .option('--from-filled <files>', 'Comma-separated filled-spec JSON files (each must have "template" and "slots" keys). Renders, validates, maps ado_field, and pushes in one call.')
   // Comment
   .option('--comment <comment>', 'Add a comment/history entry')
+  // Dry run
+  .option('--dry-run', 'Render and validate without pushing to ADO. Shows fields that would be updated.')
   // Output
   .option('--json', 'Output as JSON')
   .option('-v, --verbose', 'Verbose output')
@@ -237,7 +268,7 @@ program
             fields['System.Tags'] = extraFields.tags.join('; ');
           }
           if (extraFields.title) fields['System.Title'] = extraFields.title;
-          if (extraFields.story_points !== undefined) fields['Microsoft.VSTS.Scheduling.StoryPoints'] = extraFields.story_points;
+          if (extraFields.story_points != null) fields['Microsoft.VSTS.Scheduling.StoryPoints'] = extraFields.story_points;
           if (extraFields.work_class_type) fields['Custom.WorkClassType'] = extraFields.work_class_type;
           if (extraFields.requires_qa) fields['Custom.RequiresQA'] = extraFields.requires_qa;
         }
@@ -257,6 +288,55 @@ program
         writeCtx(options.fromContext, JSON.stringify(ctx, null, 2), 'utf-8');
       }
 
+      // Standalone filled-spec update: render + validate + map ado_field + push
+      // Each file must be a FillSpec (with "template" and "slots" keys) from scaffold output.
+      if (options.fromFilled) {
+        const filePaths = (options.fromFilled as string).split(',').map((f: string) => f.trim());
+        const { renderTemplate: renderTpl, validateRendered: validateHtml, getTemplateEntry: getEntry } = await import('../src/templateEngine.js');
+
+        for (const filePath of filePaths) {
+          const raw = JSON.parse(readFileSync(filePath, 'utf-8'));
+
+          // Require FillSpec format with template key
+          const templateKey = raw.template;
+          if (!templateKey) {
+            console.error(`Error: file "${filePath}" missing "template" key. Use scaffold output format.`);
+            process.exit(1);
+          }
+
+          // Extract slots (support both .slots wrapper and direct slots object)
+          const slots = raw.slots ?? raw;
+
+          // Render
+          const renderResult = renderTpl(templateKey, slots as Record<string, import('../src/types/templateTypes.js').FillSlot>);
+          if (!renderResult.success) {
+            console.error(`Warning: template "${templateKey}" has ${renderResult.slots_missing} missing slot(s): ${renderResult.missing_slots.join(', ')}`);
+            if (renderResult.warnings.length > 0) {
+              for (const w of renderResult.warnings) console.error(`  ⚠ ${w}`);
+            }
+          }
+
+          // Validate
+          const validation = validateHtml(templateKey, renderResult.html);
+          if (!validation.valid) {
+            const errors = validation.issues.filter((i: { severity: string }) => i.severity === 'error');
+            console.error(`Error: template "${templateKey}" failed validation:`);
+            for (const err of errors) {
+              console.error(`  [${err.code}] ${err.message}`);
+            }
+            process.exit(1);
+          }
+
+          // Map to ADO field from registry
+          const entry = getEntry(templateKey);
+          if (entry.ado_field) {
+            fields[entry.ado_field] = renderResult.html;
+          } else {
+            console.error(`Warning: template "${templateKey}" has no ado_field mapping — skipping.`);
+          }
+        }
+      }
+
       // Helper: map ADO field path to context key name
       function adoFieldToContextKey(adoField: string): string {
         const mapping: Record<string, string> = {
@@ -271,6 +351,34 @@ program
           'Custom.ReleaseNotes': 'release_notes',
         };
         return mapping[adoField] ?? adoField.replace(/\./g, '_').toLowerCase();
+      }
+
+      // Dry-run: show what would be pushed without calling ADO API
+      if (options.dryRun) {
+        const dryResult: Record<string, unknown> = {
+          dry_run: true,
+          work_item_id: parseInt(id, 10),
+          fields_count: Object.keys(fields).length,
+          fields_to_update: Object.fromEntries(
+            Object.entries(fields).map(([k, v]) => [
+              k,
+              typeof v === 'string' && (v as string).length > 200
+                ? `(${(v as string).length} chars HTML)`
+                : v,
+            ])
+          ),
+          comment: options.comment ?? null,
+        };
+        if (options.json) {
+          console.log(JSON.stringify(dryResult, null, 2));
+        } else {
+          console.log(`[DRY RUN] Would update work item ${id}`);
+          console.log(`  Fields: ${Object.keys(fields).length}`);
+          for (const [k, v] of Object.entries(dryResult['fields_to_update'] as Record<string, unknown>)) {
+            console.log(`    ${k}: ${v}`);
+          }
+        }
+        return;
       }
 
       const workItem = await updateWorkItem(parseInt(id, 10), {
@@ -300,7 +408,7 @@ program
   .option('-a, --area <path>', 'Area path')
   .option('-i, --iteration <path>', 'Iteration path')
   .option('--assigned-to <user>', 'Assign to user')
-  .option('--tags <tags>', 'Comma-separated tags')
+  .option('--tags <tags>', 'Tags (comma or semicolon-separated)')
   .option('--json', 'Output as JSON')
   .option('-v, --verbose', 'Verbose output')
   .action(async (type: string, options) => {
@@ -319,7 +427,7 @@ program
         areaPath: options.area,
         iterationPath: options.iteration,
         assignedTo: options.assignedTo,
-        tags: options.tags?.split(','),
+        tags: parseTagList(options.tags),
       });
 
       if (options.json) {
@@ -343,9 +451,10 @@ program
   .option('-a, --assigned-to <user>', 'Assigned to filter')
   .option('--area <path>', 'Area path filter')
   .option('--iteration <path>', 'Iteration path filter')
-  .option('--tags <tags>', 'Comma-separated tags filter')
+  .option('--tags <tags>', 'Tags filter (comma or semicolon-separated)')
   .option('--wiql <query>', 'Raw WIQL query')
   .option('--top <n>', 'Maximum results', parseInt)
+  .option('--all', 'Return all matching results (disables --top limit)')
   .option('--json', 'Output as JSON')
   .option('-v, --verbose', 'Verbose output')
   .action(async (options) => {
@@ -356,6 +465,11 @@ program
         configureLogger({ minLevel: 'debug' });
       }
 
+      if (options.all && options.top) {
+        console.error('Error: --all cannot be combined with --top');
+        process.exit(1);
+      }
+
       const results = await searchWorkItems({
         searchText: options.text,
         workItemType: options.type as WorkItemType,
@@ -363,9 +477,9 @@ program
         assignedTo: options.assignedTo,
         areaPath: options.area,
         iterationPath: options.iteration,
-        tags: options.tags?.split(','),
+        tags: parseTagList(options.tags),
         wiql: options.wiql,
-        top: options.top,
+        top: options.all ? undefined : options.top,
       });
 
       if (options.json) {

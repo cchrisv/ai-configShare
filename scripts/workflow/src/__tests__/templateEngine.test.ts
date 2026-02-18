@@ -329,6 +329,171 @@ describe('validateRendered', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Repeatable Block Rendering (nested-div regression tests)
+// ---------------------------------------------------------------------------
+describe('renderTemplate repeatable_block', () => {
+  it('should render user-story acceptance criteria with all block variables', () => {
+    const spec = generateFillSpec('field-user-story-acceptance-criteria');
+    const filledSlots: Record<string, FillSlot> = {
+      scenarios: {
+        ...spec.slots['scenarios']!,
+        blocks: [
+          { title: 'Login success', given: 'valid credentials', when: 'user submits login', then: 'dashboard loads' },
+          { title: 'Login failure', given: 'invalid password', when: 'user submits login', then: 'error message shown' },
+          { title: 'Session timeout', given: 'expired session', when: 'user navigates', then: 'redirect to login' },
+        ],
+      },
+    };
+    const result = renderTemplate('field-user-story-acceptance-criteria', filledSlots);
+    expect(result.html).not.toContain('{{');
+    expect(result.html).toContain('valid credentials');
+    expect(result.html).toContain('user submits login');
+    expect(result.html).toContain('dashboard loads');
+    expect(result.html).toContain('error message shown');
+    expect(result.html).toContain('redirect to login');
+    expect(result.warnings.filter(w => w.includes('remains after'))).toHaveLength(0);
+
+    const validation = validateRendered('field-user-story-acceptance-criteria', result.html);
+    expect(validation.valid).toBe(true);
+    expect(validation.checks.no_unfilled_tokens).toBe(true);
+  });
+
+  it('should render feature acceptance criteria with all block variables', () => {
+    const spec = generateFillSpec('field-feature-acceptance-criteria');
+    const filledSlots: Record<string, FillSlot> = {
+      success_indicators: {
+        ...spec.slots['success_indicators']!,
+        blocks: [
+          { title: 'Core Capability', given: 'system configured', when: 'pipeline runs', then: '95% accuracy' },
+          { title: 'Data Quality', given: 'source data loaded', when: 'validation runs', then: 'zero critical errors' },
+          { title: 'Performance', given: 'peak load', when: 'batch executes', then: 'completes in 30 min' },
+        ],
+      },
+    };
+    const result = renderTemplate('field-feature-acceptance-criteria', filledSlots);
+    expect(result.html).not.toContain('{{');
+    expect(result.html).toContain('system configured');
+    expect(result.html).toContain('pipeline runs');
+    expect(result.html).toContain('95% accuracy');
+    expect(result.html).toContain('zero critical errors');
+    expect(result.html).toContain('completes in 30 min');
+
+    const validation = validateRendered('field-feature-acceptance-criteria', result.html);
+    expect(validation.valid).toBe(true);
+  });
+
+  it('should render feature objectives with all block variables', () => {
+    const spec = generateFillSpec('field-feature-objectives');
+    const filledSlots: Record<string, FillSlot> = {
+      objectives: {
+        ...spec.slots['objectives']!,
+        blocks: [
+          { title: 'Foundation Objective', description: 'Establish core data pipeline' },
+          { title: 'Visibility Objective', description: 'Real-time dashboards for stakeholders' },
+          { title: 'Quality Objective', description: 'Automated validation reduces errors by 40%' },
+        ],
+      },
+    };
+    const result = renderTemplate('field-feature-objectives', filledSlots);
+    expect(result.html).not.toContain('{{');
+    expect(result.html).toContain('Foundation Objective');
+    expect(result.html).toContain('Establish core data pipeline');
+    expect(result.html).toContain('Real-time dashboards for stakeholders');
+    expect(result.html).toContain('Automated validation reduces errors by 40%');
+
+    const validation = validateRendered('field-feature-objectives', result.html);
+    expect(validation.valid).toBe(true);
+  });
+
+  it('should render blockers critical_blockers with all block variables', () => {
+    const spec = generateFillSpec('field-blockers');
+    const filledSlots: Record<string, FillSlot> = {
+      blocker_count: { ...spec.slots['blocker_count']!, value: '2' },
+      escalation_summary: { ...spec.slots['escalation_summary']!, value: 'Two items need leadership attention' },
+      critical_blockers: {
+        ...spec.slots['critical_blockers']!,
+        blocks: [
+          { work_item_id: '12345', title: 'Auth blocked', description: 'SSO config pending', impact: 'Blocks all login work', target_date: '2025-02-01', target_date_status: '5 days overdue', days_stalled: '12' },
+          { work_item_id: '12346', title: 'API timeout', description: 'External API down', impact: 'Integration stalled', target_date: '2025-02-15', target_date_status: 'On track', days_stalled: '3' },
+        ],
+      },
+      medium_dependencies: { ...spec.slots['medium_dependencies']!, blocks: [] },
+      risks: { ...spec.slots['risks']!, blocks: [] },
+      resolved_items: { ...spec.slots['resolved_items']!, blocks: [] },
+      leadership_ask_text: { ...spec.slots['leadership_ask_text']!, value: 'Escalate SSO config to vendor' },
+    };
+    const result = renderTemplate('field-blockers', filledSlots);
+    expect(result.html).toContain('SSO config pending');
+    expect(result.html).toContain('Blocks all login work');
+    expect(result.html).toContain('12 days');
+    expect(result.html).toContain('External API down');
+    expect(result.html).toContain('Integration stalled');
+    // No critical_blocker tokens should remain
+    expect(result.html).not.toContain('{{blocker_');
+  });
+
+  it('should render progress weeks with all block variables', () => {
+    const spec = generateFillSpec('field-progress');
+    const filledSlots: Record<string, FillSlot> = {
+      completion_percent: { ...spec.slots['completion_percent']!, value: '45' },
+      completed_count: { ...spec.slots['completed_count']!, value: '27' },
+      total_count: { ...spec.slots['total_count']!, value: '60' },
+      update_date: { ...spec.slots['update_date']!, value: 'Jun 18, 2025' },
+      overall_status_summary: { ...spec.slots['overall_status_summary']!, value: 'Steady progress across all workstreams.' },
+      window_start: { ...spec.slots['window_start']!, value: '05/07/2025' },
+      window_end: { ...spec.slots['window_end']!, value: '06/18/2025' },
+      weeks: {
+        ...spec.slots['weeks']!,
+        blocks: [
+          { start: '06/16', end: '06/18', narrative: 'Auth sprint completed', activities: '<ul><li>Closed 3 stories</li></ul>' },
+          { start: '06/09', end: '06/15', narrative: 'Testing focus week', activities: '<ul><li>QA started</li></ul>' },
+          { start: '06/02', end: '06/08', narrative: 'Dev ramp-up', activities: '<ul><li>Sprint planning</li></ul>' },
+        ],
+      },
+      leadership_helped_text: { ...spec.slots['leadership_helped_text']!, value: 'Removed procurement blocker' },
+      support_needed_text: { ...spec.slots['support_needed_text']!, value: 'No immediate needs' },
+    };
+    const result = renderTemplate('field-progress', filledSlots);
+    expect(result.html).toContain('Auth sprint completed');
+    expect(result.html).toContain('Closed 3 stories');
+    expect(result.html).toContain('Testing focus week');
+    expect(result.html).toContain('QA started');
+    expect(result.html).toContain('Dev ramp-up');
+    // No week tokens should remain
+    expect(result.html).not.toContain('{{week_');
+  });
+
+  it('should handle fewer blocks than template slots without leaving tokens', () => {
+    const spec = generateFillSpec('field-user-story-acceptance-criteria');
+    const filledSlots: Record<string, FillSlot> = {
+      scenarios: {
+        ...spec.slots['scenarios']!,
+        blocks: [
+          { title: 'Only scenario', given: 'precond', when: 'action', then: 'result' },
+        ],
+      },
+    };
+    const result = renderTemplate('field-user-story-acceptance-criteria', filledSlots);
+    // Should not contain any remaining scenario tokens
+    expect(result.html).not.toContain('{{scenario_');
+    expect(result.html).toContain('precond');
+  });
+
+  it('should report warnings when tokens remain after rendering', () => {
+    // Render with empty blocks to leave tokens unfilled
+    const spec = generateFillSpec('field-user-story-acceptance-criteria');
+    const filledSlots: Record<string, FillSlot> = {
+      scenarios: {
+        ...spec.slots['scenarios']!,
+        blocks: [],
+      },
+    };
+    const result = renderTemplate('field-user-story-acceptance-criteria', filledSlots);
+    expect(result.success).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Integration: scaffold → fill → render → validate loop
 // ---------------------------------------------------------------------------
 describe('Full scaffold→fill→render→validate loop', () => {

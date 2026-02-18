@@ -16,7 +16,7 @@ Input: `{{work_item_id}}`
 ## Prerequisites [IO]
 - `{{work_item_id}}` is a Feature or Epic in ADO
 - Children groomed (Description, AC) and solutioned (DevelopmentSummary)
-- Child wiki pages at `/WorkItems/{{child_id}}-{{sanitized_title}}` (supplementary)
+- Child wiki pages at `{{ado_defaults.wiki_copilot_root}}/{{child_id}}-{{sanitized_title}}` (supplementary)
 - **STOP** if type invalid or no children found.
 
 ## Templates
@@ -51,7 +51,7 @@ A5 [LOGIC]: If collected-data.json exists → skip to Step 3
 B1 [CLI]: `{{cli.ado_get}} {{work_item_id}} --expand All --comments --json`
 B2 [CLI]: `{{cli.ado_relations}} {{work_item_id}} --type child --json` → extract child IDs; **STOP** if none
 B3 [CLI]: Per child: `{{cli.ado_get}} {{child_id}} --expand All --comments --json`
-B4 [CLI]: Per child: `{{cli.wiki_get}} --path "/WorkItems/{{child_id}}-{{sanitized_title}}" --json`
+B4 [CLI]: Per child: `{{cli.wiki_get}} --path "{{ado_defaults.wiki_copilot_root}}/{{child_id}}-{{sanitized_title}}" --json`
 B5 [IO]: Save → collected-data.json (type="Feature", epic=null, features=[single entry + child_stories])
 
 **Epic path** (2-level):
@@ -102,7 +102,7 @@ D1 [IO]: Save document → temp file
 D2 [IO]: Save wiki content → temp file
 
 ### Step 5 [CLI] – Wiki Publishing
-E1 [LOGIC]: Wiki path: Feature → `/Features/{{work_item_id}}-{{sanitized_title}}`; Epic → `/Epics/{{work_item_id}}-{{sanitized_title}}`
+E1 [LOGIC]: Wiki path: `{{ado_defaults.wiki_copilot_root}}/{{work_item_id}}-{{sanitized_title}}`
 E2 [CLI]: `{{cli.wiki_get}} --path "{{wiki_path}}" --json` — check existing
 E3 [CLI]: New → `{{cli.wiki_create}} --path "{{wiki_path}}" --content "<temp_file>" --json`
   Existing → `{{cli.wiki_update}} --path "{{wiki_path}}" --content "<temp_file>" --json`

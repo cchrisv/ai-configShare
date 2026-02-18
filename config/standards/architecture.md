@@ -68,19 +68,17 @@ Composite: `{{paths.artifacts_root}}/{{work_item_id}}/research/{{artifact_files.
 | 01 | Initialize | Prepare work item directory, run-state |
 | 02a | Grooming Research | Business context (ADO, wiki, similar items) |
 | 02b | Grooming | Requirements (what/why) → ADO |
-| 02c | Grooming Update | Dev updates to requirements (standalone) |
 | 03a | Solutioning Research | Technical context (deps, code, web) |
 | 03b | Solutioning | Solution design (how) |
-| 03c | Solutioning Update | Dev updates to solution (standalone) |
 | 04 | Wiki | Generate wiki documentation |
 | 05 | Finalize | Completion summary, WSJF, final ADO |
 | 06 | Closeout | Post-dev delta analysis (standalone) |
 
-**Flow:** 01 → 02a → 02b → 03a → 03b → 04 → 05. Standalone (02c, 03c, 06) run independently post-handoff.
+**Flow:** 01 → 02a → 02b → 03a → 03b → 04 → 05. Standalone (06) runs independently post-handoff. Utilities (`util-grooming-update`, `util-solutioning-update`) run independently at any time.
 
-**Content separation:** What/Why (02b, 02c) → Description, Acceptance Criteria · How (03b, 03c) → DevelopmentSummary, SFComponents. Never cross-write.
+**Content separation:** What/Why (02b, `util-grooming-update`) → Description, Acceptance Criteria · How (03b, `util-solutioning-update`) → DevelopmentSummary, SFComponents. Never cross-write.
 
-**Utilities:** `util-base` (shared vars, guardrails) · `util-research-base` (research schema) · `util-help` · `util-repeat-phase` · `util-feature-solution-design` (Feature/Epic aggregation) · `util-reformat-ticket` · `util-sequence-tickets` · `util-update-feature-progress` (Feature flow health + progress fields)
+**Utilities:** `util-base` (shared vars, guardrails) · `util-research-base` (research schema) · `util-grooming-update` (dev updates to requirements) · `util-solutioning-update` (dev updates to solution) · `util-help` · `util-repeat-phase` · `util-feature-solution-design` (Feature/Epic aggregation) · `util-reformat-ticket` · `util-sequence-tickets` · `util-update-feature-progress` (Feature flow health + progress fields)
 
 **Run state** (`run-state.json`): `workItemId`, `currentPhase`, `completedSteps[]` (phase, step, completedAt, artifact), `errors[]`. Updated after each phase. Read via `workflow-tools status`, reset via `workflow-tools reset`.
 

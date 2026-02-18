@@ -1,6 +1,6 @@
 # Phase 06 – Development Closeout (Context7)
 Role: Closeout Coordinator
-Mission: Reconcile planned vs actual; update ADO, wiki, context.
+Mission: Reconcile planned vs actual; update ADO and context.
 Config: `#file:.github/prompts/util-base.prompt.md`
 Input: `{{work_item_id}}`
 
@@ -11,7 +11,7 @@ Input: `{{work_item_id}}`
 - **Preserve investigation trail** – add as-built alongside planned
 - **CLI-only** – per util-base guardrails
 - **Template-engine only** – NEVER generate raw HTML. Use `template-tools scaffold-phase` for fill specs, fill JSON slots, save to context. The CLI renders and validates.
-- **No prior artifacts required** – fetch from ADO + wiki
+- **No prior artifacts required** – fetch from ADO and context
 - **Graceful degradation** – proceed with reduced evidence if needed
 - **Tag**: append {{tags.dev_complete}} to tags
 - **Context7 only** – outputs to {{context_file}}.closeout.*
@@ -21,18 +21,16 @@ Templates are managed by the template engine. Use `template-tools scaffold-phase
 - `field-solution-design` — ADO Development Summary HTML
 - `field-release-notes` — ADO Release Notes HTML
 - Grooming field templates (description, AC, etc.) per work item type
-- `wiki-page-template` — Wiki page markdown
 
 ## Execution
 
 ### Step 1 [IO/CLI] – Init
 A1 [IO]: Load shared.json; ensure {{context_file}} exists
 A2 [CLI]: `{{cli.ado_get}} {{work_item_id}} --expand All --comments --json`
-A3 [CLI]: Find wiki: `{{cli.wiki_search}} "{{work_item_id}}" --json`
-A4 [LOGIC]: Extract current state from ADO + wiki
-A5 [IO]: Load dev_updates.updates[] (optional context)
-A6 [LOGIC]: Extract child IDs from relations (`System.LinkTypes.Hierarchy-Forward`)
-A7 [CLI]: Per child: `{{cli.ado_get}} {{child_id}} --expand Relations --comments --json`
+A3 [IO]: Load dev_updates.updates[] (optional context)
+A4 [LOGIC]: Extract current state from ADO
+A5 [LOGIC]: Extract child IDs from relations (`System.LinkTypes.Hierarchy-Forward`)
+A6 [CLI]: Per child: `{{cli.ado_get}} {{child_id}} --expand Relations --comments --json`
 A8 [GEN]: Per child: extract state, key fields, classify comments (decisions, scope changes, lessons learned)
 A9 [GEN]: **Comment mining** across all comments (self + children):
   - Final decisions made during development
@@ -53,7 +51,7 @@ B4.5 [GEN]: **Child reconciliation** — compare child states against planned co
 B5 [GEN]: Compile evidence: PRs, SF audit, SF as-built vs planned, child reconciliation
 
 ### Step 3 [GEN] – Assumptions & Unknowns Resolution (Final)
-C1 [GEN]: Extract all assumptions + unknowns from wiki
+C1 [GEN]: Extract all assumptions + unknowns from context
 C2 [GEN]: Cross-reference against evidence
 C3 [GEN]: Auto-resolve where conclusive
 C4 [GEN]: Present remaining items to developer — require resolution
@@ -75,17 +73,19 @@ Append {{tags.dev_complete}} to tags.
 
 ### Step 7 [GEN] – Update Solutioning
 G1 [GEN]: Regenerate solution design with as-built architecture. **How only**.
-G2 [GEN]: Build DevelopmentSummary HTML.
+G2 [GEN]: Prepare as-built solution design data for template rendering in Step 8.
 G3 [IO]: Save technical spec → {{context_file}}.closeout.technical_spec_final
 
-### Step 8 [GEN/CLI] – Update Wiki
-Produce updated wiki with:
-**1. What/Why vs How** — distinct sections
-**2. End-to-End Flow** — problem → requirements → solution → outcome
-**3. Previous vs Current** — preserve planned alongside as-built
-
-H1 [IO]: Save → {{context_file}}.closeout.wiki_closeout_content
-H2 [CLI]: If wiki_path set: `{{cli.wiki_update}} --path "{{wiki_path}}" --content "{{context_file}}.closeout.wiki_closeout_content" --json`
+### Step 8 [GEN/CLI] – Update Developer Summary
+H1 [CLI]: `{{cli.template_scaffold_phase}} --phase closeout --type "{{work_item_type}}" -w {{work_item_id}} --context {{context_file}} --json` — get fill spec for `field-solution-design`
+H2 [GEN]: Fill slot values from `closeout.delta` (as-built components, scope changes) and `closeout.solutioning_final` (solution_design, architecture_decisions):
+  - `business_problem_statement` — refined from delivered scope
+  - `solution_approach_narrative` — as-built approach reflecting actual implementation
+  - `technical_narrative` — final technical details from Step 7 solution design
+  - `components` — reconciled component table from closeout delta
+  - `integration_points_brief` — as-built integration points
+H3 [IO]: Save filled_slots → {{context_file}}.closeout.filled_slots
+H4 [IO]: Save to disk — **GATE: do not proceed until confirmed written.**
 
 ### Step 9 [GEN] – Release Notes
 Build polished release note for field_paths.release_notes using field_release_notes template.
@@ -100,19 +100,26 @@ Save → {{context_file}}.closeout:
   "delta": {
     "components": [], "acceptance_criteria": [],
     "scope_changes": {"added": [], "removed": [], "modified": []},
-    "testing_actual": {"types_performed": [], "p1_results": ""},
     "effort_final": {"story_points": 0, "effort_level": ""},
     "lessons_learned": [], "follow_up_work_items": []
   },
   "assumptions_resolved": [], "unknowns_resolved": [],
   "grooming_final": {"fields": {}},
   "solutioning_final": {"solution_design": {}, "development_summary_html": ""},
+  "filled_slots": {},
   "release_notes_html": ""
 }
 ```
 
 ### Step 11 [CLI] – Update ADO
-`{{cli.ado_update}} {{work_item_id}} --fields-file "<temp_payload>" --json`
+`{{cli.ado_update}} {{work_item_id}} --from-context "{{context_file}}" --phase closeout --json`
+
+The CLI automatically:
+1. Renders `field-solution-design` template from closeout.filled_slots → final HTML
+2. Validates: no unfilled tokens, sections present
+3. Maps rendered HTML + grooming_final fields + release_notes_html → ADO field paths
+4. Reads extra_fields for non-template fields (tags, story_points)
+5. Pushes all fields to ADO in a single update
 
 ### Step 12 [GEN/IO] – Closeout Summary
 E1 [GEN]: Generate narrative summary

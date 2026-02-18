@@ -4,8 +4,8 @@ Shared patterns for research prompts. Uses unified ticket-context.json.
 ## Phases
 | Phase | Purpose | Prompt |
 |-------|---------|--------|
-| 02a | Business research → grooming | `phase-02a-grooming-research.prompt.md` |
-| 03a | Technical research → solutioning | `phase-03a-solutioning-research.prompt.md` |
+| 01 | Business research → grooming | `ticket-grooming-phase-01-research.prompt.md` |
+| 03 | Technical research → solutioning | `ticket-grooming-phase-03-solutioning-research.prompt.md` |
 
 ## Prerequisites
 1. [IO] Verify {{context_file}} exists; load metadata.run_state
@@ -13,8 +13,8 @@ Shared patterns for research prompts. Uses unified ticket-context.json.
 
 ## Context7 Research Pattern
 All research outputs go to {{context_file}}.research.*:
-- 02a: organization_dictionary, ado_workitem (scope_context, domain_keywords), similar_workitems, wiki_search, business_context, solutioning_investigation (assumptions_to_validate, questions_for_solutioning, unknowns, scope_risks), synthesis (what_requested, why_it_matters, who_affected, scope_boundaries, open_questions)
-- 03a: salesforce_metadata, web_research (extends synthesis)
+- 01 (research): organization_dictionary, ado_workitem (scope_context, domain_keywords), similar_workitems, wiki_search, business_context, solutioning_investigation (assumptions_to_validate, questions_for_solutioning, unknowns, scope_risks), synthesis (what_requested, why_it_matters, who_affected, scope_boundaries, open_questions)
+- 03 (solutioning research): salesforce_metadata, dependency_discovery (extends synthesis)
 
 ## Rolling Synthesis
 After each stream:
@@ -60,5 +60,5 @@ After each stream, add to run_state.completed_steps[]:
 | Search wiki | `{{cli.wiki_search}} "{{keywords}}" --json` | — |
 | SF describe | `{{cli.sf_describe}} {{obj}} --json` | `--batch` |
 | SF discover | `{{cli.sf_discover}} --type {{type}} --name {{name}} --depth 3 --json` | — |
-| Search ADO | `{{cli.ado_search}} --text "{{text}}" --top 20 --json` | — |
+| Search ADO | `{{cli.ado_search}} --text "{{text}}" --all --json` | — |
 | SF query | `{{cli.sf_query}} "{{soql}}" --json` | — |

@@ -26,14 +26,14 @@
         },
         "current_phase": {
           "type": "string",
-          "enum": ["research", "grooming", "solutioning_research", "solutioning", "test_cases", "finalization", "complete"],
+          "enum": ["research", "grooming", "solutioning_research", "solutioning", "finalization", "complete"],
           "description": "Current workflow phase"
         },
         "phases_completed": {
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["research", "grooming", "solutioning_research", "solutioning", "test_cases", "finalization"]
+            "enum": ["research", "grooming", "solutioning_research", "solutioning", "finalization"]
           },
           "description": "List of completed phases"
         },
@@ -99,8 +99,7 @@
             "solutioning": {
               "type": "object",
               "properties": {
-                "options_evaluated": { "type": "integer" },
-                "test_cases_created": { "type": "integer" }
+                "options_evaluated": { "type": "integer" }
               }
             }
           }
@@ -545,7 +544,89 @@
             "architecture_decisions": { "type": "array" },
             "integration_points": { "type": "array" },
             "quality_bar": { "type": "object" },
-            "applied_standards": { "type": "array", "items": { "type": "string" } }
+            "applied_standards": { "type": "array", "items": { "type": "string" } },
+            "implementation_phases": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "phase_id": { "type": "string" },
+                  "name": { "type": "string" },
+                  "goal": { "type": "string" },
+                  "steps": { "type": "array", "items": { "type": "string" } },
+                  "dependencies": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            },
+            "field_level_mapping": {
+              "type": "object",
+              "properties": {
+                "component_id": { "type": "string" },
+                "fields_reset": { "type": "array", "items": { "type": "object" } },
+                "fields_computed": { "type": "array", "items": { "type": "object" } },
+                "fields_removed": { "type": "array", "items": { "type": "object" } }
+              }
+            },
+            "legacy_analysis": {
+              "type": "object",
+              "properties": {
+                "critical_issues": { "type": "array", "items": { "type": "object" } },
+                "dead_code_inventory": { "type": "array", "items": { "type": "object" } },
+                "not_carried_over": { "type": "array", "items": { "type": "string" } }
+              }
+            },
+            "risk_considerations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "risk_id": { "type": "string" },
+                  "description": { "type": "string" },
+                  "likelihood": { "type": "string", "enum": ["High", "Medium", "Low"] },
+                  "impact": { "type": "string", "enum": ["High", "Medium", "Low"] },
+                  "mitigation": { "type": "string" }
+                }
+              }
+            },
+            "method_designs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "component_id": { "type": "string" },
+                  "method_name": { "type": "string" },
+                  "visibility": { "type": "string" },
+                  "parameters": { "type": "string" },
+                  "return_type": { "type": "string" },
+                  "cc_target": { "type": "integer" },
+                  "nesting_limit": { "type": "integer" },
+                  "pattern": { "type": "string" },
+                  "extracted_helpers": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            },
+            "standards_traceability": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "standard": { "type": "string" },
+                  "rule": { "type": "string" },
+                  "implementation": { "type": "string" }
+                }
+              }
+            },
+            "mermaid_diagrams": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["component_interaction", "implementation_order", "data_flow"] },
+                  "title": { "type": "string" },
+                  "source": { "type": "string" }
+                }
+              }
+            }
           }
         },
         "traceability": {
@@ -567,114 +648,6 @@
             "gaps": { "type": "array" },
             "orphans": { "type": "array" }
           }
-        },
-        "testing": {
-          "type": "object",
-          "description": "Test engineering outputs",
-          "properties": {
-            "test_data_matrix": {
-              "type": "object",
-              "properties": {
-                "rows": { "type": "array" },
-                "columns": { "type": "array", "items": { "type": "string" } }
-              }
-            },
-            "test_cases": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": { "type": "string" },
-                  "title": { "type": "string" },
-                  "path_type": { "type": "string", "enum": ["happy_path", "negative", "edge_case", "security"] },
-                  "covers_ac": { "type": "array", "items": { "type": "string" } },
-                  "priority": { "type": "string", "enum": ["P1", "P2", "P3"] },
-                  "data_row": { "type": "string" },
-                  "objective": { "type": "string" },
-                  "preconditions": { "type": "array" },
-                  "steps": { "type": "array" },
-                  "verification_checklist": { "type": "array" },
-                  "telemetry_logs": { "type": "array" },
-                  "cleanup_steps": { "type": "array" },
-                  "developer_validation": { "type": "object" },
-                  "qa_validation": { "type": "object" }
-                }
-              }
-            },
-            "ac_coverage_matrix": {
-              "type": "object",
-              "properties": {
-                "coverage_summary": {
-                  "type": "object",
-                  "properties": {
-                    "total_ac": { "type": "integer" },
-                    "fully_covered": { "type": "integer" },
-                    "partially_covered": { "type": "integer" },
-                    "not_covered": { "type": "integer" }
-                  }
-                },
-                "acceptance_criteria": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "ac_id": { "type": "string" },
-                      "description": { "type": "string" },
-                      "happy_path_tests": { "type": "array", "items": { "type": "string" } },
-                      "unhappy_path_tests": { "type": "array", "items": { "type": "string" } },
-                      "coverage_status": { "type": "string", "enum": ["full", "partial", "none"] },
-                      "coverage_notes": { "type": "string" }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "wiki": {
-      "type": "object",
-      "description": "Wiki phase outputs",
-      "properties": {
-        "creation_audit": {
-          "type": "object",
-          "description": "Wiki page creation audit trail",
-          "properties": {
-            "path": { "type": "string" },
-            "page_id": { "type": "string" },
-            "url": { "type": "string" },
-            "wiki_identifier": { "type": "string" },
-            "taxonomy": {
-              "type": "object",
-              "properties": {
-                "primary_object": { "type": "string" },
-                "parent_path": { "type": "string" }
-              }
-            },
-            "sections_generated": {
-              "type": "object",
-              "description": "Boolean per wiki_sections key — true when content has been filled",
-              "properties": {
-                "executive_summary": { "type": "boolean" },
-                "what_business_context": { "type": "boolean" },
-                "what_requirements": { "type": "boolean" },
-                "what_success_criteria": { "type": "boolean" },
-                "why_business_value": { "type": "boolean" },
-                "why_discovery": { "type": "boolean" },
-                "why_investigation": { "type": "boolean" },
-                "why_decisions": { "type": "boolean" },
-                "how_solution": { "type": "boolean" },
-                "how_quality": { "type": "boolean" }
-              }
-            },
-            "ado_compatibility": { "type": "object" }
-          }
-        },
-        "content_generated_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp when wiki-content.md was generated"
         }
       }
     },
@@ -720,7 +693,7 @@
     },
     "dev_updates": {
       "type": "object",
-      "description": "Incremental development-time updates (phase 08)",
+      "description": "Incremental development-time updates",
       "properties": {
         "updates": {
           "type": "array",
@@ -748,7 +721,7 @@
     },
     "closeout": {
       "type": "object",
-      "description": "Development closeout reconciliation (phase 09)",
+      "description": "Development closeout reconciliation",
       "properties": {
         "questionnaire": {
           "type": "object",
@@ -761,7 +734,6 @@
             "components": { "type": "array" },
             "acceptance_criteria": { "type": "array" },
             "scope_changes": { "type": "object" },
-            "testing_actual": { "type": "object" },
             "effort_final": { "type": "object" },
             "lessons_learned": { "type": "array" },
             "follow_up_work_items": { "type": "array" },

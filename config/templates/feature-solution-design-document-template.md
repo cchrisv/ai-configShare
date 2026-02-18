@@ -27,7 +27,7 @@ All data is retrieved from Azure DevOps and the wiki -- no local artifacts are e
 | Feature work item | `{{cli.ado_get}} {{work_item_id}} --expand All --comments --json` | Description, Business Value, Objectives, AC, Tags |
 | Child relations | `{{cli.ado_relations}} {{work_item_id}} --type child --json` | List of child work item IDs |
 | Each child user story | `{{cli.ado_get}} {{child_id}} --expand All --comments --json` | Title, Description, AC, DevelopmentSummary, SFComponents, State, Tags |
-| Each child wiki page | `{{cli.wiki_get}} --path "/WorkItems/{{child_id}}-{{sanitized_title}}" --json` | Full wiki page content (research, solution design, testing) |
+| Each child wiki page | `{{cli.wiki_get}} --path "{{ado_defaults.wiki_copilot_root}}/{{child_id}}-{{sanitized_title}}" --json` | Full wiki page content (research, solution design, testing) |
 
 ### Epic-Level Data Sources (in addition to Feature-level)
 
@@ -38,7 +38,7 @@ All data is retrieved from Azure DevOps and the wiki -- no local artifacts are e
 | Each child Feature | `{{cli.ado_get}} {{feature_id}} --expand All --comments --json` | Description, Business Value, Objectives, AC, Tags |
 | Each Feature's child relations | `{{cli.ado_relations}} {{feature_id}} --type child --json` | List of child user story IDs |
 | Each user story (per Feature) | `{{cli.ado_get}} {{child_id}} --expand All --comments --json` | Title, Description, AC, DevelopmentSummary, SFComponents, State, Tags |
-| Each user story wiki page | `{{cli.wiki_get}} --path "/WorkItems/{{child_id}}-{{sanitized_title}}" --json` | Full wiki page content |
+| Each user story wiki page | `{{cli.wiki_get}} --path "{{ado_defaults.wiki_copilot_root}}/{{child_id}}-{{sanitized_title}}" --json` | Full wiki page content |
 
 ## Document Structure
 

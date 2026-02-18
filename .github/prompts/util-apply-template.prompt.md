@@ -29,8 +29,8 @@ Load from `{{paths.templates}}/` (use `{{template_files.*}}` keys):
 ## Wiki Page Templates
 | Type | Template Key | Detection |
 |------|-------------|-----------|
-| Work Item Wiki | `{{template_files.wiki_page_template}}` | Path contains `/WorkItems/` or header "Autonomous Ticket Preparation" |
-| Feature Solution Design | `{{template_files.solution_design_wiki}}` | Path contains `/Features/` or header "Feature Solution Design" |
+| Work Item Wiki | `{{template_files.wiki_page_template}}` | Header contains "Autonomous Ticket Preparation" or page title starts with work item ID |
+| Feature Solution Design | `{{template_files.solution_design_wiki}}` | Header contains "Feature Solution Design" or work item type is Feature/Epic |
 | **General (fallback)** | `{{template_files.wiki_general_template}}` | Any page not matching above — pattern reference only |
 
 ## Design Conventions (from `{{template_files.wiki_format}}`)

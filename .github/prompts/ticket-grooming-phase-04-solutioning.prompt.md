@@ -1,4 +1,4 @@
-# Phase 03b – Solutioning
+# Phase 04 – Solutioning
 Role: Solution Architect
 Mission: Design technical solutions meeting requirements and standards.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md`
@@ -7,7 +7,7 @@ Input: `{{work_item_id}}`
 ## Constraints
 - **Extend over new** – prefer existing components; avoid net-new when platform supports it
 - **Standards-driven** – reference `{{paths.standards}}/` for compliance
-- **No timelines** – do not produce sprint estimates, delivery dates, schedule commitments, or task-level duration estimates. Capture high-level LOE only (component `complexity_estimate` as Simple/Medium/Complex) for Phase 5 WSJF scoring. Story points are derived exclusively in Phase 5 finalization.
+- **No timelines** – do not produce sprint estimates, delivery dates, schedule commitments, or task-level duration estimates. Capture high-level LOE only (component `complexity_estimate` as Simple/Medium/Complex) for Phase 05 WSJF scoring. Story points are derived exclusively in Phase 05 finalization.
 - **Single ADO update** – one `ado_update --from-context` call at the end
 - **CLI-only** – per util-base guardrails
 - **Template-engine only** – NEVER generate raw HTML. Run `template-tools scaffold` [CLI] for Development Summary fill spec, then fill JSON slot values [GEN] (there is NO `fill-slots` CLI command — this is AI reasoning), save to context [IO]. The `--from-context` flag auto-renders and validates.
@@ -29,7 +29,7 @@ Templates are managed by the template engine. The CLI scaffolds fill specs, AI f
 
 Reference docs (not engine-rendered — used for guidance only):
 - `{{template_files.solution_design}}` — solution design structure reference
-- `{{template_files.solution_design_document}}` — feature-level solution design document (used in Phase 04, not here)
+- `{{template_files.solution_design_document}}` — feature-level solution design document (reference only)
 
 ---
 
@@ -42,7 +42,7 @@ B5 [IO]: Read `.grooming.solutioning_hints[]` — extracted implementation clues
 B6 [IO]: Read `.grooming.templates_applied.applied_content.acceptance_criteria` — what we must trace to
 
 ## Step 2 [GEN/CLI] – Option Analysis
-C0 [GEN]: **Refine preliminary classifications** — load `.grooming.classification` (effort, complexity, feasibility are marked `"preliminary"` from phase 02b). Using technical evidence from 03a research, produce evidence-based values to replace the preliminaries.
+C0 [GEN]: **Refine preliminary classifications** — load `.grooming.classification` (effort, complexity, feasibility are marked `"preliminary"` from Phase 02). Using technical evidence from Phase 03 research, produce evidence-based values to replace the preliminaries.
 C1 [GEN]: Enumerate solution options — score each on **Trusted** / **Easy** / **Adaptable** (1–5):
   - **OOTB**: Out-of-the-box platform capability (declarative)
   - **Extension**: Extend existing components (modify trigger action, update CMT, adjust flow)
@@ -64,12 +64,39 @@ D4 [GEN]: **Standards compliance** — load relevant standards from `{{paths.sta
   - `event-driven-architecture-standards.md` — if platform events involved
   - `metadata-naming-conventions.md` — always
 D5 [GEN]: **Quality bar** — define code review, test coverage, performance thresholds
+D6 [GEN]: **Implementation phasing** — define ordered phases with:
+  - phase_id, name, goal, steps[], dependencies[]
+  - Identify parallel tracks where phases can execute concurrently
+  - Include a Mermaid `graph TD` showing phase dependencies
+D7 [GEN]: **Field-level mapping** (when solution touches sObject fields) — for each component:
+  - List every field API name, field type, and before/after behavior (e.g., "null → recalculated", "stale → reset to 0")
+  - Group by operation: fields_reset, fields_computed, fields_removed (not carried over)
+D8 [GEN]: **Legacy analysis** (when replacing or heavily modifying existing code) — document:
+  - Critical issues in the existing implementation (categorized: timing, dead code, complexity, security, logging, naming)
+  - Dead code / removal inventory: static maps, methods, variables, infrastructure being eliminated
+  - Summary of what is NOT carried over and why
+  - Skip this step entirely if the solution is net-new with no legacy predecessor
+D9 [GEN]: **Risk assessment** — for the recommended solution:
+  - risk_id, description, likelihood (High/Medium/Low), impact (High/Medium/Low), mitigation
+  - Include risks specific to: coexistence with legacy, rollout strategy, governor limits, downstream dependencies
+D10 [GEN]: **Method-level design** (for components rated `Complex`) — document:
+  - Method name, visibility, parameters, return type, CC target, nesting limit
+  - Key algorithm or pattern used (e.g., "map-based accumulation", "guard clause + early return")
+  - Private utility methods extracted for complexity control
+  - Skip for Simple/Medium components — responsibility field is sufficient
+D11 [GEN]: **Standards traceability** — for each standard in applied_standards, document:
+  - Standard name and the specific rule(s) applied
+  - How the solution implements that rule (concrete, not generic)
+D12 [GEN]: **Mermaid diagrams** — generate and store diagram source for:
+  - Component interaction diagram (always) — shows entry point, helpers, data flow, external systems
+  - Implementation order diagram (Complex solutions) — shows phase dependencies and parallel tracks
+  - Data flow diagram (optional) — shows transformation from input through processing to output
 
 ## Step 4 [GEN] – Traceability & LOE
 E1 [GEN]: **AC traceability** — map every acceptance criterion → component_ids that implement it
 E2 [GEN]: **Gap analysis** — identify ACs not covered by any component; flag as gaps
 E3 [GEN]: **Orphan detection** — identify components not traced to any AC
-E4 [GEN]: **Level of effort summary** — capture high-level LOE signals for Phase 5 WSJF scoring:
+E4 [GEN]: **Level of effort summary** — capture high-level LOE signals for Phase 05 WSJF scoring:
   - overall_complexity (Simple | Medium | Complex) — derived from component count and architecture decisions
   - risk_surface (Low | Medium | High) — derived from integration points, dependency depth, standards deviations
   - uncertainty_flags[] — list any unresolved assumptions, traceability gaps, or untested patterns
@@ -108,7 +135,33 @@ Save → {{context_file}}.solutioning:
     "architecture_decisions": [{ "id": "", "decision": "", "rationale": "", "alternatives_considered": [] }],
     "integration_points": [{ "source": "", "target": "", "mechanism": "", "contract": "" }],
     "quality_bar": { "code_review": true, "test_coverage_min": 80, "performance_threshold": "" },
-    "applied_standards": [""]
+    "applied_standards": [""],
+    "implementation_phases": [
+      { "phase_id": "", "name": "", "goal": "", "steps": [""], "dependencies": [""] }
+    ],
+    "field_level_mapping": {
+      "component_id": "",
+      "fields_reset": [{ "api_name": "", "field_type": "", "before": "", "after": "" }],
+      "fields_computed": [{ "api_name": "", "field_type": "", "before": "", "after": "" }],
+      "fields_removed": [{ "api_name": "", "reason": "" }]
+    },
+    "legacy_analysis": {
+      "critical_issues": [{ "category": "", "description": "" }],
+      "dead_code_inventory": [{ "type": "method|variable|map|class", "name": "", "reason": "" }],
+      "not_carried_over": [""]
+    },
+    "risk_considerations": [
+      { "risk_id": "", "description": "", "likelihood": "High|Medium|Low", "impact": "High|Medium|Low", "mitigation": "" }
+    ],
+    "method_designs": [
+      { "component_id": "", "method_name": "", "visibility": "", "parameters": "", "return_type": "", "cc_target": 0, "nesting_limit": 0, "pattern": "", "extracted_helpers": [""] }
+    ],
+    "standards_traceability": [
+      { "standard": "", "rule": "", "implementation": "" }
+    ],
+    "mermaid_diagrams": [
+      { "type": "component_interaction|implementation_order|data_flow", "title": "", "source": "" }
+    ]
   },
   "traceability": {
     "acceptance_criteria": [{ "ac_id": "", "description": "", "component_ids": [] }],
@@ -122,7 +175,7 @@ Save → {{context_file}}.solutioning:
     "risk_surface": "Low|Medium|High",
     "uncertainty_flags": [],
     "loe_notes": "",
-    "refined_from_grooming": { "effort": "", "complexity": "", "feasibility": "", "note": "Replaces preliminary values from phase 02b classification" }
+    "refined_from_grooming": { "effort": "", "complexity": "", "feasibility": "", "note": "Replaces preliminary values from Phase 02 classification" }
   },
   "filled_slots": {
     "field-solution-design": {
@@ -164,22 +217,12 @@ The CLI automatically:
 
 On error: log to `run_state.errors[]`; save to disk; retry once; **STOP** on second failure.
 
-## Step 8 [IO/GEN/CLI] – Wiki: Fill Why Decisions + How Solution
-Ref: `#file:.github/prompts/util-wiki-base.prompt.md`
-
-Fill sections where `filled_by_phase == "solutioning"`:
-- `why_decisions` — from `solutioning.option_analysis`, `solutioning.solution_design.applied_standards`, `research.synthesis.unified_truth.risks`
-- `how_solution` — from `solutioning.solution_design`, `solutioning.traceability`
-- `executive_summary` (finalize — add recommended approach + path forward from `solutioning.option_analysis.decision_summary`)
-
-Execute the 7-step fill workflow from util-wiki-base. Update status banner: **Grooming** ✅ | **Research** ✅ | **Solutioning** ✅ | **Testing** ⏸️
-
 ## Completion [IO/GEN]
 Update {{context_file}}:
 - `metadata.phases_completed` append `"solutioning"`
-- `metadata.current_phase` = `"test_cases"`
+- `metadata.current_phase` = `"finalization"`
 - `metadata.last_updated` = current ISO timestamp
 - Append `{"phase":"solutioning","step":"ado_update","completedAt":"<ISO>"}` to `run_state.completed_steps[]`
 - Save to disk
 
-Tell user: **"Solutioning complete. Use /phase-04-test-cases."**
+Tell user: **"Solutioning complete. Use /ticket-grooming-phase-05-finalization."**

@@ -1192,6 +1192,50 @@ Every section should **lead with narrative context** before presenting structure
 - **Support with** component tables and diagrams
 - **Tone:** Experienced mentor — "We chose this approach because… here's how the pieces fit together…"
 
+#### Solution Design Sub-sections (scale by complexity)
+
+**🏗️ Architecture Overview** (always)
+- 2-4 sentence narrative: what the solution does, why this approach, how pieces connect
+- Reference the recommended option from why_decisions
+
+**📦 Components** (always)
+- Table: Component ID | Name | Type | Complexity | Responsibility
+- For Complex components, add a "Key Methods" sub-table (see Method Design below)
+
+**🔗 Integration Points** (always, when integration exists)
+- Table: Source | Target | Mechanism | Contract
+- Or narrative if only 1-2 simple integrations
+
+**📋 Implementation Phases** (Medium + Complex)
+- Table: Phase | Goal | Key Steps | Dependencies
+- Mermaid `graph TD` showing phase dependency order (from `mermaid_diagrams` type=implementation_order)
+
+**🗂️ Field-Level Mapping** (when solution modifies sObject fields)
+- Group by operation with separate tables:
+  - Fields Reset: API Name | Type | Before | After
+  - Fields Computed: API Name | Type | Before | After
+  - Fields Removed: API Name | Reason
+
+**🗑️ Legacy Cleanup** (when replacing/heavily modifying existing code)
+- Critical Issues table: Category | Description
+- Dead Code Inventory table: Type (method/variable/map/class) | Name | Reason
+- Summary: "What is NOT carried over and why"
+
+**🔧 Method Design** (Complex components only)
+- Table: Method | Visibility | Parameters | Return Type | CC Target | Nesting Limit | Pattern
+- Include extracted helper methods
+- Skip for Simple/Medium — responsibility field is sufficient
+
+**📊 Diagrams** (always ≥1)
+- Component interaction diagram (always) — shows entry point, helpers, data flow, external systems
+- Implementation order diagram (Complex) — shows phase dependencies and parallel tracks
+- Data flow diagram (optional) — shows transformation pipeline
+- All diagrams from `mermaid_diagrams[]` in ticket-context.json
+
+**🔗 AC ↔ Component Traceability** (always)
+- Table: AC ID | Description | Component IDs
+- Flag any gaps or orphans
+
 ### How — Quality & Validation Sections
 - **Lead with** what success looks like in business terms
 - **Support with** acceptance criteria, test coverage matrices, test cases
@@ -1405,7 +1449,39 @@ Chose to extend existing Apex + LWC patterns over building net-new. TEA score: 8
 
 ### 🏛️ Solution Design
 
-Apex backend + Lightning Web Components UI + Platform Events for real-time updates.
+The solution replaces the legacy `JourneyPipelineStatisticsService` with a streamlined, single-pass Apex service. We chose to rebuild rather than patch because the existing implementation has 6 critical issues including dead code paths, stale statistics, and CC > 30 methods.
+
+#### 📦 Components
+
+| ID | Name | Type | Complexity | Responsibility |
+|----|------|------|------------|----------------|
+| C1 | JourneyPipelineStatisticsService | Apex Service | Complex | Orchestrate pipeline statistics calculation via single SOQL + map-based accumulation |
+| C2 | JourneyPipelineStatsBatch | Batch Apex | Medium | Nightly recalculation for large data volumes |
+
+#### 📋 Implementation Phases
+
+| Phase | Goal | Key Steps | Dependencies |
+|-------|------|-----------|--------------|
+| P1 | Core refactor | Replace nested loops with map accumulation, extract helpers | None |
+| P2 | Field cleanup | Reset stale fields, remove dead code | P1 |
+| P3 | Batch support | Add batch wrapper for nightly runs | P1 |
+
+#### 🔧 Method Design (C1 — Complex)
+
+| Method | Visibility | CC Target | Pattern |
+|--------|-----------|-----------|---------|
+| `calculate()` | public | ≤ 8 | Guard clause + map accumulation |
+| `buildStageMap()` | private | ≤ 4 | Map factory with null-safe defaults |
+
+#### 📊 Diagrams
+
+```mermaid
+graph TD
+  A[Trigger Entry] --> B[JourneyPipelineStatisticsService]
+  B --> C[buildStageMap]
+  B --> D[accumulateCounts]
+  D --> E[Journey__c DML]
+```
 
 ### ✅ Quality & Validation
 

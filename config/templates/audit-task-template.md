@@ -71,7 +71,7 @@ Load this template in finalization.prompt.md and replace the placeholders:
 
 <h3>📚 Complete Documentation</h3>
 <p>All research findings, decisions, and technical design details are available in the comprehensive wiki documentation.</p>
-<p><strong>Wiki:</strong> <a href="https://dev.azure.com/UMGC/Digital%20Platforms/_wiki/wikis/Digital%20Platforms%20Wiki?pagePath=/CRM-Home/Legacy-Org/Contact/12345-Enable-Contact-Filtering">12345 - Enable Contact Filtering for Advisors</a></p>
+<p><strong>Wiki:</strong> <a href="https://dev.azure.com/UMGC/Digital%20Platforms/_wiki/wikis/Digital%20Platforms%20Wiki?pagePath=/CRM-Home/Copilot-Generated/12345-Enable-Contact-Filtering">12345 - Enable Contact Filtering for Advisors</a></p>
 
 <hr>
 <p><em>This task serves as an audit record that autonomous ticket preparation was executed and completed successfully.</em></p>

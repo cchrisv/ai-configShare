@@ -1,11 +1,11 @@
-# Phase 03a – Solutioning Research
+# Phase 03 – Solutioning Research
 Role: Technical Research Coordinator
 Mission: Gather technical depth — SF metadata, dependencies, standards compliance.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md` · `#file:.github/prompts/util-research-base.prompt.md`
 Input: `{{work_item_id}}`
 
 ## Constraints
-- **Read-only** – NO ADO/wiki modifications
+- **Write-enabled** – context updates are allowed for this phase
 - **CLI-only** – per util-base guardrails (SF operations use `{{cli.*}}` commands only)
 - **Outputs to** {{context_file}}.research.salesforce_metadata + .dependency_discovery
 - **Rolling synthesis** – extend research.synthesis with new findings
@@ -23,16 +23,16 @@ Input: `{{work_item_id}}`
 A1 [CLI]: `{{cli.workflow_status}} -w {{work_item_id}} --json`
 A2 [IO]: Verify {{context_file}}:
   - `.research.ado_workitem` exists (keywords, technical_context)
-  - `.research.wiki_search` exists (search results, page content)
-  - `.research.synthesis` exists (unified_truth from grooming research)
+  - `.research.wiki_search` exists (search results from Phase 01 research)
+  - `.research.synthesis` exists (unified_truth from Phase 01 research)
   - `.research.team_impact` exists (impacted_roles, coordination_contacts)
-  - `.grooming` exists (solutioning_hints from phase-02b)
-  - `.grooming.solutioning_investigation` exists (assumptions, questions, unknowns, scope_risks from phase-02b)
+  - `.grooming` exists (solutioning_hints from Phase 02)
+  - `.grooming.solutioning_investigation` exists (assumptions, questions, unknowns, scope_risks from Phase 02)
   - `.metadata.phases_completed` includes `"grooming"`
 A3 [CLI]: Verify SF auth: `{{cli.sf_query}} "SELECT Id FROM Organization LIMIT 1" --json`
 A3.5 [CLI]: `{{cli.ado_get}} {{work_item_id}} --comments --json` — **Comment Refresh**
 A3.6 [LOGIC]: Compare against {{context_file}}.research.ado_workitem.comments[]:
-  - Identify new comments since grooming research (phase 02a)
+  - Identify new comments since Phase 01 research
   - Classify new comments; update {{context_file}}.research.ado_workitem.comments[]
   - Update {{context_file}}.research.ado_workitem.comment_summary with new decisions
   - If new comments contain technical direction, requirements changes, or blockers → flag for Stream 1 consideration
@@ -52,9 +52,9 @@ Add to {{context_file}}.research:
 ### Init
 B1 [IO]: Load domain keywords from `.research.ado_workitem.domain_keywords` + `.research.wiki_search`
 B2 [IO]: Load `.grooming.solutioning_hints[]` — these are implementation clues extracted during grooming
-B2.5 [IO]: Load `.grooming.solutioning_investigation` — these are deliberate items phase 2 flagged for technical investigation. Log count: assumptions_to_validate, questions_for_solutioning, unknowns, scope_risks. Use these to guide investigation priorities in this stream.
-B3 [GEN]: Extract SF object/field names from domain keywords + hints + solutioning_investigation items; also extract any technical/implementation keywords that phase 02a identified as in-scope but did not investigate (02a focuses on what/why only)
-B3.5 [CLI]: If metadata investigation needed: `{{cli.sf_query}} "{{tooling_query}}" --tooling --json` — tooling API queries live here, not in phase 02a
+B2.5 [IO]: Load `.grooming.solutioning_investigation` — these are deliberate items Phase 02 flagged for technical investigation. Log count: assumptions_to_validate, questions_for_solutioning, unknowns, scope_risks. Use these to guide investigation priorities in this stream.
+B3 [GEN]: Extract SF object/field names from domain keywords + hints + solutioning_investigation items; also extract any technical/implementation keywords that Phase 01 identified as in-scope but did not investigate (Phase 01 focuses on what/why only)
+B3.5 [CLI]: If metadata investigation needed: `{{cli.sf_query}} "{{tooling_query}}" --tooling --json` — tooling API queries live here, not in Phase 01
 
 ### Discovery (batch when multiple objects)
 C1 [CLI]: `{{cli.sf_describe}} {{object}} --json` (batch: `{{obj1}},{{obj2}} --batch --json`)
@@ -92,15 +92,6 @@ E2 [GEN]: Compare discovered patterns against loaded standards; flag non-complia
 
 ---
 
-## Wiki [IO/GEN/CLI] – Fill Why Discovery
-Ref: `#file:.github/prompts/util-wiki-base.prompt.md`
-
-Fill sections where `filled_by_phase == "solutioning_research"`:
-- `why_discovery` — from `research.salesforce_metadata`, `research.dependency_discovery`, `research.code_search`, `research.wiki_search`, `research.web_research`
-- `why_investigation` — from `research.assumptions`, `research.synthesis.conflict_log`, `research.synthesis.research_gaps_investigated`, `research.synthesis.reusable_assets`
-
-Execute the 7-step fill workflow from util-wiki-base. Update status banner: **Grooming** ✅ | **Research** ✅ | **Solutioning** ⏸️ | **Testing** ⏸️
-
 ## Completion [IO/GEN]
 Update {{context_file}}:
 - `research.synthesis.research_phase_complete` = `true`
@@ -109,11 +100,11 @@ Update {{context_file}}:
   - Mark as `resolved` (with evidence/answer) or `unresolved` (with reason)
   - Store resolution status in `research.investigation_resolution[]`:
     `{ id, original_item, status: "resolved"|"unresolved", evidence: "", resolved_in_stream: "" }`
-  - Unresolved items carry forward as risks for phase 03b to address
+  - Unresolved items carry forward as risks for Phase 04 to address
 - `metadata.phases_completed` append `"solutioning_research"`
 - `metadata.current_phase` = `"solutioning"`
 - `metadata.last_updated` = current ISO timestamp
 - Append `{"phase":"solutioning_research","step":"solutioning_research_complete","completedAt":"<ISO>","artifact":"{{context_file}}"}` to `run_state.completed_steps[]`
 - Save to disk
 
-Tell user: **"Solutioning research complete. Use /phase-03b-solutioning."**
+Tell user: **"Solutioning research complete. Use /ticket-grooming-phase-04-solutioning."**

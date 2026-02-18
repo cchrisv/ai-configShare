@@ -12,7 +12,7 @@ Input: `{{work_item_id}}` — target Feature Work Item ID
 **Anti-pattern:** NEVER write state-change logs like "moved X to Active, spawned 2 tasks." Write about what the team DID, WHY, and what it MEANS for the feature.
 
 ## Constraints
-Per util-base guardrails (CLI-only, template-verbatim HTML, no hardcoded paths), plus:
+Per util-base guardrails (CLI-only, template-engine only, no hardcoded paths), plus:
 - **Feature-only scope** – if target is not a Feature, **STOP** and inform user
 - **Evidence-based** – all summaries from actual child data, comments, revision history. No speculation
 - **6-week rolling window** – Progress shows last 6 weeks (Mon–Sun). Every week MUST appear, even with "No significant updates"
@@ -27,9 +27,9 @@ Per util-base guardrails (CLI-only, template-verbatim HTML, no hardcoded paths),
 Apply `{{flow_health.*}}` thresholds: Warning (`{{flow_health.warning_days}}`d), Critical (`{{flow_health.critical_days}}`d), Escalation (`{{flow_health.escalation_days}}`d). Also detect: assignment churn (>`{{flow_health.churn_reassignments}}` reassignments in `{{flow_health.churn_window_days}}`d), silent work (no activity for `{{flow_health.silent_days}}`d), cascade risk (parent >`{{flow_health.cascade_complete_percent}}`% with stalled children).
 
 ## Templates
-Load from `{{paths.templates}}/`: `#file:config/templates/field-progress.html` · `#file:config/templates/field-planned-work.html` · `#file:config/templates/field-blockers.html` (Variant 1: Issues, Variant 2: Healthy)
+Templates: `#file:config/templates/field-progress.html` · `#file:config/templates/field-planned-work.html` · `#file:config/templates/field-blockers.html` (Variant 1: Issues, Variant 2: Healthy)
 
-**Rule:** COPY template HTML character-for-character; ONLY replace `{{variable}}` placeholders. Every `style="..."` in output must exist verbatim in the source template. Correct: `<strong style="color: #2e7d32; font-size: 18px;">72%</strong>` — Wrong: `<span style="color: green; font-size: 18px; font-weight: bold;">72%</span>`.
+**Rule:** NEVER generate raw HTML. Use `template-tools scaffold` → fill JSON slots → `template-tools render` → `template-tools validate`. The AI fills slot values only — the engine produces HTML.
 
 ## Work Item Hierarchy
 ```
@@ -142,92 +142,80 @@ Categorize: **Immediate** (this week), **Near-term** (next 2–4 weeks), **Upcom
 
 ---
 
-### Phase C: Field Content Generation [GEN]
+### Phase C: Field Content Generation [CLI/GEN]
 
-**CRITICAL:** Use HTML templates verbatim. Replace `{{variable}}` placeholders only. Preserve all inline CSS. Omit sections with no content. Escape `&`, `<`, `>`, `"`. Apply the B2.5 narrative formula to ALL text variables across all three fields.
+**CRITICAL:** Use the template engine pipeline. The AI fills JSON slot values — NEVER generates raw HTML. Apply the B2.5 narrative formula to ALL text slot values across all three fields.
 
-#### C1 – Progress Field
-**Template:** `#file:config/templates/field-progress.html`
+#### C0 [CLI] – Scaffold All Templates
+Get fill specs and save to temp:
+- C0.1: `{{cli.template_scaffold}} --template field-progress --output ".temp/{{work_item_id}}-progress.json"`
+- C0.2: `{{cli.template_scaffold}} --template field-planned-work --output ".temp/{{work_item_id}}-planned-work.json"`
+- C0.3: `{{cli.template_scaffold}} --template field-blockers --output ".temp/{{work_item_id}}-blockers.json"`
 
-| Variable | Source | Description |
-|----------|--------|-------------|
-| `{{completion_percent}}` | B1 | Integer: story-state score `(earned_points / (total_stories × 6)) × 100` |
-| `{{completed_count}}` / `{{total_count}}` | B1 | Earned story points / max possible points (total_stories × 6) |
-| `{{update_date}}` | Today | Format: `Mon DD, YYYY` |
-| `{{overall_status_summary}}` | B1–B4 | 4–6 sentence executive narrative. Open with trajectory (accelerating, steady, slowing, pivoting). Cover 2–3 most significant developments and their business impact. Close with key risk or opportunity. Write for a leader who reads ONLY this paragraph. |
-| `{{window_start}}` / `{{window_end}}` | Calc | 6-week window dates `MM/DD/YYYY` |
-| `{{week_start}}` / `{{week_end}}` | Calc | Per-week boundaries `MM/DD` |
-| `{{week_narrative_summary}}` | B2.5 | 1-sentence week theme |
-| `{{activity_item}}` | B2.5 | Narrative bullet per B2.5 formula |
-| `{{milestone_description}}` | B2.5 | Milestone narrative with work item ref |
-| `{{leadership_helped_text}}` | B2/B4 | Specific leadership actions that unblocked or accelerated work, or "N/A" |
-| `{{support_needed_text}}` | B4 | Concrete early warnings with specific ask, or "No immediate support needs" |
+Each file contains `{ "template": "...", "slots": { ... } }`. The AI fills slot values in these files.
 
-**Content rules:** ALWAYS 6 weeks ("No significant updates" for inactive weeks). Max 3–5 narrative-rich bullets per week. Work item refs: `<strong style="color: #1976d2;">#{{id}}</strong>`. Milestones: `<strong style="color: #2e7d32;">Milestone:</strong>`. For inline badges, use exact styles from templates. Every bullet must pass the "could a leader understand this without opening the ticket?" test. "Updated N work items" is NEVER acceptable.
+#### C1 [GEN] – Fill Progress Slots
+Fill the `field-progress` spec slots:
 
-#### C2 – Planned Work Field
-**Template:** `#file:config/templates/field-planned-work.html`
+| Slot | Type | Source | Content Rules |
+|------|------|--------|---------------|
+| `completion_percent` | text | B1 | Integer: story-state score `(earned_points / (total_stories × 6)) × 100` |
+| `completed_count` | text | B1 | Earned story points |
+| `total_count` | text | B1 | Max possible points (total_stories × 6) |
+| `update_date` | text | Today | Format: `Mon DD, YYYY` |
+| `overall_status_summary` | text | B1–B4 | 4–6 sentence executive narrative. Open with trajectory. Cover 2–3 most significant developments. Close with key risk or opportunity. Write for a leader who reads ONLY this paragraph. |
+| `window_start` / `window_end` | text | Calc | 6-week window dates `MM/DD/YYYY` |
+| `weeks` | repeatable_block | B2.5 | 6 blocks with `start`, `end`, `narrative`, `activities`. ALWAYS 6 weeks ("No significant updates" for inactive). Max 3–5 narrative-rich bullets per week. |
+| `leadership_helped_text` | text | B2/B4 | Specific leadership actions that unblocked work, or "N/A" |
+| `support_needed_text` | text | B4 | Concrete early warnings with specific ask, or "No immediate support needs" |
 
-| Variable | Source | Description |
-|----------|--------|-------------|
-| `{{primary_focus_summary}}` | B3 | 2–3 sentence narrative: what the team is focused on, why it matters, and the next milestone. Not a list. |
-| `{{work_item_id}}` / `{{work_item_title}}` | Data | Work item reference |
-| `{{status}}` | State | Badge text (Solution Review, In Progress, etc.) |
-| `{{description}}` | Analysis | 1-sentence narrative: what this work accomplishes and why the feature needs it |
-| `{{blocker_id}}` | Data | Work item ID of the blocking item (used in "blocked by" references) |
-| `{{urgency_description}}` | Analysis | Business reason this is priority — what risk or opportunity drives the urgency |
-| `{{near_term_context}}` | B3 | 1–2 sentence narrative introducing the near-term theme and how it connects to feature goals |
-| `{{story_points}}` | Data | SP value or "—" |
-| `{{notes}}` | Analysis | Key context a leader needs: dependencies, risks, what "done" looks like |
-| `{{upcoming_context}}` | B3 | 1–2 sentence narrative framing the upcoming horizon and its strategic significance |
-| `{{effort_level}}` | Analysis | "High Effort", "Medium", etc. |
-| `{{dependency}}` | Analysis | What this item is waiting for and who owns the dependency |
-| `{{ask_category_N}}` / `{{ask_detail_N}}` | B4 | Specific, actionable leadership asks — name the decision, resource, or escalation needed and why |
+**Content rules:** Work item refs in activities: `<strong style="color: #1976d2;">#ID</strong>`. Milestones: `<strong style="color: #2e7d32;">Milestone:</strong>`. Every bullet must pass the "could a leader understand this without opening the ticket?" test. "Updated N work items" is NEVER acceptable.
 
-**Content rules:** Forward-looking ONLY. Omit empty timeline sections. Table format for Near-term when 3+ items. Badge colors: Yellow `#fff3cd` (active), Red `#dc3545` (blocked), Gray `#6c757d` (on hold). Each item should answer: what will be done, why it matters to the feature, and what is needed to proceed.
+#### C2 [GEN] – Fill Planned Work Slots
+Fill the `field-planned-work` spec slots:
 
-#### C3 – Flow Health Report
-**Template:** `#file:config/templates/field-blockers.html`
+| Slot | Type | Source | Content Rules |
+|------|------|--------|---------------|
+| `primary_focus_summary` | text | B3 | 2–3 sentence narrative: what the team is focused on, why it matters, next milestone |
+| `immediate_items` | repeatable_block | B3 | Blocks with `id`, `title`, `status`, `description`, `urgency`. Forward-looking ONLY. |
+| `near_term_context` | text | B3 | 1–2 sentence narrative introducing near-term theme |
+| `near_term_items` | table | B3 | Rows with `id`, `title`, `points`, `notes`. Table format when 3+ items. |
+| `upcoming_context` | text | B3 | 1–2 sentence narrative framing the upcoming horizon |
+| `upcoming_items` | repeatable_block | B3 | Blocks with `id`, `title`, `effort`, `dependency` |
+| `leadership_asks` | repeatable_block | B4 | Blocks with `category`, `detail`. Specific, actionable asks. |
 
-**Choose variant:** Variant 1 (Escalation Required) if blockers or stalled work detected. Variant 2 (Healthy Flow) if all clear.
+**Content rules:** Forward-looking ONLY. Omit empty timeline sections. Badge colors: Yellow `#fff3cd` (active), Red `#dc3545` (blocked), Gray `#6c757d` (on hold).
 
-**Variant 1 variables:**
+#### C3 [GEN] – Fill Blockers Slots
+Fill the `field-blockers` spec slots. **Choose variant:** Variant 1 if blockers or stalled work detected. Variant 2 if all clear.
 
-| Variable | Source | Description |
-|----------|--------|-------------|
-| `{{blocker_count}}` | B4 | Active blocker count |
-| `{{escalation_summary}}` | B4 | 1–2 sentence narrative: the most critical issue, its business impact, and what resolution requires |
-| `{{work_item_id}}` / `{{work_item_title}}` | Data | Blocker card header identity and dependency references |
-| `{{blocker_id}}` | Data | Work item ID of the blocking item (used in "blocked by" references) |
-| `{{blocker_description}}` | Analysis | Narrative: what is blocked, what has been tried, what specific action would unblock it |
-| `{{impact_description}}` | Analysis | Business impact: what downstream work, milestones, or commitments are at risk |
-| `{{target_date}}` / `{{target_date_status}}` | Data | Due date + "X days overdue" or "On track" |
-| `{{days_stalled}}` | B4 | Days since last activity |
-| `{{dependency_description}}` | Analysis | Who owns the dependency, what they committed to, and current status of that commitment |
-| `{{risk_category}}` / `{{risk_description}}` | Analysis | Named risk pattern and its potential impact if unaddressed |
-| `{{resolution_description}}` | Analysis | What was resolved, how, and what it unblocked — tell the resolution story |
-| `{{leadership_ask_text}}` | Analysis | Concrete request: name the person, decision, or resource needed and the deadline |
+**Variant 1 (Escalation Required):**
 
-**Variant 2 variables:**
+| Slot | Type | Source | Content Rules |
+|------|------|--------|---------------|
+| `blocker_count` | text | B4 | Active blocker count |
+| `escalation_summary` | text | B4 | 1–2 sentence narrative: most critical issue + business impact + resolution path |
+| `critical_blockers` | repeatable_block | B4 | Blocks with `work_item_id`, `title`, `description`, `impact`, `target_date`, `target_date_status`, `days_stalled` |
+| `medium_dependencies` | repeatable_block | B4 | Blocks with `id`, `title`, `description` |
+| `risks` | repeatable_block | B4 | Blocks with `category`, `description` |
+| `resolved_items` | repeatable_block | B4 | Blocks with `id`, `title`, `description` — tell the resolution story |
+| `leadership_ask_text` | text | Analysis | Concrete request: name the person, decision, or resource needed |
 
-| Variable | Source | Description |
-|----------|--------|-------------|
-| `{{active_count}}` | B1 | Active work items |
-| `{{completed_count}}` | B1 | Recently completed |
-| `{{avg_cycle_time}}` | Analysis | Avg days Active → Closed |
-| `{{team_highlights_text}}` | Analysis | Specific healthy practices worth celebrating — name what the team did well and why it matters |
+**Variant 2 (Healthy Flow):** Use variant 2 text slots per scaffold spec.
 
-**Content rules:** Current state ONLY. Omit empty sections. Inline severity colors: Red `#dc3545` (critical/blocked badges), Green `#28a745` (resolved badges), Blue `#2196f3` (leadership callout). Section structure follows template header gradients — do not invent colors.
+**Content rules:** Current state ONLY. Omit empty blocks arrays. Severity colors applied by engine.
+
+#### C4 [IO] – Save Filled Specs
+Save the filled specs back to the same temp JSON files created in C0. Preserve the `"template"` and `"slots"` wrapper — only fill `value`, `items`, `rows`, or `blocks` within each slot.
 
 ---
 
 ### Phase D: Validation [LOGIC]
 
-#### D0 – Template Fidelity
-Compare generated HTML tags and `style="..."` against source templates. Only `{{variable}}` tokens should differ. Mismatch → re-read template, regenerate.
+**Note:** Template engine validation (unfilled tokens, sections, gradients, HTML structure) is handled automatically by `--from-filled` in Phase E. Phase D focuses on content quality only.
 
 #### D1 – Content Quality
-- Well-formed HTML (matching tags), no PII (emails, phone numbers)
+- No PII (emails, phone numbers)
 - Valid work item ID references
 - Date formats: window dates `MM/DD/YYYY`, week boundaries `MM/DD`, update date `Mon DD, YYYY`
 - Professional tone, acronyms explained at first use
@@ -254,13 +242,20 @@ If any check fails → regenerate affected content.
 
 ### Phase E: ADO Update [CLI]
 
-#### E1 – Prepare Update Payload
-Write temp JSON: `{ "fields": { "Custom.Progress": "<C1>", "Custom.PlannedWork": "<C2>", "Custom.Blockers": "<C3>" } }`
+#### E1 [CLI] – Render + Validate + Push (Single Command)
+```
+{{cli.ado_update}} {{work_item_id}} --from-filled ".temp/{{work_item_id}}-progress.json,.temp/{{work_item_id}}-planned-work.json,.temp/{{work_item_id}}-blockers.json" --json
+```
+This single command:
+1. Reads each filled-spec JSON (uses `template` key to identify which template)
+2. Renders via template engine
+3. Validates (fails on unfilled tokens or structural issues)
+4. Maps `ado_field` from registry
+5. Pushes all fields in one API call
 
-#### E2 – Execute Update
-`{{cli.ado_update}} {{work_item_id}} --fields-file "{{temp_json_path}}" --json` — verify success.
+If validation fails → review filled slots, fix values, re-run. **STOP** after 2 failures per field.
 
-#### E3 – User Summary
+#### E2 – User Summary
 Present a narrative markdown summary:
 ```markdown
 ## Feature Progress Updated: [Title]

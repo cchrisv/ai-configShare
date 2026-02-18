@@ -1,4 +1,4 @@
-# Phase 02b – Grooming
+# Phase 02 – Grooming
 Role: Business Architect
 Mission: Transform requests into evidence-based requirements.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md`
@@ -34,9 +34,9 @@ This produces a JSON fill spec describing every slot the AI must fill — variab
 
 ## Step 3 [GEN] – Analysis & Slot Filling
 C1: **Organizational context** — match department, persona, strategic goals from research evidence
-C2: **Classify** — determine WorkClass (`{{work_class_types}}`), Risk, Priority, Tags (business-driven, evidence available now). Mark Effort, Complexity, Feasibility as `"preliminary"` — these will be refined in phase 03b after technical research.
-C3: **Solution neutrality** — identify any "How" statements; extract to `.grooming.solutioning_hints[]` for phase-03; keep only "What/Why"
-C3.5: **Investigation refinement** — review `.research.solutioning_investigation` from phase 02a; resolve items answered during analysis; add new items surfaced. Output refined list to `.grooming.solutioning_investigation`.
+C2: **Classify** — determine WorkClass (`{{work_class_types}}`), Risk, Priority, Tags (business-driven, evidence available now). Mark Effort, Complexity, Feasibility as `"preliminary"` — these will be refined in Phase 04 after technical research.
+C3: **Solution neutrality** — identify any "How" statements; extract to `.grooming.solutioning_hints[]` for Phase 03; keep only "What/Why"
+C3.5: **Investigation refinement** — review `.research.solutioning_investigation` from Phase 01; resolve items answered during analysis; add new items surfaced. Output refined list to `.grooming.solutioning_investigation`.
 C4: **Fill slot values** — for each template in the fill spec, populate slot values using research evidence:
   - `text` slots: plain text value string (will be HTML-escaped by renderer)
   - `html` slots: rich text value (use sparingly, only where template expects it)
@@ -66,7 +66,7 @@ Save → {{context_file}}.grooming:
 {
   "classification": {
     "work_class": "", "risk": "", "priority": "",
-    "effort": "", "complexity": "", "feasibility": "", "preliminary_fields_note": "effort/complexity/feasibility are preliminary — refined in phase 03b after technical research",
+    "effort": "", "complexity": "", "feasibility": "", "preliminary_fields_note": "effort/complexity/feasibility are preliminary — refined in Phase 04 after technical research",
     "tags": { "existing": [], "to_add": [], "final": [] },
     "quality_gates": {
       "slot_completeness": { "passed": true, "evidence": "" },
@@ -134,17 +134,6 @@ The CLI automatically:
 
 On error: log to `run_state.errors[]`; save to disk; retry once; **STOP** on second failure.
 
-## Step 7 [IO/GEN/CLI] – Wiki: Fill What
-Ref: `#file:.github/prompts/util-wiki-base.prompt.md`
-
-Fill sections where `filled_by_phase == "grooming"`:
-- `executive_summary` (partial — challenge + discoveries only; no solution yet)
-- `what_business_context` — from `research.ado_workitem.business_summary`, `research.business_context`, `grooming.organizational_context_match`, `research.journey_maps`
-- `what_requirements` — from `grooming.templates_applied.applied_content` (description filled_slots), `research.synthesis.unified_truth.technical_requirements`
-- `what_success_criteria` — from `grooming.templates_applied.applied_content` (AC filled_slots), `grooming.classification.quality_gates`
-- `why_business_value` — from `grooming.organizational_context_match.strategic_goals`, `research.synthesis.unified_truth.business_goals`, `research.synthesis.swot_analysis`
-
-Execute the 7-step fill workflow from util-wiki-base. Update status banner: **Grooming** ✅ | **Research** ⏸️ | **Solutioning** ⏸️ | **Testing** ⏸️
 
 ## Completion [IO/GEN]
 Update {{context_file}}:
@@ -153,4 +142,4 @@ Update {{context_file}}:
 - `metadata.last_updated` = current ISO timestamp
 - Save to disk
 
-Tell user: **"Grooming complete. Use /phase-03a-solutioning-research."**
+Tell user: **"Grooming complete. Use /ticket-grooming-phase-03-solutioning-research."**

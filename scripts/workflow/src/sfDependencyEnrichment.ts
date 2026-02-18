@@ -97,31 +97,38 @@ async function analyzeApexUsage(
 
   logDebug('Analyzing Apex usage');
 
-  // Query Apex classes that might reference these objects
+  // Query Apex classes that reference these objects via MetadataComponentDependency
   for (const objectName of objectNames) {
     try {
+      // Use MetadataComponentDependency to find actual references
       const query = `
-        SELECT Id, Name FROM ApexClass 
-        WHERE Status = 'Active'
-        LIMIT 100
+        SELECT MetadataComponentName, MetadataComponentType
+        FROM MetadataComponentDependency
+        WHERE RefMetadataComponentName = '${objectName}'
+        AND MetadataComponentType = 'ApexClass'
       `;
       
-      const result = await executeToolingQuery<{ Id: string; Name: string }>(query, config);
+      const result = await executeToolingQuery<{
+        MetadataComponentName: string;
+        MetadataComponentType: string;
+      }>(query, config);
       
-      // For each class, we would ideally parse the body to find references
-      // For now, create a general pill indicating potential Apex usage
       if (result.records.length > 0) {
+        const severity: UsageSeverity = result.records.length > 10 ? 'warning' : 'info';
         pills.push(createPill({
           type: 'apex_usage',
           label: `${objectName} Apex Usage`,
-          description: `${result.records.length} Apex classes in org may reference this object`,
-          severity: 'info',
-          affectedComponents: result.records.slice(0, 10).map(r => r.Name),
-          recommendation: 'Review Apex classes for direct object references before making schema changes',
+          description: `${result.records.length} Apex class(es) reference this object`,
+          severity,
+          affectedComponents: result.records.slice(0, 10).map(r => r.MetadataComponentName),
+          recommendation: severity === 'warning'
+            ? 'High Apex coupling — review classes for direct object references before making schema changes'
+            : 'Review Apex classes for direct object references before making schema changes',
         }));
       }
     } catch (error) {
-      logDebug(`Error analyzing Apex for ${objectName}: ${error}`);
+      // MetadataComponentDependency may not be available in all orgs; fall back to count-only pill
+      logDebug(`MetadataComponentDependency not available for ${objectName}, skipping Apex usage enrichment: ${error}`);
     }
   }
 

@@ -134,7 +134,7 @@ program
   .description('Discover metadata dependencies for one or more components')
   .requiredOption('--type <type>', 'Metadata type (CustomObject, CustomField, ApexClass, etc.)')
   .requiredOption('--name <names>', 'Component name (comma-separated for batch)')
-  .option('--depth <n>', 'Maximum traversal depth', parseInt, 3)
+  .option('--depth <n>', 'Maximum traversal depth', (v: string) => parseInt(v, 10), 3)
   .option('--include-standard', 'Include standard objects')
   .option('--batch', 'Process multiple components in parallel (comma-separated)')
   .option('-o, --org <alias>', 'Org alias (uses default org if not specified)')

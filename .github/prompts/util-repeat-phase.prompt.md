@@ -1,7 +1,7 @@
 # Util – Repeat Phase (Context7)
 Mission: Re-run a specific workflow phase after updates or corrections.
-Config: `#file:.github/prompts/util-base.prompt.md`
-Input: `{{work_item_id}}` · `{{phase}}` (grooming-research | grooming | solutioning-research | solutioning | test_cases | finalization)
+Config: `#file:util-base.prompt.md`
+Input: `{{work_item_id}}` · `{{phase}}` (research | grooming | solutioning-research | solutioning | finalization)
 
 ## Step 1 [CLI] – Reset
 `{{cli.workflow_reset}} -w {{work_item_id}} --phase {{phase}} --force --json`
@@ -9,11 +9,10 @@ Input: `{{work_item_id}}` · `{{phase}}` (grooming-research | grooming | solutio
 ## Step 2 – Execute Phase
 | Phase | Prompt |
 |-------|--------|
-| grooming-research | `#file:.github/prompts/phase-02a-grooming-research.prompt.md` |
-| grooming | `#file:.github/prompts/phase-02b-grooming.prompt.md` |
-| solutioning-research | `#file:.github/prompts/phase-03a-solutioning-research.prompt.md` |
-| solutioning | `#file:.github/prompts/phase-03b-solutioning.prompt.md` |
-| test_cases | `#file:.github/prompts/phase-04-test-cases.prompt.md` |
-| finalization | `#file:.github/prompts/phase-05-finalization.prompt.md` |
+| research | `#file:ticket-grooming-phase-01-research.prompt.md` |
+| grooming | `#file:ticket-grooming-phase-02-grooming.prompt.md` |
+| solutioning-research | `#file:ticket-grooming-phase-03-solutioning-research.prompt.md` |
+| solutioning | `#file:ticket-grooming-phase-04-solutioning.prompt.md` |
+| finalization | `#file:ticket-grooming-phase-05-finalization.prompt.md` |
 
 Note: Phase updates ticket-context.json directly. No separate artifacts created.

@@ -275,8 +275,16 @@ export function renderTemplate(
   // Strip all HTML comments (template documentation, "Add more" hints, etc.)
   html = html.replace(/<!--[\s\S]*?-->/g, '');
 
+  // Post-render safety check: warn if any {{...}} tokens remain after rendering
+  const remainingTokens = extractVariables(html);
+  if (remainingTokens.length > 0) {
+    for (const token of remainingTokens) {
+      warnings.push(`Token {{${token}}} remains after rendering`);
+    }
+  }
+
   return {
-    success: missingSlots.length === 0,
+    success: missingSlots.length === 0 && remainingTokens.length === 0,
     template: templateKey,
     ado_field: entry.ado_field,
     html: html.trim(),
@@ -486,6 +494,13 @@ function renderRepeatableBlockSlot(
   const firstRegion = allBlockRegions[0]!;
   const templateBlock = firstRegion.html;
 
+  // Safety: verify the detected block region contains ALL block variable tokens.
+  // If the region is too small (e.g. matched an inner title div), fall back.
+  const tokensInRegion = findBlockTokens(templateBlock, varName, 1, blockVarKeys);
+  if (tokensInRegion.length < blockVarKeys.length) {
+    return renderRepeatableBlockFallback(html, varName, blocks, blockVarKeys);
+  }
+
   // Remove all existing numbered blocks (reverse order to preserve indices)
   let cleaned = html;
   for (const region of [...allBlockRegions].reverse()) {
@@ -580,14 +595,20 @@ function findBlockTokens(
   return tokens;
 }
 
-/** Find the containing div/block element for a token */
-function findBlockRegion(html: string, token: string): { start: number; end: number; html: string } | null {
+/** Find the containing div/block element for a token.
+ *  When allTokens is provided, ensures the region contains ALL of them
+ *  (prevents matching a nested inner div instead of the outer card div). */
+function findBlockRegion(
+  html: string,
+  token: string,
+  allTokens?: string[],
+): { start: number; end: number; html: string } | null {
   const tokenPos = html.indexOf(token);
   if (tokenPos === -1) return null;
 
-  // Walk backward to find the containing styled <div>
+  // Collect candidate start positions walking backward
+  const candidates: number[] = [];
   let depth = 0;
-  let start = tokenPos;
 
   for (let i = tokenPos - 1; i >= 0; i--) {
     if (html.substring(i, i + 5) === '</div') depth++;
@@ -597,37 +618,55 @@ function findBlockRegion(html: string, token: string): { start: number; end: num
       } else {
         const divSnippet = html.substring(i, Math.min(i + 200, html.length));
         if (divSnippet.includes('margin-bottom') || divSnippet.includes('border-left')) {
-          start = i;
-          while (start > 0 && (html[start - 1] === ' ' || html[start - 1] === '\n')) start--;
-          if (html[start] === '\n') start++;
-          break;
+          let candidateStart = i;
+          while (candidateStart > 0 && (html[candidateStart - 1] === ' ' || html[candidateStart - 1] === '\n')) candidateStart--;
+          if (html[candidateStart] === '\n') candidateStart++;
+          candidates.push(candidateStart);
         }
       }
     }
   }
 
-  // Walk forward to find matching </div>
-  depth = 0;
-  let end = start;
+  if (candidates.length === 0) return null;
 
-  for (let i = start; i < html.length; i++) {
-    if (html[i] === '>') {
-      const tagStart = html.lastIndexOf('<', i);
-      const tag = html.substring(tagStart, i + 1);
-      if (tag.startsWith('<div')) depth++;
-      else if (tag.startsWith('</div')) {
-        depth--;
-        if (depth === 0) {
-          end = i + 1;
-          if (end < html.length && html[end] === '\n') end++;
-          break;
+  // Helper: compute the full region (start → matching </div>) for a candidate
+  const computeRegion = (start: number): { start: number; end: number; html: string } | null => {
+    let d = 0;
+    let end = start;
+    for (let i = start; i < html.length; i++) {
+      if (html[i] === '>') {
+        const tagStart = html.lastIndexOf('<', i);
+        const tag = html.substring(tagStart, i + 1);
+        if (tag.startsWith('<div')) d++;
+        else if (tag.startsWith('</div')) {
+          d--;
+          if (d === 0) {
+            end = i + 1;
+            if (end < html.length && html[end] === '\n') end++;
+            break;
+          }
         }
       }
     }
+    if (end <= start) return null;
+    return { start, end, html: html.substring(start, end) };
+  };
+
+  // If no allTokens check needed, use the first (innermost) candidate (legacy behavior)
+  if (!allTokens || allTokens.length <= 1) {
+    return computeRegion(candidates[0]!);
   }
 
-  if (end <= start) return null;
-  return { start, end, html: html.substring(start, end) };
+  // Find the smallest candidate region that contains ALL tokens
+  for (const candidateStart of candidates) {
+    const region = computeRegion(candidateStart);
+    if (!region) continue;
+    const allPresent = allTokens.every(t => region.html.includes(t));
+    if (allPresent) return region;
+  }
+
+  // No candidate contains all tokens — return the outermost as best effort
+  return computeRegion(candidates[candidates.length - 1]!);
 }
 
 /** Find all numbered block regions in the HTML */
@@ -642,7 +681,7 @@ function findAllNumberedBlockRegions(
     const tokens = findBlockTokens(html, varName, n, blockVarKeys);
     if (tokens.length === 0) break;
     const firstToken = tokens[0]!;
-    const region = findBlockRegion(html, firstToken);
+    const region = findBlockRegion(html, firstToken, tokens);
     if (region) regions.push({ ...region, blockNum: n });
   }
   return regions;

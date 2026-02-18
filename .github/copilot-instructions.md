@@ -21,16 +21,14 @@ Schema: `#file:config/templates/ticket-context-schema.json`
 
 | Task | Prompt |
 |------|--------|
-| Initialize workflow | `#file:.github/prompts/phase-01-initialize.prompt.md` |
-| Grooming research | `#file:.github/prompts/phase-02a-grooming-research.prompt.md` |
-| Grooming | `#file:.github/prompts/phase-02b-grooming.prompt.md` |
-| Grooming update (dev) | `#file:.github/prompts/phase-02c-grooming-update.prompt.md` |
-| Solutioning research | `#file:.github/prompts/phase-03a-solutioning-research.prompt.md` |
-| Solutioning | `#file:.github/prompts/phase-03b-solutioning.prompt.md` |
-| Solutioning update (dev) | `#file:.github/prompts/phase-03c-solutioning-update.prompt.md` |
-| Test cases | `#file:.github/prompts/phase-04-test-cases.prompt.md` |
-| Finalization | `#file:.github/prompts/phase-05-finalization.prompt.md` |
-| Dev closeout | `#file:.github/prompts/phase-06-dev-closeout.prompt.md` |
+| Research (init + business research) | `#file:.github/prompts/ticket-grooming-phase-01-research.prompt.md` |
+| Grooming | `#file:.github/prompts/ticket-grooming-phase-02-grooming.prompt.md` |
+| Grooming update (dev) | `#file:.github/prompts/util-grooming-update.prompt.md` |
+| Solutioning research | `#file:.github/prompts/ticket-grooming-phase-03-solutioning-research.prompt.md` |
+| Solutioning | `#file:.github/prompts/ticket-grooming-phase-04-solutioning.prompt.md` |
+| Solutioning update (dev) | `#file:.github/prompts/util-solutioning-update.prompt.md` |
+| Finalization | `#file:.github/prompts/ticket-grooming-phase-05-finalization.prompt.md` |
+| Dev closeout | `#file:.github/prompts/ticket-grooming-phase-06-dev-closeout.prompt.md` |
 | Feature/Epic solution design | `#file:.github/prompts/util-feature-solution-design.prompt.md` |
 | Apply template (reformat) | `#file:.github/prompts/util-apply-template.prompt.md` |
 | Sequence tickets | `#file:.github/prompts/util-sequence-tickets.prompt.md` |
@@ -42,15 +40,17 @@ Schema: `#file:config/templates/ticket-context-schema.json`
 | Setup | `#file:.github/prompts/util-setup.prompt.md` |
 
 ## Phases (Context7)
-**Grooming (02):** 02a research → 02b grooming (+wiki What) → 02c update (iterative)
-**Solutioning (03):** 03a research (+wiki Why discovery) → 03b solutioning (+wiki Why decisions, How solution) → 03c update (iterative)
-**Completion:** 04 test-cases (+wiki How quality) → 05 finalization (+wiki footer) → 06 dev closeout
-**Wiki:** Scaffolded in Phase 01; sections filled incrementally by each phase above. No discrete wiki phase.
+**01 Research:** init + business research
+**02 Grooming:** refine requirements (what/why)
+**03 Solutioning Research:** technical research (SF metadata, dependencies)
+**04 Solutioning:** solution design (how)
+**05 Finalization:** WSJF scoring, ADO links
+**06 Dev Closeout:** planned vs actual, release notes
 **Feature/Epic:** `util-feature-solution-design` — aggregate children into solution design
-**Utilities:** `util-apply-template` · `util-sequence-tickets` · `util-activity-report` · `util-team-members` · `util-update-feature-progress` · `util-repeat-phase` · `util-help` · `util-setup`
+**Utilities:** `util-grooming-update` · `util-solutioning-update` · `util-apply-template` · `util-sequence-tickets` · `util-activity-report` · `util-team-members` · `util-update-feature-progress` · `util-repeat-phase` · `util-help` · `util-setup`
 
 ## Folder Structure
-`.github/prompts/` — prompt definitions · `config/shared.json` — master config · `config/templates/` — ADO field + wiki HTML templates · `config/standards/` — dev standards · `scripts/workflow/` — TypeScript CLI tools
+`.github/prompts/` — prompt definitions · `config/shared.json` — master config · `config/templates/` — ADO field HTML templates · `config/standards/` — dev standards · `scripts/workflow/` — TypeScript CLI tools
 `.ai-artifacts/{id}/ticket-context.json` — UNIFIED context file (replaces all phase artifacts)
 `.ai-artifacts/reports/` — activity report CSVs
 
@@ -122,4 +122,4 @@ Output: CSV + JSON always generated to `{{paths.reports}}`. Service accounts and
 
 ## Extending
 **New CLI command:** add to `scripts/workflow/cli/{tool}-tools.ts` → register in `shared.json` `cli_commands` → `npm run build`
-**New phase:** create `phase-XX-{name}.prompt.md` → register in `shared.json` `artifact_files.{phase}` → update `util-help`, `copilot-instructions`, `README`
+**New phase:** create `ticket-grooming-phase-XX-{name}.prompt.md` → register in `shared.json` `artifact_files.{phase}` → update `util-help`, `copilot-instructions`, `README`

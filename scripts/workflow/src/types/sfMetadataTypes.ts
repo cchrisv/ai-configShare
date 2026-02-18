@@ -29,11 +29,6 @@ export interface EntityDefinition {
   IsIdEnabled: boolean;
   IsReplicateable: boolean;
   IsRetrieveable: boolean;
-  IsCreateable: boolean;
-  IsUpdateable: boolean;
-  IsDeletable: boolean;
-  IsUndeletable: boolean;
-  IsMergeable: boolean;
   InternalSharingModel: string;
   ExternalSharingModel: string;
   RunningUserEntityAccessId: string | null;

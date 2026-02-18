@@ -35,7 +35,7 @@ Load `#file:config/shared.json`. Extract: `paths.*` · `cli_commands.*` (use as 
 {
   "metadata": {
     "work_item_id": "", "created_at": "", "last_updated": "",
-    "current_phase": "research|grooming|solutioning_research|solutioning|test_cases|finalization|complete",
+    "current_phase": "research|grooming|solutioning_research|solutioning|finalization|complete",
     "phases_completed": [], "version": "1.0"
   },
   "run_state": {
@@ -43,12 +43,12 @@ Load `#file:config/shared.json`. Extract: `paths.*` · `cli_commands.*` (use as 
     "metrics": { "research": {}, "grooming": {}, "solutioning": {} }
   },
   "research": {}, "grooming": {}, "solutioning": {},
-  "wiki": {}, "finalization": {}, "dev_updates": {},
+  "finalization": {}, "dev_updates": {},
   "closeout": {}
 }
 ```
-**Valid `current_phase` values:** `research` · `grooming` · `solutioning_research` · `solutioning` · `test_cases` · `finalization` · `complete`
-**Valid `phases_completed` values:** `research` · `grooming` · `solutioning_research` · `solutioning` · `test_cases` · `finalization`
+**Valid `current_phase` values:** `research` · `grooming` · `solutioning_research` · `solutioning` · `finalization` · `complete`
+**Valid `phases_completed` values:** `research` · `grooming` · `solutioning_research` · `solutioning` · `finalization`
 Full schema: `#file:config/templates/ticket-context-schema.json`
 
 ## CLI Quick Reference
