@@ -73,3 +73,5 @@ All tools authenticated and validated. Report results:
 | Workflow | ✅/❌ | Status check succeeded |
 
 Next → `/ticket-grooming-phase-01-research` with a work item ID.
+
+Having issues with a prompt? → `/util-feedback` to submit feedback as an ADO Issue for leadership triage.

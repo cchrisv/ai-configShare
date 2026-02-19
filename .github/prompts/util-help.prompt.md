@@ -25,7 +25,7 @@ New users → `/util-setup`. Full workflow → `/ticket-grooming-phase-01-resear
 **Feature/Epic:** `util-feature-solution-design` — aggregate children → context.solution_design
 
 **Utilities:**
-`util-grooming-update` (iterative requirements/scope updates → context.dev_updates) · `util-solutioning-update` (iterative solution design updates → context.dev_updates) · `util-help` · `util-setup` · `util-activity-report` (CSV) · `util-apply-template` (HTML reformat) · `util-sequence-tickets` (dependencies) · `util-repeat-phase` (re-run phase)
+`util-grooming-update` (iterative requirements/scope updates → context.dev_updates) · `util-solutioning-update` (iterative solution design updates → context.dev_updates) · `util-feedback` (submit feedback about prompts → ADO Issue) · `util-help` · `util-setup` · `util-activity-report` (CSV) · `util-apply-template` (HTML reformat) · `util-sequence-tickets` (dependencies) · `util-repeat-phase` (re-run phase)
 
 ## Context7 Pattern
 Single `ticket-context.json` per work item:

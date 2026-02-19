@@ -1,0 +1,89 @@
+<!--
+  COPILOT FEEDBACK DESCRIPTION FIELD HTML TEMPLATE
+  Purpose: Rich styled template for Issue Description field in Azure DevOps (Copilot prompt feedback)
+  Sections: Feedback Summary, Expected vs Actual, Reproduction Steps, Context
+  Variables: Replace {{variable}} placeholders with actual content
+  
+  Color Scheme (Dark Gradients with White Text):
+  - Purple (#7b1fa2 → #4a148c): Feedback Summary
+  - Orange (#e65100 → #bf360c): Expected vs Actual
+  - Blue (#1565c0 → #0d47a1): Reproduction Steps
+  - Blue-gray (#546e7a → #37474f): Context
+-->
+<div style="font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #333;">
+
+  <!-- FEEDBACK SUMMARY HEADER - Purple (Analysis) -->
+  <div style="background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">📋 Feedback Summary</span>
+  </div>
+
+  <!-- FEEDBACK CONTENT -->
+  <div style="background: #fff; border: 1px solid #dee2e6; border-left: 4px solid #7b1fa2; border-radius: 0 8px 8px 0; padding: 16px; margin-bottom: 20px;">
+    <div style="font-size: 13px; line-height: 1.6; color: #333;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 10px; width: 120px; vertical-align: top;"><strong style="color: #7b1fa2;">Prompt:</strong></td>
+          <td style="padding: 10px;"><code>{{prompt_name}}</code></td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 10px; vertical-align: top;"><strong style="color: #7b1fa2;">Severity:</strong></td>
+          <td style="padding: 10px;">{{severity_label}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; vertical-align: top;"><strong style="color: #7b1fa2;">Related Ticket:</strong></td>
+          <td style="padding: 10px;">{{related_ticket}}</td>
+        </tr>
+      </table>
+      <div style="margin-top: 12px; padding: 10px;">
+        {{feedback_summary}}
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPECTED VS ACTUAL HEADER - Orange (Issues) -->
+  <div style="background: linear-gradient(135deg, #e65100 0%, #bf360c 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">⚖️ Expected vs Actual</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+      <tr style="border-bottom: 1px solid #eee;">
+        <td style="padding: 10px; width: 120px; vertical-align: top;"><strong style="color: #2e7d32;">Expected:</strong></td>
+        <td style="padding: 10px; line-height: 1.6;">{{expected_behavior}}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; vertical-align: top;"><strong style="color: #c62828;">Actual:</strong></td>
+        <td style="padding: 10px; line-height: 1.6;">{{actual_behavior}}</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- REPRODUCTION STEPS HEADER - Blue (Architecture) -->
+  <div style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">🔄 Reproduction Steps</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <div style="font-size: 13px; color: #333; line-height: 1.6;">
+      {{reproduction_steps}}
+    </div>
+  </div>
+
+  <!-- CONTEXT HEADER - Blue-gray (Context) -->
+  <div style="background: linear-gradient(135deg, #546e7a 0%, #37474f 100%); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+    <span style="font-weight: 700; color: #fff; font-size: 15px;">🔧 Environment &amp; Context</span>
+  </div>
+  <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+    <div style="font-size: 13px; color: #333; line-height: 1.6;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 10px; width: 120px; vertical-align: top;"><strong>Date:</strong></td>
+          <td style="padding: 10px;">{{report_date}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; vertical-align: top;"><strong>Editor:</strong></td>
+          <td style="padding: 10px;">VS Code with GitHub Copilot</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</div>

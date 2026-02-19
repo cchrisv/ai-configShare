@@ -36,6 +36,7 @@ Schema: `#file:config/templates/ticket-context-schema.json`
 | Team members | `#file:.github/prompts/util-team-members.prompt.md` |
 | Update feature progress | `#file:.github/prompts/util-update-feature-progress.prompt.md` |
 | Re-run phase | `#file:.github/prompts/util-repeat-phase.prompt.md` |
+| Submit feedback | `#file:.github/prompts/util-feedback.prompt.md` |
 | Help | `#file:.github/prompts/util-help.prompt.md` |
 | Setup | `#file:.github/prompts/util-setup.prompt.md` |
 
@@ -47,7 +48,7 @@ Schema: `#file:config/templates/ticket-context-schema.json`
 **05 Finalization:** WSJF scoring, ADO links
 **06 Dev Closeout:** planned vs actual, release notes
 **Feature/Epic:** `util-feature-solution-design` — aggregate children into solution design
-**Utilities:** `util-grooming-update` · `util-solutioning-update` · `util-apply-template` · `util-sequence-tickets` · `util-activity-report` · `util-team-members` · `util-update-feature-progress` · `util-repeat-phase` · `util-help` · `util-setup`
+**Utilities:** `util-grooming-update` · `util-solutioning-update` · `util-apply-template` · `util-sequence-tickets` · `util-activity-report` · `util-team-members` · `util-update-feature-progress` · `util-repeat-phase` · `util-feedback` · `util-help` · `util-setup`
 
 ## Folder Structure
 `.github/prompts/` — prompt definitions · `config/shared.json` — master config · `config/templates/` — ADO field HTML templates · `config/standards/` — dev standards · `scripts/workflow/` — TypeScript CLI tools

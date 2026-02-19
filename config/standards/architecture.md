@@ -78,7 +78,7 @@ Composite: `{{paths.artifacts_root}}/{{work_item_id}}/research/{{artifact_files.
 
 **Content separation:** What/Why (02b, `util-grooming-update`) → Description, Acceptance Criteria · How (03b, `util-solutioning-update`) → DevelopmentSummary, SFComponents. Never cross-write.
 
-**Utilities:** `util-base` (shared vars, guardrails) · `util-research-base` (research schema) · `util-grooming-update` (dev updates to requirements) · `util-solutioning-update` (dev updates to solution) · `util-help` · `util-repeat-phase` · `util-feature-solution-design` (Feature/Epic aggregation) · `util-reformat-ticket` · `util-sequence-tickets` · `util-update-feature-progress` (Feature flow health + progress fields)
+**Utilities:** `util-base` (shared vars, guardrails) · `util-research-base` (research schema) · `util-grooming-update` (dev updates to requirements) · `util-solutioning-update` (dev updates to solution) · `util-feedback` (submit prompt feedback → ADO Issue) · `util-help` · `util-repeat-phase` · `util-feature-solution-design` (Feature/Epic aggregation) · `util-reformat-ticket` · `util-sequence-tickets` · `util-update-feature-progress` (Feature flow health + progress fields)
 
 **Run state** (`run-state.json`): `workItemId`, `currentPhase`, `completedSteps[]` (phase, step, completedAt, artifact), `errors[]`. Updated after each phase. Read via `workflow-tools status`, reset via `workflow-tools reset`.
 
@@ -192,7 +192,7 @@ Artifacts are **gitignored** and ephemeral. `workflow-tools reset` cleans up.
 |--------|-------|--------|
 | **New Phase** | Create `phase-XX-<name>.prompt.md` (standard structure) · register artifacts in `shared.json` | `util-repeat-phase`, `util-help`, `copilot-instructions.md`, `README.md` |
 | **New Research Stream** | Add to `phase-02a` or `phase-03a` · register in `shared.json` → `artifact_files.research` (next number prefix) | `util-research-base` table |
-| **New Utility Prompt** | Create `util-<name>.prompt.md` · register artifacts if applicable | `util-help`, `copilot-instructions.md`, `README.md` |
+| **New Utility Prompt** | Create `util-<name>.prompt.md` · register artifacts if applicable | `util-help`, `copilot-instructions.md`, `README.md`, `architecture.md` |
 | **New CLI Command** | Add handler in `cli/<tool>-tools.ts` · add modules in `src/` · register in `shared.json` → `cli_commands` · rebuild | `copilot-instructions.md`, `README.md` |
 | **New Template** | Create in `config/templates/` (naming: `field-<type>-<field>.html` / `wiki-<purpose>-template.html`) · register in `shared.json` → `template_files` | — |
 | **New Standard** | Create `config/standards/<topic>.md` · reference in prompts via `#file:` | No `shared.json` registration |

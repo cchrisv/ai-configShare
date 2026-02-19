@@ -48,6 +48,7 @@ Runtime artifacts are stored in `.ai-artifacts/<work_item_id>/ticket-context.jso
 - `util-grooming-update.prompt.md` - Iterative requirements/scope updates during development (what & why only)
 - `util-solutioning-update.prompt.md` - Iterative solution design updates during development (how only)
 - `util-groom-feature.prompt.md` - Refine a Feature work item by populating Description, Business Value, Objectives, and Acceptance Criteria fields with evidence-based content from grooming research and child work items
+- `util-feedback.prompt.md` - Submit feedback about Copilot prompts and their outputs; creates an Issue work item in ADO for leadership triage
 
 Supporting/shared: `util-base.prompt.md`, `util-research-base.prompt.md`
 
