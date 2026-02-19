@@ -22,6 +22,10 @@ A2 [IO]: Load {{context_file}} → verify:
   - `.grooming` exists (classification, templates_applied, solutioning_hints)
   - `.metadata.phases_completed` includes `"research"` AND `"grooming"`
 A3: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
+A4 [LOGIC]: **Salesforce Org Selection** — Check if `{{context_file}}.run_state.sf_org` is set (from Phase 01/03). If not set:
+A4.1 [CLI]: `sf org list --json` → display authenticated orgs to user
+A4.2 [ASK]: Ask the user which org to use
+A4.3 [IO]: Store selected alias → `{{context_file}}.run_state.sf_org`; save to disk
 
 ## Templates
 Templates are managed by the template engine. The CLI scaffolds fill specs, AI fills slots, CLI renders:
@@ -48,7 +52,7 @@ C1 [GEN]: Enumerate solution options — score each on **Trusted** / **Easy** / 
   - **Extension**: Extend existing components (modify trigger action, update CMT, adjust flow)
   - **Custom**: Net-new development (new Apex, new objects, new integrations)
 C2 [GEN]: For each option, assess: effort, risk, standards compliance, regression surface
-C3 [CLI]: If additional metadata needed: `{{cli.sf_describe}} {{object_name}} --json`
+C3 [CLI]: If additional metadata needed: `{{cli.sf_describe}} {{object_name}} --org {{sf_org}} --json`
 C4 [GEN]: Recommend best option with decision rationale; document eliminated options with reasons
 
 ## Step 3 [GEN] – Solution Design

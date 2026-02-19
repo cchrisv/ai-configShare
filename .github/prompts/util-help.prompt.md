@@ -1,4 +1,4 @@
-# Util – Help (Context7)
+# Util – Help
 Role: Help Assistant
 Mission: Explain available prompts and system architecture.
 
@@ -6,7 +6,7 @@ Mission: Explain available prompts and system architecture.
 New users → `/util-setup`. Full workflow → `/ticket-grooming-phase-01-research` with work item ID, then phases sequentially.
 
 ## Docs
-`#file:README.md` (catalog + CLI) · `#file:config/shared.json` (config) · `#file:.github/prompts/util-base.prompt.md` (Context7 defs)
+`#file:README.md` (catalog + CLI) · `#file:config/shared.json` (config) · `#file:.github/prompts/util-base.prompt.md` (defs)
 
 ## Prompts
 
@@ -25,9 +25,9 @@ New users → `/util-setup`. Full workflow → `/ticket-grooming-phase-01-resear
 **Feature/Epic:** `util-feature-solution-design` — aggregate children → context.solution_design
 
 **Utilities:**
-`util-grooming-update` (iterative requirements/scope updates → context.dev_updates) · `util-solutioning-update` (iterative solution design updates → context.dev_updates) · `util-feedback` (submit feedback about prompts → ADO Issue) · `util-help` · `util-setup` · `util-activity-report` (CSV) · `util-apply-template` (HTML reformat) · `util-sequence-tickets` (dependencies) · `util-repeat-phase` (re-run phase)
+`util-grooming-update` (iterative requirements/scope updates → context.dev_updates) · `util-solutioning-update` (iterative solution design updates → context.dev_updates) · `util-pr-analysis` (analyze PR diff, evaluate quality, compare to user story) · `util-groom-feature` (refine Feature fields from child work items) · `util-feedback` (submit feedback about prompts → ADO Issue) · `util-help` · `util-setup` · `util-activity-report` (CSV) · `util-activity-briefing` (manager briefings) · `util-morning-checkin` (standup content) · `util-apply-template` (HTML reformat) · `util-sequence-tickets` (dependencies) · `util-team-members` (MS Graph org discovery) · `util-update-feature-progress` (Feature flow health + progress) · `util-repeat-phase` (re-run phase)
 
-## Context7 Pattern
+## Unified Context Pattern
 Single `ticket-context.json` per work item:
 ```json
 {
@@ -40,14 +40,17 @@ Replaces ALL separate artifact files.
 
 ## CLI Tools
 **workflow-tools**: prepare, status, reset
-**ado-tools**: get, update, create, search, link, relations
-**sf-tools**: query, describe, discover, apex, triggers, flows, validation
+**ado-tools**: get, update, create, search, link, unlink, relations
+**pr-tools**: get, diff, threads, work-items, list
+**sf-tools**: query, describe, discover, apex-classes, apex-triggers, flows, validation-rules, custom-objects
 **wiki-tools**: get, update, create, list, search, delete
 **report-tools**: activity
+**team-tools**: discover
+**template-tools**: list, scaffold-phase, render-phase, validate, info
 
 ## Templates
 All in `config/templates/`:
 - **Field HTML**: field-*.html files
 - **Wiki HTML**: wiki-*.html files
 - **Guides**: *.md files including field-mappings, templates
-- **Schema**: ticket-context-schema.json (Context7 structure)
+- **Schema**: ticket-context-schema.json (context structure)

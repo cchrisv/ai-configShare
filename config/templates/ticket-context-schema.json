@@ -261,7 +261,7 @@
             "research_complete": { "type": "boolean" }
           }
         },
-        "context7_libraries": {
+        "libraries": {
           "type": "object",
           "description": "Library documentation analysis",
           "properties": {

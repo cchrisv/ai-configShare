@@ -9,6 +9,7 @@ export * from './adoWorkItemTypes.js';
 export * from './adoLinkTypes.js';
 export * from './adoWikiTypes.js';
 export * from './adoActivityTypes.js';
+export * from './adoPullRequestTypes.js';
 
 // Salesforce types
 export * from './sfMetadataTypes.js';

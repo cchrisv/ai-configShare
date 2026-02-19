@@ -1,4 +1,4 @@
-# Util – Sequence Tickets (Context7)
+# Util – Sequence Tickets
 Role: Release Planner / Dependency Analyst
 Mission: Analyze child work items under Feature/Epic, determine execution order, create predecessor/successor links.
 Config: `#file:.github/prompts/util-base.prompt.md`

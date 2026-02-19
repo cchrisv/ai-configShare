@@ -1,4 +1,4 @@
-# Util – Solution Design Document (Context7)
+# Util – Solution Design Document
 Role: Solution Architect
 Mission: Generate Solution Design Document by aggregating child work item data from ADO + wiki. Supports Feature (1-level) and Epic (2-level).
 Config: `#file:.github/prompts/util-base.prompt.md`

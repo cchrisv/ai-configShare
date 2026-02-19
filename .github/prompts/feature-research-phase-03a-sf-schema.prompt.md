@@ -30,8 +30,15 @@ Stream sections: Stream 1 → `sf_schema.objects` + `.field_inventory` + `.recor
 A1 [IO]: Load `{{context_file}}`; verify:
   - `"ado_discovery"` in `metadata.phases_completed`
   - `scope.sf_objects` has ≥1 entry
-A2 [CLI]: Verify SF auth: `{{cli.sf_query}} "SELECT Id FROM Organization LIMIT 1" --json`
+A2 [CLI]: **Salesforce Org Selection** (see `util-research-base` § Salesforce Org Selection):
+A2.1 [LOGIC]: Check if `{{context_file}}.run_state.sf_org` is already set (from Phase 01) → if yes, skip to A2.4
+A2.2 [CLI]: `sf org list --json` → display authenticated orgs to user
+A2.3 [ASK]: Ask the user which org to use
+A2.4 [IO]: Store/confirm selected alias → `{{context_file}}.run_state.sf_org`; save to disk
+A2.5 [CLI]: Verify SF auth: `{{cli.sf_query}} "SELECT Id FROM Organization LIMIT 1" --org {{sf_org}} --json`
 A3: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
+
+**NOTE:** Pass `--org {{sf_org}}` to ALL `sf-tools` commands in this phase.
 
 ## Mission Anchor [IO/GEN]
 **Before any research begins, ground yourself in the mission.**
@@ -65,8 +72,8 @@ All outputs to `{{context_file}}.sf_schema`:
 **Goal:** Full field inventory and record types for all **{{scope.feature_area}}** objects → `{{context_file}}.sf_schema.objects` + `.field_inventory` + `.record_types`
 
 ### Describe Objects (batch when multiple)
-B1 [CLI]: `{{cli.sf_describe}} {{obj1}},{{obj2}},{{objN}} --batch --json`
-  - If single object: `{{cli.sf_describe}} {{object}} --json`
+B1 [CLI]: `{{cli.sf_describe}} {{obj1}},{{obj2}},{{objN}} --batch --org {{sf_org}} --json`
+  - If single object: `{{cli.sf_describe}} {{object}} --org {{sf_org}} --json`
   - Extract per object: label, description, isCustom, keyPrefix, fields[], recordTypeInfos[], childRelationships[]
 
 ### Field Extraction
@@ -195,7 +202,7 @@ B8 [GEN]: Store → `sf_schema.objects[]`
 
 ### Dependency Discovery
 C1 [CLI]: For each in-scope object:
-  - `{{cli.sf_discover}} --type CustomObject --name {{object}} --depth 3 --json`
+  - `{{cli.sf_discover}} --type CustomObject --name {{object}} --depth 3 --org {{sf_org}} --json`
 C2 [GEN]: From describe results (Stream 1) + discover results, extract all relationships:
   - **Master-Detail** — `referenceTo` where relationship is MasterDetail; note cascade delete behavior
   - **Lookup** — `referenceTo` where relationship is Lookup
@@ -253,7 +260,7 @@ D7 [GEN]: Store cross-object formulas separately → `sf_schema.field_analysis.c
 
 ### Field Population Rates
 D8 [CLI]: For objects with high field counts (>50 custom fields):
-  - `{{cli.sf_query}} "SELECT COUNT(Id) FROM {{object}} WHERE {{field}} != null" --json` for custom fields (max 10 queries per object)
+  - `{{cli.sf_query}} "SELECT COUNT(Id) FROM {{object}} WHERE {{field}} != null" --org {{sf_org}} --json` for custom fields (max 10 queries per object)
 D9 [GEN]: Record population rate for each queried field → `sf_schema.field_analysis.field_population_rates[]`:
   - `{ object, field, population_rate }`
 

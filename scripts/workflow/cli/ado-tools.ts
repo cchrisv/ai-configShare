@@ -131,7 +131,7 @@ program
   // Context-driven update (reads phase output from ticket-context.json)
   .option('--from-context <file>', 'Read applied_content from ticket-context.json and map to ADO fields')
   .option('--phase <phase>', 'Phase section to read from context (grooming|solutioning). Default: grooming')
-  // Standalone filled-spec update (render + validate + push without Context7)
+  // Standalone filled-spec update (render + validate + push without context file)
   .option('--from-filled <files>', 'Comma-separated filled-spec JSON files (each must have "template" and "slots" keys). Renders, validates, maps ado_field, and pushes in one call.')
   // Comment
   .option('--comment <comment>', 'Add a comment/history entry')

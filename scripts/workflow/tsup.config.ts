@@ -24,6 +24,7 @@ export default defineConfig([
       'cli/report-tools': 'cli/report-tools.ts',
       'cli/team-tools': 'cli/team-tools.ts',
       'cli/template-tools': 'cli/template-tools.ts',
+      'cli/pr-tools': 'cli/pr-tools.ts',
     },
     format: ['esm'],
     sourcemap: true,

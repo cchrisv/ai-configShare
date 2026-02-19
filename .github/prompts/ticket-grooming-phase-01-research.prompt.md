@@ -135,7 +135,13 @@ D3 [GEN]: Identify documentation gaps (missing pages for key concepts)
 **Goal:** Query Salesforce data to understand current state (what exists today) → {{context_file}}.research.business_context
 **Scope:** Business SOQL only — record volumes, data patterns, business rule evidence. Do NOT query tooling API (metadata discovery belongs in Phase 03).
 
-A1 [CLI]: `{{cli.sf_query}} "{{soql_query}}" --json` (business data — record counts, field distributions, active configurations)
+**Prerequisite — Salesforce Org Selection** (see `util-research-base` § Salesforce Org Selection):
+A0.1 [LOGIC]: Check if `{{context_file}}.run_state.sf_org` is already set → if yes, skip to A1
+A0.2 [CLI]: `sf org list --json` → display authenticated orgs to user
+A0.3 [ASK]: Ask the user which org to use
+A0.4 [IO]: Store selected alias → `{{context_file}}.run_state.sf_org`; save to disk
+
+A1 [CLI]: `{{cli.sf_query}} "{{soql_query}}" --org {{sf_org}} --json` (business data — record counts, field distributions, active configurations)
 B1 [GEN]: Analyze results; extract business patterns and current-state evidence
 B2 [GEN]: Combine with prior streams; generate what/why context summary
 

@@ -29,9 +29,14 @@ A2 [IO]: Verify {{context_file}}:
   - `.grooming` exists (solutioning_hints from Phase 02)
   - `.grooming.solutioning_investigation` exists (assumptions, questions, unknowns, scope_risks from Phase 02)
   - `.metadata.phases_completed` includes `"grooming"`
-A3 [CLI]: Verify SF auth: `{{cli.sf_query}} "SELECT Id FROM Organization LIMIT 1" --json`
-A3.5 [CLI]: `{{cli.ado_get}} {{work_item_id}} --comments --json` — **Comment Refresh**
-A3.6 [LOGIC]: Compare against {{context_file}}.research.ado_workitem.comments[]:
+A3 [CLI]: **Salesforce Org Selection** (see `util-research-base` § Salesforce Org Selection):
+A3.1 [LOGIC]: Check if `{{context_file}}.run_state.sf_org` is already set (from Phase 01) → if yes, skip to A3.4
+A3.2 [CLI]: `sf org list --json` → display authenticated orgs to user
+A3.3 [ASK]: Ask the user which org to use
+A3.4 [IO]: Store/confirm selected alias → `{{context_file}}.run_state.sf_org`; save to disk
+A3.5 [CLI]: Verify SF auth: `{{cli.sf_query}} "SELECT Id FROM Organization LIMIT 1" --org {{sf_org}} --json`
+A3.6 [CLI]: `{{cli.ado_get}} {{work_item_id}} --comments --json` — **Comment Refresh**
+A3.7 [LOGIC]: Compare against {{context_file}}.research.ado_workitem.comments[]:
   - Identify new comments since Phase 01 research
   - Classify new comments; update {{context_file}}.research.ado_workitem.comments[]
   - Update {{context_file}}.research.ado_workitem.comment_summary with new decisions
@@ -54,15 +59,15 @@ B1 [IO]: Load domain keywords from `.research.ado_workitem.domain_keywords` + `.
 B2 [IO]: Load `.grooming.solutioning_hints[]` — these are implementation clues extracted during grooming
 B2.5 [IO]: Load `.grooming.solutioning_investigation` — these are deliberate items Phase 02 flagged for technical investigation. Log count: assumptions_to_validate, questions_for_solutioning, unknowns, scope_risks. Use these to guide investigation priorities in this stream.
 B3 [GEN]: Extract SF object/field names from domain keywords + hints + solutioning_investigation items; also extract any technical/implementation keywords that Phase 01 identified as in-scope but did not investigate (Phase 01 focuses on what/why only)
-B3.5 [CLI]: If metadata investigation needed: `{{cli.sf_query}} "{{tooling_query}}" --tooling --json` — tooling API queries live here, not in Phase 01
+B3.5 [CLI]: If metadata investigation needed: `{{cli.sf_query}} "{{tooling_query}}" --tooling --org {{sf_org}} --json` — tooling API queries live here, not in Phase 01
 
 ### Discovery (batch when multiple objects)
-C1 [CLI]: `{{cli.sf_describe}} {{object}} --json` (batch: `{{obj1}},{{obj2}} --batch --json`)
-C2 [CLI]: `{{cli.sf_discover}} --type CustomObject --name {{object}} --depth 3 --json`
-C3 [CLI]: `{{cli.sf_apex}} --pattern "%{{object}}%" --json`
-C4 [CLI]: `{{cli.sf_apex_triggers}} --object {{object}} --json`
-C5 [CLI]: `{{cli.sf_flows}} --object {{object}} --json`
-C6 [CLI]: `{{cli.sf_validation}} {{object}} --json` (batch: `{{obj1}},{{obj2}} --batch --json`)
+C1 [CLI]: `{{cli.sf_describe}} {{object}} --org {{sf_org}} --json` (batch: `{{obj1}},{{obj2}} --batch --org {{sf_org}} --json`)
+C2 [CLI]: `{{cli.sf_discover}} --type CustomObject --name {{object}} --depth 3 --org {{sf_org}} --json`
+C3 [CLI]: `{{cli.sf_apex}} --pattern "%{{object}}%" --org {{sf_org}} --json`
+C4 [CLI]: `{{cli.sf_apex_triggers}} --object {{object}} --org {{sf_org}} --json`
+C5 [CLI]: `{{cli.sf_flows}} --object {{object}} --org {{sf_org}} --json`
+C6 [CLI]: `{{cli.sf_validation}} {{object}} --org {{sf_org}} --json` (batch: `{{obj1}},{{obj2}} --batch --org {{sf_org}} --json`)
 
 ### Analysis
 D1 [GEN]: **Impact assessment** — count downstream dependencies per component:

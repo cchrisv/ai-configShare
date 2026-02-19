@@ -1,4 +1,4 @@
-# Util – Repeat Phase (Context7)
+# Util – Repeat Phase
 Mission: Re-run a specific workflow phase after updates or corrections.
 Config: `#file:util-base.prompt.md`
 Input: `{{work_item_id}}` · `{{phase}}` (research | grooming | solutioning-research | solutioning | finalization)

@@ -1,4 +1,4 @@
-# Util – Submit Feedback (Context7)
+# Util – Submit Feedback
 Role: Feedback Coordinator
 Mission: Collect user feedback about Copilot prompts and their outputs, then create an Issue work item in ADO for leadership triage.
 Config: `#file:config/shared.json` · `#file:.github/prompts/util-base.prompt.md`

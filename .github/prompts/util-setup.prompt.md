@@ -32,10 +32,12 @@ B3: **Get** — pick first result ID → `{{cli.ado_get}} <id> --expand Relation
 - Empty search results → verify `{{ado_defaults.project}}` is correct
 
 ## Step 4 [CLI] – Authenticate & Validate Salesforce
-C1: `sf org login web -a {{sf_defaults.default_org}}` → `sf org list` → confirm org alias appears
-C2: **Describe** — `{{cli.sf_describe}} Journey_Pipeline__c --fields-only --json`
+C1: `sf org login web` → complete browser auth flow
+C2: `sf org list --json` → display authenticated orgs
+C3 [ASK]: Ask the user which org to use for validation. Store alias as `{{sf_org}}`
+C4: **Describe** — `{{cli.sf_describe}} Journey_Pipeline__c --fields-only --org {{sf_org}} --json`
   - Verify object metadata is returned (confirms SF connection + object access)
-C3: **Query** — `{{cli.sf_query}} "SELECT Id, Name, Stage_Primary__c FROM Journey_Pipeline__c LIMIT 5" --json`
+C5: **Query** — `{{cli.sf_query}} "SELECT Id, Name, Stage_Primary__c FROM Journey_Pipeline__c LIMIT 5" --org {{sf_org}} --json`
   - Verify records returned (confirms data access)
 
 **Errors:**

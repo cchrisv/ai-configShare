@@ -39,7 +39,7 @@ program
       const projectRoot = getProjectRoot();
       const artifactsRoot = config.paths.artifacts_root;
       
-      // Context7: single directory + single context file
+      // Single directory + single context file
       const root = resolve(projectRoot, artifactsRoot, String(workItemId));
       const contextPath = resolve(root, 'ticket-context.json');
       
@@ -57,12 +57,12 @@ program
       // Fetch work item to validate it exists
       const workItem = await getWorkItem(workItemId, { expand: 'All' });
       
-      // Create root directory only (Context7: no subdirectories)
+      // Create root directory only (no subdirectories)
       if (!existsSync(root)) {
         mkdirSync(root, { recursive: true });
       }
       
-      // Create unified ticket-context.json (Context7)
+      // Create unified ticket-context.json
       const now = new Date().toISOString();
       const ticketContext = {
         metadata: {
@@ -151,7 +151,7 @@ program
       const metadata = context.metadata || {};
       const runState = context.run_state || {};
       
-      // Check which sections have data (Context7: sections instead of directories)
+      // Check which sections have data (sections instead of directories)
       const hasData = (section: unknown): boolean => {
         if (!section || typeof section !== 'object') return false;
         return Object.keys(section as object).length > 0;

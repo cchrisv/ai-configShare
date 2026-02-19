@@ -1,4 +1,4 @@
-# Util – Grooming Update (Context7)
+# Util – Grooming Update
 Role: Developer Assistant — Requirements Reconciliation
 Mission: Capture development-time changes to requirements/scope (what/why only).
 Config: `#file:util-base.prompt.md`

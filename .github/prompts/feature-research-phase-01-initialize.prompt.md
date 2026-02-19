@@ -56,17 +56,20 @@ A1 [LOGIC]: Determine input mode:
   - **Mode C** – both provided (maximum cross-referencing)
   - **No input** → **ASK** user for at least one input. **STOP**.
 
-### Step 2 [CLI] – Validate Auth
+### Step 2 [CLI] – Validate Auth & Select Org
 B1 [CLI]: Verify ADO auth: `{{cli.ado_search}} --text "test" --top 1 --json`
   - Failure → **STOP**: "Run `az login` first."
-B2 [CLI]: Verify SF auth: `{{cli.sf_query}} "SELECT Id FROM Organization LIMIT 1" --json`
-  - Failure → **STOP**: "Run `sf org login web -a {{sf_defaults.default_org}}` first."
+B2 [CLI]: **Salesforce Org Selection** — `sf org list --json` → display authenticated orgs to user
+B3 [ASK]: Ask the user which Salesforce org to use for this research
+B4 [IO]: Store selected alias → `{{context_file}}.run_state.sf_org`
+B5 [CLI]: Verify SF auth: `{{cli.sf_query}} "SELECT Id FROM Organization LIMIT 1" --org {{sf_org}} --json`
+  - Failure → **STOP**: "Run `sf org login web` first."
 
 ### Step 3 [CLI/GEN] – Resolve Scope (by input mode)
 
 #### Mode A – SF Entry Only
 C1 [CLI]: For each object name in `{{sf_entry}}`:
-  - `{{cli.sf_describe}} {{object}} --fields-only --json` → validate object exists
+  - `{{cli.sf_describe}} {{object}} --fields-only --org {{sf_org}} --json` → validate object exists
   - On failure: log to errors, continue with remaining objects
 C2 [CLI]: `{{cli.ado_search}} --text "{{sf_entry}}" --top 20 --json` → find related ADO work items
 C3 [CLI]: `{{cli.ado_search}} --tags "{{sf_entry}}" --top 10 --json` → tag-based search
@@ -86,7 +89,7 @@ D2 [GEN]: Extract SF object references from:
   - `{{field_paths.technical_notes}}` (scan for SF references)
   - `System.Tags` (scan for SF object names)
 D3 [CLI]: For each extracted object name:
-  - `{{cli.sf_describe}} {{object}} --fields-only --json` → validate object exists in org
+  - `{{cli.sf_describe}} {{object}} --fields-only --org {{sf_org}} --json` → validate object exists in org
   - On failure: log as potential reference, continue
 D4 [CLI]: `{{cli.wiki_search}} "{{title_from_D1}}" --json` → find related wiki pages for additional SF references (use title extracted from D1 result)
 D5 [GEN]: Extract additional SF object names from wiki search result highlights

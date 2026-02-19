@@ -60,7 +60,12 @@
     "template_render": "npx --prefix scripts/workflow template-tools render",
     "template_render_phase": "npx --prefix scripts/workflow template-tools render-phase",
     "template_validate": "npx --prefix scripts/workflow template-tools validate",
-    "template_info": "npx --prefix scripts/workflow template-tools info"
+    "template_info": "npx --prefix scripts/workflow template-tools info",
+    "pr_get": "npx --prefix scripts/workflow pr-tools get",
+    "pr_diff": "npx --prefix scripts/workflow pr-tools diff",
+    "pr_threads": "npx --prefix scripts/workflow pr-tools threads",
+    "pr_work_items": "npx --prefix scripts/workflow pr-tools work-items",
+    "pr_list": "npx --prefix scripts/workflow pr-tools list"
   },
   "work_item_types": {
     "user_story": "User Story",

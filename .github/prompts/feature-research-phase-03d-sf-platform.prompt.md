@@ -33,7 +33,10 @@ A1 [IO]: Load `{{context_file}}`; verify:
   - `sf_schema.objects` is populated
   - `sf_automation` is populated (triggers, flows, apex_classes, lwc_components)
   - `sf_architecture` is populated (order_of_operations, execution_chains)
+A1.5 [LOGIC]: Verify `{{context_file}}.run_state.sf_org` is set (from Phase 01/03a). If not set → run `sf org list --json`, ask user which org to use, store alias.
 A2: **STOP** if any prerequisite missing. Log to `run_state.errors[]` and save.
+
+**NOTE:** Pass `--org {{sf_org}}` to ALL `sf-tools` commands in this phase.
 
 ## Mission Anchor [IO/GEN]
 **Before any research begins, ground yourself in the mission.**

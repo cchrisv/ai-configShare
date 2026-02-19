@@ -1,4 +1,4 @@
-# Util – Base Reference (Context7)
+# Util – Base Reference
 Shared definitions for all workflow prompts. Uses unified ticket-context.json.
 
 ## Config
@@ -10,14 +10,14 @@ Load `#file:config/shared.json`. Extract: `paths.*` · `cli_commands.*` (use as 
 3. **No hardcoded paths** – use template variables; NEVER absolute paths
 4. **Config read-only** – NEVER modify shared.json or CLI scripts unless asked
 5. **Load config first** – always load shared.json before execution
-6. **Context7 only** – ALWAYS use {{root}}/ticket-context.json; NO separate artifacts
+6. **Unified context only** – ALWAYS use {{root}}/ticket-context.json; NO separate artifacts
 7. **Template-engine only** – NEVER generate raw HTML. Run `template-tools scaffold-phase` [CLI] to get a fill spec, then the AI fills slot values in the JSON [GEN] (there is NO `fill-slots` CLI command), saves to context [IO], then `ado-tools update --from-context` [CLI] auto-renders, validates, and pushes. The AI only produces structured JSON, never HTML.
 8. **Fill slots, not HTML** – When populating ADO fields that have templates, write filled slot values to `{{context_file}}.{{phase}}.filled_slots`, then let the CLI render and validate.
 
 ## Step Types
 `[IO]` file read/write · `[CLI]` tool execution · `[API]` remote API · `[LOGIC]` conditional · `[GEN]` AI reasoning
 
-## Context7 Paths
+## Unified Context Paths
 `{{root}}` = `{{paths.artifacts_root}}/{{work_item_id}}`
 `{{context_file}}` = `{{root}}/ticket-context.json`  (SINGLE SOURCE OF TRUTH)
 
@@ -30,7 +30,7 @@ Load `#file:config/shared.json`. Extract: `paths.*` · `cli_commands.*` (use as 
 | Dev Updates | `.dev_updates` |
 | Closeout | `.closeout` |
 
-## Context7 Structure
+## Context Structure
 ```json
 {
   "metadata": {
@@ -76,7 +76,7 @@ Full schema: `#file:config/templates/ticket-context-schema.json`
 ```
 Note: `template-tools render-phase` exists for standalone rendering but is NOT needed when using `--from-context` (which auto-renders internally).
 
-## Context7 Operations
+## Context Operations
 - Load: `[IO]` read {{context_file}}
 - Update: `[IO]` modify section → write {{context_file}}
 - Phase complete: update `metadata.current_phase` + `metadata.phases_completed`

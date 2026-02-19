@@ -161,12 +161,12 @@ The digest gives you a baseline, but a curious analyst digs deeper. **Before wri
 | "blocked" or "waiting" in comments | What's the blocker? Who owns it? | `{{cli.ado_get}} {id} --expand All --json` — check linked items |
 | Dev Summary mentions components but no PR | Is there a PR in another repo? | `{{cli.ado_search}} --type pr --query "{component_name}"` |
 | Person mentioned but not in the team | Who is this person? What's their role? | `{{cli.ado_search}} --type workitem --query "assigned to:{name}"` |
-| SF metadata changes with no ADO correlation | What was deployed and why? | `{{cli.sf_query}} --query "SELECT ... FROM SetupAuditTrail WHERE ..."` |
+| SF metadata changes with no ADO correlation | What was deployed and why? | `{{cli.sf_query}} --query "SELECT ... FROM SetupAuditTrail WHERE ..." --org {{sf_org}}` |
 | Complex solution in Dev Summary | Is there a wiki page with more detail? | `{{cli.wiki_search}} --query "{topic_keywords}"` |
 | Items On Hold with no explanation | Are there linked blockers or dependencies? | `{{cli.ado_relations}} {id} --json` |
 | PR review raised concerns | What were the specific review comments? | Check the PR link from the digest, or `{{cli.ado_search}} --type pr --query "{pr_title}"` |
 | Low test coverage mentioned | What's the current coverage? What tests exist? | `{{cli.sf_apex}} --org {{sf_org}} --json` |
-| Exception pipeline items | What errors are in the pipeline? | `{{cli.sf_query}} --query "SELECT ... FROM ExceptionPipeline__c WHERE ..."` |
+| Exception pipeline items | What errors are in the pipeline? | `{{cli.sf_query}} --query "SELECT ... FROM ExceptionPipeline__c WHERE ..." --org {{sf_org}}` |
 
 #### Research Guidelines
 - **Be targeted** — don't fetch everything, only what fills a narrative gap

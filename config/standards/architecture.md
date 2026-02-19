@@ -4,7 +4,7 @@ Internal architecture of the Autonomous Ticket Workflow. For AI agents and devel
 
 ## 1. System Overview
 
-Autonomous ticket workflow integrating **ADO**, **Salesforce**, and **AI assistants**. Automates: research → grooming → solutioning → wiki → finalization. Each phase produces JSON/Markdown artifacts in `.ai-artifacts/<work_item_id>/`. Phases run sequentially.
+Autonomous ticket workflow integrating **ADO**, **Salesforce**, and **AI assistants**. Automates: research → grooming → solutioning → finalization → closeout. Each phase writes to a single unified `ticket-context.json` per work item. Phases run sequentially.
 
 | System | Library | Purpose |
 |--------|---------|--------|
@@ -21,13 +21,13 @@ Autonomous ticket workflow integrating **ADO**, **Salesforce**, and **AI assista
 project-root/
 ├── .github/
 │   ├── copilot-instructions.md      # AI entry points + CLI docs
-│   └── prompts/                     # Phase (phase-XX-*.prompt.md) + utility (util-*.prompt.md) prompts
+│   └── prompts/                     # Phase (ticket-grooming-phase-*.prompt.md, feature-research-phase-*.prompt.md) + utility (util-*.prompt.md) prompts
 ├── config/
 │   ├── shared.json                  # Central config (paths, CLI, tags, templates, artifacts)
-│   ├── templates/                   # ADO field HTML + wiki templates (33 files)
-│   └── standards/                   # Salesforce dev standards (14 .md + 1 .json)
+│   ├── templates/                   # ADO field HTML + wiki templates (37 files)
+│   └── standards/                   # Salesforce dev standards (16 .md + 1 .json)
 ├── scripts/workflow/
-│   ├── cli/                         # CLI entry points (ado-tools, sf-tools, wiki-tools, workflow-tools, report-tools)
+│   ├── cli/                         # CLI entry points (ado-tools, sf-tools, wiki-tools, workflow-tools, pr-tools, report-tools, team-tools, template-tools)
 │   └── src/                         # Shared modules (clients, operations, auth, config, types)
 ├── force-app/                       # Salesforce source
 └── .ai-artifacts/                   # Runtime artifacts (gitignored, per work item)
@@ -65,22 +65,20 @@ Composite: `{{paths.artifacts_root}}/{{work_item_id}}/research/{{artifact_files.
 
 | Phase | Name | Purpose |
 |-------|------|---------|
-| 01 | Initialize | Prepare work item directory, run-state |
-| 02a | Grooming Research | Business context (ADO, wiki, similar items) |
-| 02b | Grooming | Requirements (what/why) → ADO |
-| 03a | Solutioning Research | Technical context (deps, code, web) |
-| 03b | Solutioning | Solution design (how) |
-| 04 | Wiki | Generate wiki documentation |
-| 05 | Finalize | Completion summary, WSJF, final ADO |
-| 06 | Closeout | Post-dev delta analysis (standalone) |
+| 01 | Research | Initialize workflow, business research (ADO, wiki, org dictionary) |
+| 02 | Grooming | Requirements refinement (what/why), template-driven ADO updates |
+| 03 | Solutioning Research | Technical research (SF metadata, dependencies, standards) |
+| 04 | Solutioning | Solution design (how), template-driven ADO updates |
+| 05 | Finalization | WSJF scoring, ADO links, final field updates |
+| 06 | Dev Closeout | Post-dev delta analysis, release notes (standalone) |
 
-**Flow:** 01 → 02a → 02b → 03a → 03b → 04 → 05. Standalone (06) runs independently post-handoff. Utilities (`util-grooming-update`, `util-solutioning-update`) run independently at any time.
+**Flow:** 01 → 02 → 03 → 04 → 05. Standalone (06) runs independently post-development. Utilities (`util-grooming-update`, `util-solutioning-update`) run independently at any time.
 
-**Content separation:** What/Why (02b, `util-grooming-update`) → Description, Acceptance Criteria · How (03b, `util-solutioning-update`) → DevelopmentSummary, SFComponents. Never cross-write.
+**Content separation:** What/Why (02, `util-grooming-update`) → Description, Acceptance Criteria · How (04, `util-solutioning-update`) → DevelopmentSummary, SFComponents. Never cross-write.
 
-**Utilities:** `util-base` (shared vars, guardrails) · `util-research-base` (research schema) · `util-grooming-update` (dev updates to requirements) · `util-solutioning-update` (dev updates to solution) · `util-feedback` (submit prompt feedback → ADO Issue) · `util-help` · `util-repeat-phase` · `util-feature-solution-design` (Feature/Epic aggregation) · `util-reformat-ticket` · `util-sequence-tickets` · `util-update-feature-progress` (Feature flow health + progress fields)
+**Utilities:** `util-base` (shared vars, guardrails) · `util-research-base` (research schema) · `util-grooming-update` (dev updates to requirements) · `util-solutioning-update` (dev updates to solution) · `util-pr-analysis` (PR diff analysis) · `util-feedback` (submit prompt feedback → ADO Issue) · `util-help` · `util-setup` · `util-repeat-phase` · `util-feature-solution-design` (Feature/Epic aggregation) · `util-apply-template` (HTML reformat) · `util-sequence-tickets` (dependency ordering) · `util-update-feature-progress` (Feature flow health + progress fields) · `util-team-members` (MS Graph org discovery) · `util-activity-report` (CSV reports) · `util-activity-briefing` (manager briefings) · `util-morning-checkin` (standup content) · `util-groom-feature` (Feature requirements)
 
-**Run state** (`run-state.json`): `workItemId`, `currentPhase`, `completedSteps[]` (phase, step, completedAt, artifact), `errors[]`. Updated after each phase. Read via `workflow-tools status`, reset via `workflow-tools reset`.
+**Unified context** (`ticket-context.json`): `metadata` (workItemId, currentPhase, phasesCompleted[]), `run_state` (completedSteps[], errors[]), `research`, `grooming`, `solutioning`, `finalization`, `dev_updates`, `closeout`. Updated after each phase. Read via `workflow-tools status`, reset via `workflow-tools reset`.
 
 ---
 
@@ -108,7 +106,10 @@ Composite: `{{paths.artifacts_root}}/{{work_item_id}}/research/{{artifact_files.
 | `sf-tools` | query, describe, discover, apex-classes, apex-triggers, flows, validation-rules, custom-objects | SF query/metadata |
 | `wiki-tools` | get, update, create, search, list, delete | ADO wiki |
 | `workflow-tools` | prepare, status, reset | Workflow lifecycle |
+| `pr-tools` | get, diff, threads, work-items, list | Pull request analysis |
 | `report-tools` | activity | Activity reports |
+| `team-tools` | discover | MS Graph team discovery |
+| `template-tools` | list, scaffold-phase, render-phase, validate, info | Template engine |
 
 **Invocation:** `npx --prefix scripts/workflow <tool> <command> [options] --json`. `--json` for structured output · `-v` for debug.
 
@@ -126,11 +127,12 @@ Templates in `config/templates/`, registered in `shared.json.template_files`.
 
 | Category | Pattern | Count |
 |----------|---------|-------|
-| ADO field HTML | `field-<type>-<field>.html` | 15 |
+| ADO field HTML | `field-<type>-<field>.html` | 21 |
 | Wiki pages | `wiki-*-template.html` | 3 |
 | Content guides | `<type>-templates.md` | 5 |
-| Solution design | `*-template.md` | 2 |
-| Reference/schemas | various | 5 |
+| Solution design | `*-template.md` | 3 |
+| Reports | `report-*.html` | 2 |
+| Reference/schemas | various | 3 |
 
 **Field templates:** per work item type (User Story, Bug, Feature) + shared (solution-design, release-notes, blockers, progress).
 
@@ -157,6 +159,9 @@ Salesforce dev standards in `config/standards/*.md`. Referenced in prompts via `
 | `profiles-permissions-standards.md` | Security model |
 | `metadata-naming-conventions.md` | Object/field/layout naming |
 | `code-complexity-standards.md` | CC/CoC thresholds, PMD |
+| `core-competencies.md` | Team core competencies |
+| `test-cases-playbook.md` | Test case design patterns |
+| `wiki-section-content-guide.md` | Wiki section authoring guidelines |
 | `organization-dictionary.json` | Acronyms, terms, departments |
 
 ---
@@ -165,22 +170,25 @@ Salesforce dev standards in `config/standards/*.md`. Referenced in prompts via `
 
 ```
 .ai-artifacts/<work_item_id>/
-├── run-state.json
-├── research/          # 00-org-dict, 01-ado-workitem, 02-wiki, 03a-deps, 04-similar, 05-business, 06-code, 07-web, research-summary, assumptions
-├── grooming/          # grooming-result.json
-├── solutioning/       # solution-design.json, technical-spec.md
-├── wiki/              # generated-content.md, wiki-metadata.json
-├── finalization/       # completion-summary.md, wsjf-evidence.json
-├── closeout/          # questionnaire, delta, fields, summary
-├── dev-updates/       # Timestamped logs (02c/03c)
-├── solution-design/   # util-feature-solution-design outputs
-├── sequencing/        # util-sequence-tickets outputs
-└── reformat/          # util-reformat-ticket outputs
+└── ticket-context.json          # Single unified context file (all phases)
+    ├── metadata                 # work_item_id, current_phase, phases_completed[]
+    ├── run_state                # completed_steps[], generation_history[], errors[]
+    ├── research                 # Business + technical research
+    ├── grooming                 # Requirements (what/why), filled_slots
+    ├── solutioning              # Solution design (how), filled_slots
+    ├── finalization             # WSJF scoring, completion
+    ├── dev_updates              # In-flight grooming/solutioning updates
+    └── closeout                 # Planned vs actual, release notes, filled_slots
+
+.ai-artifacts/sf-research/<feature-name>/
+└── research-context.json        # Feature research unified context
+
+.ai-artifacts/reports/            # Activity report CSVs
 ```
 
-**Lifecycle:** prepare → research → grooming → solutioning → wiki → finalization. Each phase overwrites its artifacts (idempotent).
+**Lifecycle:** prepare → research → grooming → solutioning → finalization. Each phase writes to its section in `ticket-context.json` (idempotent).
 
-**Schema (all research artifacts):** `workItemId`, `generatedAt` (ISO 8601), `research_complete` (bool), `feedback_loops[]`.
+**Schema:** Full structure defined in `config/templates/ticket-context-schema.json`.
 
 Artifacts are **gitignored** and ephemeral. `workflow-tools reset` cleans up.
 

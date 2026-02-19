@@ -1,4 +1,4 @@
-# Util – Solutioning Update (Context7)
+# Util – Solutioning Update
 Role: Developer Assistant — Solution Reconciliation
 Mission: Capture development-time changes to architecture/components (how only).
 Config: `#file:util-base.prompt.md`
@@ -28,9 +28,13 @@ A2.7 [IO]: Update {{context_file}}.research.ado_workitem.comments[] with new ent
 A3 [IO]: Count existing dev_updates.updates[]; set update_number
 
 ### Step 2 [CLI/GEN] – Evidence Gathering
+B0 [LOGIC]: **Salesforce Org Selection** — Check if `{{context_file}}.run_state.sf_org` is set. If not:
+B0.1 [CLI]: `sf org list --json` → display authenticated orgs to user
+B0.2 [ASK]: Ask the user which org to use
+B0.3 [IO]: Store selected alias → `{{context_file}}.run_state.sf_org`; save to disk
 B1 [CLI]: `{{cli.ado_relations}} {{work_item_id}} --json` — filter PR links
-B2 [CLI]: `{{cli.sf_query}} "SELECT Action, Section, Display, CreatedDate, CreatedBy.Name, DelegateUser FROM SetupAuditTrail WHERE CreatedDate = LAST_N_DAYS:30 ORDER BY CreatedDate DESC" --json`
-B3 [CLI]: For SF components: `{{cli.sf_discover}}` / `{{cli.sf_describe}}` to get as-built state
+B2 [CLI]: `{{cli.sf_query}} "SELECT Action, Section, Display, CreatedDate, CreatedBy.Name, DelegateUser FROM SetupAuditTrail WHERE CreatedDate = LAST_N_DAYS:30 ORDER BY CreatedDate DESC" --org {{sf_org}} --json`
+B3 [CLI]: For SF components: `{{cli.sf_discover}}` / `{{cli.sf_describe}}` to get as-built state (pass `--org {{sf_org}}`)
 B4 [GEN]: Compile evidence: PRs, SF audit, SF metadata
 
 ### Step 3 [GEN] – Technical Assumptions & Unknowns Resolution
